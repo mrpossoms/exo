@@ -1,0 +1,22 @@
+Objectives
+----------
+* Provide toolkit for declaring and generating messages
+* Maintain and verify consistency within messaging protocols
+* Split system up into modules for separation of concerns, that can be built separately or as a monolitic program
+* Provide un-opinionated module to module communication.
+
+Design
+------
+* Each module should name a set of message types that it can recieve
+* Each module should name a set of message types that it can emit
+* Module to module compatibility may be determined by the intersection of messages emitted by module1 with the messages received by module2
+* Provide module boiler plate for config, update loop, fault recovery / handling
+* Message version should be determined by a checksum on the struct
+* Provide a few messaging implementations, stdout->stdin, pipes, shared address space, network, etc.
+* Provide an interface for module configs on different platforms
+
+example_msg_t.h
+---------------
+typedef struct {
+	int32_t x, y, z;
+} example_msg_t;
