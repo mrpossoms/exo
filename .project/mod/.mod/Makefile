@@ -6,18 +6,20 @@
 #                                       
 include ../../vars.mk
 
+MOD_SRC=$(shell ls *.c)
+
 #----------------------------------------
 #    ___      _        
 #   | _ \_  _| |___ ___
 #   |   / || | / -_|_-<
 #   |_|_\\_,_|_\___/__/
-#                      
+#             
+.PHONY: all
+all: $(addprefix obj/$(TARGET)/,$(MOD_SRC:.c=.o))
+	@echo "$(COLOR_GREEN) Built module for $(TARGET) $(COLOR_OFF)"
+         
 obj/$(TARGET):
 	mkdir -p $@
-
-.PHONY: %.o
-%.o: obj/$(TARGET)/%.o
-	@echo "Built $@"
 
 obj/$(TARGET)/%.o: %.c obj/$(TARGET)
 	$(CC) $(FLAGS) $(INC) -c $< -o $@

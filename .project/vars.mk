@@ -11,6 +11,9 @@ MSG_DIR=msg
 INC=
 FLAGS=
 
+COLOR_GREEN=\033[0;32m
+COLOR_OFF=\033[0m
+
 ifndef CC
 CC=gcc
 endif

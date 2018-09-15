@@ -8,12 +8,27 @@ Objectives
 Design
 ------
 * Each module should name a set of message types that it can recieve
+	1. module directory could contain msgs/rx/ and msgs/tx/, which would contain links to msgs in the root msgs/ directory?
 * Each module should name a set of message types that it can emit
+	1. see above
 * Module to module compatibility may be determined by the intersection of messages emitted by module1 with the messages received by module2
+	1. simple intersection check between rx/ and tx/ directories for each module
 * Provide module boiler plate for config, update loop, fault recovery / handling
+	1. mod struct with function pointers that are assigned according to chosen implementations
 * Message version should be determined by a checksum on the struct
+	1. cumulative checksum across all files in the root msgs/ directory
 * Provide a few messaging implementations, stdout->stdin, pipes, shared address space, network, etc.
+	1. should live somewhere in imp/
 * Provide an interface for module configs on different platforms
+	1. TBD
+
+* Provide a means to specify desired communication pathways between modules
+	1. Perhaps this could be implemented by adding symbolic links between module directories?
+		> see above mention of rx and tx directories, it may not be essential to call out how programs should be used together
+
+* Provide uniform logging interface
+* Provide config facilities
+* Provide cli facilities where applicable 
 
 example_msg_t.h
 ---------------
