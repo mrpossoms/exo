@@ -22,6 +22,14 @@ Design
 * Provide an interface for module configs on different platforms
 	1. TBD
 
+Module design
+-------------
+	Life cycle states
+	1. entry -> first 
+	2. update
+	3. fault
+	4. exit
+
 * Provide a means to specify desired communication pathways between modules
 	1. Perhaps this could be implemented by adding symbolic links between module directories?
 		> see above mention of rx and tx directories, it may not be essential to call out how programs should be used together
