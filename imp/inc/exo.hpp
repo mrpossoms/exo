@@ -1,11 +1,27 @@
 #pragma once
 
-#include <iostream>
+#include <istream>
 
 namespace exo
 {
     using Result = int;
     using ID = std::string;
+
+    struct Mod
+    {
+        Mod(ID&& name);
+
+        /*
+        bool   msg_compatible(msg::Hdr& h);
+        Result msg_recieved(msg::Hdr& h, msg::Payload& p);
+        Result enter();
+        Result update();
+        Result exit();
+        */
+
+    private:
+        ID _name;
+    };
 
     namespace msg
     {
@@ -30,26 +46,47 @@ namespace exo
             virtual std::istream& operator>>(std::istream& is) = 0;
         };
 
-        struct Port : public std::iostream
+        struct Outlet : public std::ostream
         {
+            Outlet(Mod& m, std::initializer_list<ID>&& receipients);
+            ~Outlet();
 
+            Outlet& operator<<(Hdr& h);
+            Outlet& operator<<(Payload* p);
+
+            Outlet& operator<<(int8_t& val);
+            Outlet& operator<<(uint8_t& val);
+            Outlet& operator<<(int16_t& val);
+            Outlet& operator<<(uint16_t& val);
+            Outlet& operator<<(int32_t& val);
+            Outlet& operator<<(uint32_t& val);
+            Outlet& operator<<(int64_t& val);
+            Outlet& operator<<(uint64_t& val);
+            Outlet& operator<<(float& val);
+            Outlet& operator<<(double& val);
+
+        private:
+            int 
+        };
+
+        struct Inlet : public std::istream
+        {
+            Inlet(Mod& m);
+            ~Inlet();
+
+            Inlet& operator>>(Hdr& h);
+            Inlet& operator>>(Payload* p);
+
+            Inlet& operator>>(int8_t& val);
+            Inlet& operator>>(uint8_t& val);
+            Inlet& operator>>(int16_t& val);
+            Inlet& operator>>(uint16_t& val);
+            Inlet& operator>>(int32_t& val);
+            Inlet& operator>>(uint32_t& val);
+            Inlet& operator>>(int64_t& val);
+            Inlet& operator>>(uint64_t& val);
+            Inlet& operator>>(float& val);
+            Inlet& operator>>(double& val);
         };
     }
-
-
-    struct Mod
-    {
-        Mod(ID&& name);
-
-        /*
-        bool   msg_compatible(msg::Hdr& h);
-        Result msg_recieved(msg::Hdr& h, msg::Payload& p);
-        Result enter();
-        Result update();
-        Result exit();
-        */
-
-    private:
-        ID _name;
-    };
 }
