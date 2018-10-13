@@ -1,9 +1,9 @@
 #----------------------------------------
-#   __   __        _      _    _        
+#   __   __        _      _    _
 #   \ \ / /_ _ _ _(_)__ _| |__| |___ ___
 #    \ V / _` | '_| / _` | '_ \ / -_|_-<
 #     \_/\__,_|_| |_\__,_|_.__/_\___/__/
-#                                       
+#
 MOD_DIR=mod
 MSG_DIR=msg
 
@@ -14,10 +14,8 @@ FLAGS=
 COLOR_GREEN=\033[0;32m
 COLOR_OFF=\033[0m
 
-ifndef CC
-CC=gcc
+ifndef CMP
+CMP=g++
 endif
 
-TARGET=$(shell $(CC) -dumpmachine)
-
-
+TARGET=$(shell $(CMP) -dumpmachine)

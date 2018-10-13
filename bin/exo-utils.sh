@@ -25,5 +25,6 @@ function get_cfg_val {
 function create_default_configs {
     mkdir $CFG_ROOT
 
+    set_cfg_val $CFG_ROOT exo_base /etc/exo
     set_cfg_val $CFG_ROOT template_path /etc/exo/.project
 }
