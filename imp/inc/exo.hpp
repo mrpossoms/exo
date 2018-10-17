@@ -1,6 +1,7 @@
 #pragma once
 
 #include <istream>
+#include <memory>
 
 namespace exo
 {
@@ -46,7 +47,7 @@ namespace exo
             virtual std::istream& operator>>(std::istream& is) = 0;
         };
 
-        struct Outlet : public std::ostream
+        struct Outlet
         {
             Outlet(Mod& m, std::initializer_list<ID>&& receipients);
             ~Outlet();
@@ -54,6 +55,8 @@ namespace exo
             Outlet& operator<<(Hdr& h);
             Outlet& operator<<(Payload* p);
 
+            template<typename T>
+            Outlet& put(T& structure);
             Outlet& operator<<(int8_t& val);
             Outlet& operator<<(uint8_t& val);
             Outlet& operator<<(int16_t& val);
@@ -66,10 +69,11 @@ namespace exo
             Outlet& operator<<(double& val);
 
         private:
-            int 
+            class impl;
+            impl* _pimpl;
         };
 
-        struct Inlet : public std::istream
+        struct Inlet
         {
             Inlet(Mod& m);
             ~Inlet();
@@ -87,6 +91,10 @@ namespace exo
             Inlet& operator>>(uint64_t& val);
             Inlet& operator>>(float& val);
             Inlet& operator>>(double& val);
+
+        private:
+            class impl;
+            impl* _pimpl;
         };
     }
 }

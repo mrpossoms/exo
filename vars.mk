@@ -9,7 +9,7 @@ MSG_DIR=msg
 
 # global to all modules
 INC=
-FLAGS=
+FLAGS=-g
 
 COLOR_GREEN=\033[0;32m
 COLOR_OFF=\033[0m

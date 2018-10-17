@@ -26,6 +26,10 @@ msg::Hdr msg::Hdr::from_stream(std::istream& is)
     return { is };
 }
 
+Mod::Mod(ID&& name)
+{
+    _name = name;
+}
 /*
 bool Mod::msg_compatible(msg::Hdr& h) { return false; }
 Result Mod::msg_recieved(msg::Hdr& h, msg::Payload& p) { return {}; }

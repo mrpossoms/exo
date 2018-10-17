@@ -8,10 +8,30 @@ export EXO_DIR=$(dirname $(which $0))
 # export EXO_DIR=$(pwd)
 SUB_CMD=$1
 
+if [ -z $(printenv | grep EXO_ROOT) ]; then
+    exo_root=$(prompt "Specify your EXO_ROOT [default /etc/exo]: ")
+    dot_file=$(prompt "Specify the full path to your shell's rc file: ")
+
+    if [ -z $exo_root ]; then
+        exo_root=/etc/exo
+    fi
+
+    echo "\nexport EXO_ROOT=$exo_root\n" >> $dot_file
+
+    # make sure appending worked
+    if [ $? -ne 0 ]; then
+        echo "Error writing to '$dot_file'"
+        exit 1
+    fi
+
+    echo "All good, please restart your shell."
+    exit 0
+fi
+
 # check for defaults folder in user's home directory
 # if it doesn't exist, create it.
 if [ ! -d $CFG_ROOT ]; then
-    answer=$(prompt ".exo doesn't exist, create it? [y/n] ")
+    answer=$(prompt ".exo doesn't exist, create it? [y/n]: ")
 
     if [ $answer == 'y' ]; then
         create_default_configs

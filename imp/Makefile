@@ -16,10 +16,25 @@ INC+=-Iinc/
 #   |_|_\\_,_|_\___/__/
 #
 obj/$(TARGET):
-	mkdir obj/$(TARGET)
+	mkdir -p obj/$(TARGET)
+
+.PHONY: obj/%.o
+obj/%.o: obj/$(TARGET)/%.o
+	@echo "$(COLOR_GREEN) Built $@ $(COLOR_OFF)"
 
 obj/$(TARGET)/%.o: src/%.cpp obj/$(TARGET)
 	$(CMP) $(INC) $(FLAGS) -c $< -o $@
 
+tests/bin:
+	mkdir tests/bin
+
+tests/bin/%: tests/%.cpp tests/bin
+	$(CMP) $(INC) $(FLAGS) -Itests/ src/*.cpp $< -o $@
+
+.PHONY: test
+test: 
+	echo ""
+
 clean:
 	rm -rf obj
+	rm -rf tests/bin
