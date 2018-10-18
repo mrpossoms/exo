@@ -49,7 +49,7 @@ fi
 # try to run the sub command program
 # but check to see if it exists
 cmd=$EXO_DIR/exo-cmd-$SUB_CMD.sh
-which $cmd
+which $cmd > /dev/null
 if [ $? -eq 0 ]; then
     $EXO_DIR/exo-cmd-$SUB_CMD.sh ${@:2}
 else
