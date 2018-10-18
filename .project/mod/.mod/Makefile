@@ -4,7 +4,7 @@
 #    \ V / _` | '_| / _` | '_ \ / -_|_-<
 #     \_/\__,_|_| |_\__,_|_.__/_\___/__/
 #
-include ../../vars.mk
+include $(EXO_ROOT)/vars.mk
 
 MOD_SRC=$(shell ls *.cpp)
 
@@ -15,13 +15,13 @@ MOD_SRC=$(shell ls *.cpp)
 #   |_|_\\_,_|_\___/__/
 #
 .PHONY: all
-all: $(addprefix obj/$(TARGET)/,$(MOD_SRC:.c=.o))
+all: $(addprefix obj/$(TARGET)/,$(MOD_SRC:.cpp=.o)) exo
 	@echo "$(COLOR_GREEN) Built module for $(TARGET) $(COLOR_OFF)"
 
 obj/$(TARGET):
 	mkdir -p $@
 
-obj/$(TARGET)/%.o: %.c obj/$(TARGET)
+obj/$(TARGET)/%.o: %.cpp obj/$(TARGET)
 	$(CMP) $(FLAGS) $(INC) -c $< -o $@
 
 .PHONY: clean

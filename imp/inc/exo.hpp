@@ -8,6 +8,10 @@ namespace exo
     using Result = int;
     using ID = std::string;
 
+    const Result OK = 0;
+
+    struct Context;
+
     struct Mod
     {
         Mod(ID&& name);
@@ -19,10 +23,31 @@ namespace exo
         Result update();
         Result exit();
         */
-
     private:
         ID _name;
     };
+
+    namespace data
+    {
+        struct Config
+        {
+            struct Value
+            {
+                char* path;
+                char* def_val;
+
+                bool is_new();
+                void operator=(std::string value);
+                std::string operator()();
+            };
+
+            Value operator[](char* path);
+
+        private:
+            struct impl;
+            impl* _pimpl;
+        };
+    }
 
     namespace msg
     {

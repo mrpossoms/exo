@@ -8,8 +8,10 @@ MOD_DIR=mod
 MSG_DIR=msg
 
 # global to all modules
-INC=
-FLAGS=-g
+INC=-I$(EXO_ROOT)/imp/inc
+FLAGS=-g -std=c++11
+
+EXO_IMP=imp
 
 COLOR_GREEN=\033[0;32m
 COLOR_OFF=\033[0m
@@ -19,3 +21,7 @@ CMP=g++
 endif
 
 TARGET=$(shell $(CMP) -dumpmachine)
+
+.PHONY: exo
+exo:
+	make -C $(EXO_ROOT)/imp all
