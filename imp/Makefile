@@ -8,11 +8,9 @@ include $(EXO_ROOT)/vars.mk
 
 FLAGS+=-std=c++11
 INC+=-Iinc/
-PLATFORMS=$(shell ls src/platforms)
-SRCS=$(shell exo rls src)
-#SRCS+=$(foreach path,$(PLT_PATHS),src/$(foreach src,$(shell ls src/$(path)),$(path)/$(src)))
-TMP=$(shell exo rls src | sed "s|src/||" | sed "s|.cpp|.o|")
-OBJS=$(foreach src,$(TMP),obj/$(TARGET)/$(src))
+#PLATFORMS=$(shell ls src/platforms)
+SRCS=$(shell ls src | grep .cpp)
+OBJS=$(foreach src,$(SRCS:.cpp=.o),obj/$(TARGET)/$(src))
 
 #----------------------------------------
 #    ___      _
@@ -25,7 +23,6 @@ all: $(OBJS)
 
 obj/$(TARGET):
 	mkdir -p obj/$(TARGET)
-	mkdir -p $(foreach plt,$(PLATFORMS),obj/$(TARGET)/platforms/$(plt))
 
 #obj/%.o: obj/$(TARGET)/%.o
 #	@echo "$(COLOR_GREEN) Built $@ $(COLOR_OFF)"
@@ -38,7 +35,7 @@ tests/bin:
 	mkdir tests/bin
 
 tests/bin/%: tests/%.cpp tests/bin
-	$(CMP) $(INC) $(FLAGS) -Itests/ src/*.cpp $< -o $@
+	$(CMP) $(INC) $(FLAGS) -Itests/ $< src/*.cpp -o $@
 
 test:
 	@echo $(SRCS)
