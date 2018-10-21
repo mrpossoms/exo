@@ -98,6 +98,6 @@ namespace exo
     struct Context
     {
         std::string proc_name;
-        std::unordered_map<std::string, std::string> args;
+        int argc, char* argv[];
     };
 }

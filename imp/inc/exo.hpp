@@ -12,42 +12,7 @@ namespace exo
 
     struct Context;
 
-    struct Mod
-    {
-        Mod(ID&& name);
-
-        /*
-        bool   msg_compatible(msg::Hdr& h);
-        Result msg_recieved(msg::Hdr& h, msg::Payload& p);
-        Result enter();
-        Result update();
-        Result exit();
-        */
-    private:
-        ID _name;
-    };
-
-    namespace data
-    {
-        struct Config
-        {
-            struct Value
-            {
-                char* path;
-                char* def_val;
-
-                bool is_new();
-                void operator=(std::string value);
-                std::string operator()();
-            };
-
-            Value operator[](char* path);
-
-        private:
-            struct impl;
-            impl* _pimpl;
-        };
-    }
+    struct Mod;
 
     namespace msg
     {
@@ -119,6 +84,42 @@ namespace exo
 
         private:
             class impl;
+            impl* _pimpl;
+        };
+    }
+
+    struct Mod
+    {
+        Mod(ID&& name);
+
+        virtual bool msg_compatible(msg::Hdr& h) = 0;
+        virtual Result msg_recieved(msg::Hdr& h, msg::Inlet& inlet) = 0;
+        virtual Result enter(Context* ctx) = 0;
+        virtual Result update() = 0;
+        virtual Result exit() = 0;
+
+    private:
+        ID _name;
+    };
+
+    namespace data
+    {
+        struct Config
+        {
+            struct Value
+            {
+                char* path;
+                char* def_val;
+
+                bool is_new();
+                void operator=(std::string value);
+                std::string operator()();
+            };
+
+            Value operator[](char* path);
+
+        private:
+            struct impl;
             impl* _pimpl;
         };
     }

@@ -9,11 +9,12 @@ if [ $(basename $(pwd)) != "mod" ]; then
     exit 1
 fi
 
-echo "Enter a new module name"
-read -r name
+name=$(prompt "Enter a new module name: ")
 if [ -d $name ]; then
     echo "Error: '$name' already exists"
     exit 2
 else
     cp -r $MOD_DIR $name
+    cat $name/MOD_NAME.cpp | sed s/MOD_NAME/$name/ > $name/$name.cpp
+    rm $name/MOD_NAME.cpp
 fi

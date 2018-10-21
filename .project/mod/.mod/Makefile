@@ -7,6 +7,8 @@
 include $(EXO_ROOT)/vars.mk
 
 MOD_SRC=$(shell ls *.cpp)
+OS_TARGET=$(cat os_target)
+TARGET_OBJS=$(shell ls imp/obj/$(TARGET))
 
 #----------------------------------------
 #    ___      _
