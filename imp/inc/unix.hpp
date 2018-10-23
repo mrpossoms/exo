@@ -98,6 +98,7 @@ namespace exo
     struct Context
     {
         std::string proc_name;
-        int argc, char* argv[];
+        int argc;
+        char* argv[];
     };
 }

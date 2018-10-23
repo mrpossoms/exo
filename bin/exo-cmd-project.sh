@@ -13,4 +13,4 @@ else
 fi
 
 os_target=$(prompt "Which OS is being targeted [unix/none]: ")
-echo $os_target >> $name/os_target
+echo $os_target > $name/os_target

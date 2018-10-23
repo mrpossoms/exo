@@ -7,8 +7,8 @@
 include $(EXO_ROOT)/vars.mk
 
 MOD_SRC=$(shell ls *.cpp)
-OS_TARGET=$(cat os_target)
-TARGET_OBJS=$(shell ls imp/obj/$(TARGET))
+OS_TARGET=$(exo get os_target)
+TARGET_OBJS=$(shell ls $(EXO_ROOT)/imp/obj/$(TARGET)/$(OS_TARGET)_*)
 
 #----------------------------------------
 #    ___      _
@@ -25,6 +25,10 @@ obj/$(TARGET):
 
 obj/$(TARGET)/%.o: %.cpp obj/$(TARGET)
 	$(CMP) $(FLAGS) $(INC) -c $< -o $@
+
+.PHONY: target_objs
+target_objs:
+	@echo $(TARGET_OBJS)
 
 .PHONY: clean
 clean:
