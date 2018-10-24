@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string.h>
+
 #include <istream>
 #include <memory>
 
@@ -9,6 +11,7 @@ namespace exo
     using ID = std::string;
 
     const Result OK = 0;
+    const Result BAD = 1;
 
     struct Context;
 
@@ -31,60 +34,134 @@ namespace exo
             static Hdr from_stream(std::istream& is);
         };
 
+        struct PayloadBuffer
+        {
+            void* buf;
+            size_t len;
+        };
+
+        template<size_t T>
         struct Payload
         {
-            virtual std::ostream& operator<<(std::ostream& os) = 0;
-            virtual std::istream& operator>>(std::istream& is) = 0;
+
+            Payload()
+            {
+                _size = T;
+                _pos = 0;
+            }
+
+            template<typename S>
+            Payload& put(S& structure) { enqueue<S>(structure); return *this; }
+            Payload& operator<<(int8_t& val)   { enqueue<int8_t>(val); return *this; }
+            Payload& operator<<(uint8_t& val)  { enqueue<uint8_t>(val); return *this; }
+            Payload& operator<<(int16_t& val)  { enqueue<int16_t>(val); return *this; }
+            Payload& operator<<(uint16_t& val) { enqueue<uint16_t>(val); return *this; }
+            Payload& operator<<(int32_t& val)  { enqueue<int32_t>(val); return *this; }
+            Payload& operator<<(uint32_t& val) { enqueue<uint32_t>(val); return *this; }
+            Payload& operator<<(int64_t& val)  { enqueue<int64_t>(val); return *this; }
+            Payload& operator<<(uint64_t& val) { enqueue<uint64_t>(val); return *this; }
+            Payload& operator<<(float& val)    { enqueue<float>(val); return *this; }
+            Payload& operator<<(double& val)   { enqueue<double>(val); return *this; }
+            
+            template<typename S>
+            Payload& get(S& structure) { dequeue<S>(structure); return *this; }
+            Payload& operator>>(int8_t& val)   { dequeue<int8_t>(val); return *this; }
+            Payload& operator>>(uint8_t& val)  { dequeue<uint8_t>(val); return *this; }
+            Payload& operator>>(int16_t& val)  { dequeue<int16_t>(val); return *this; }
+            Payload& operator>>(uint16_t& val) { dequeue<uint16_t>(val); return *this; }
+            Payload& operator>>(int32_t& val)  { dequeue<int32_t>(val); return *this; }
+            Payload& operator>>(uint32_t& val) { dequeue<uint32_t>(val); return *this; }
+            Payload& operator>>(int64_t& val)  { dequeue<int64_t>(val); return *this; }
+            Payload& operator>>(uint64_t& val) { dequeue<uint64_t>(val); return *this; }
+            Payload& operator>>(float& val)    { dequeue<float>(val); return *this; }
+            Payload& operator>>(double& val)   { dequeue<double>(val); return *this; }
+
+            Result seek_set(size_t pos)
+            {
+                if (pos < T)
+                {
+                    _pos = pos;
+                    return exo::OK;
+                }
+
+                return exo::BAD;
+            }
+
+            void* ptr() { return _buf; }
+
+            size_t size() { return _size; }
+
+            PayloadBuffer buffer() { return { ptr(), size() }; }
+
+        private:
+            uint8_t _buf[T];
+            size_t _pos, _size;
+
+            template<typename P> Result enqueue(P& val)
+            {
+                if (_pos + sizeof(P) > T) 
+                {                                   
+                    // TODO handle error                    
+                    return exo::BAD;                   
+                } 
+
+                memcpy(_buf + _pos, &val, sizeof(P));
+                _pos += sizeof(P);
+
+                return exo::OK;
+            }
+
+            template<typename P> Result dequeue(P& val)
+            {
+                if (_pos + sizeof(P) > T) 
+                {                                   
+                    // TODO handle error                    
+                    return exo::BAD;                   
+                }                     
+
+                memcpy(&val, _buf + _pos, sizeof(P));
+                _pos += sizeof(P);
+
+                return exo::OK;
+            }
         };
+
+
 
         struct Outlet
         {
-            Outlet(Mod& m, std::initializer_list<ID>&& receipients);
-            ~Outlet();
+            virtual Outlet& operator<<(Hdr& h) = 0;
+            virtual Outlet& operator<<(PayloadBuffer&& buf) = 0;
 
-            Outlet& operator<<(Hdr& h);
-            Outlet& operator<<(Payload* p);
-
-            template<typename T>
-            Outlet& put(T& structure);
-            Outlet& operator<<(int8_t& val);
-            Outlet& operator<<(uint8_t& val);
-            Outlet& operator<<(int16_t& val);
-            Outlet& operator<<(uint16_t& val);
-            Outlet& operator<<(int32_t& val);
-            Outlet& operator<<(uint32_t& val);
-            Outlet& operator<<(int64_t& val);
-            Outlet& operator<<(uint64_t& val);
-            Outlet& operator<<(float& val);
-            Outlet& operator<<(double& val);
-
-        private:
-            class impl;
-            impl* _pimpl;
+            // template<typename T>
+            // Outlet& put(T& structure);
+            // Outlet& operator<<(int8_t& val);
+            // Outlet& operator<<(uint8_t& val);
+            // Outlet& operator<<(int16_t& val);
+            // Outlet& operator<<(uint16_t& val);
+            // Outlet& operator<<(int32_t& val);
+            // Outlet& operator<<(uint32_t& val);
+            // Outlet& operator<<(int64_t& val);
+            // Outlet& operator<<(uint64_t& val);
+            // Outlet& operator<<(float& val);
+            // Outlet& operator<<(double& val);
         };
 
         struct Inlet
         {
-            Inlet(Mod& m);
-            ~Inlet();
+            virtual Inlet& operator>>(Hdr& h) = 0;
+            virtual Inlet& operator>>(PayloadBuffer&& buf) = 0;
 
-            Inlet& operator>>(Hdr& h);
-            Inlet& operator>>(Payload* p);
-
-            Inlet& operator>>(int8_t& val);
-            Inlet& operator>>(uint8_t& val);
-            Inlet& operator>>(int16_t& val);
-            Inlet& operator>>(uint16_t& val);
-            Inlet& operator>>(int32_t& val);
-            Inlet& operator>>(uint32_t& val);
-            Inlet& operator>>(int64_t& val);
-            Inlet& operator>>(uint64_t& val);
-            Inlet& operator>>(float& val);
-            Inlet& operator>>(double& val);
-
-        private:
-            class impl;
-            impl* _pimpl;
+            // Inlet& operator>>(int8_t& val);
+            // Inlet& operator>>(uint8_t& val);
+            // Inlet& operator>>(int16_t& val);
+            // Inlet& operator>>(uint16_t& val);
+            // Inlet& operator>>(int32_t& val);
+            // Inlet& operator>>(uint32_t& val);
+            // Inlet& operator>>(int64_t& val);
+            // Inlet& operator>>(uint64_t& val);
+            // Inlet& operator>>(float& val);
+            // Inlet& operator>>(double& val);
         };
     }
 

@@ -3,9 +3,11 @@
 #include "unix.hpp"
 
 
-int main(int argc, char* argv[])
+using namespace exo::unix;
+
+template<typename T>
+int module(T& mod, int argc, char** argv)
 {
-    UNIX_MOD mod;
     exo::Result res = exo::OK;
     exo::msg::Inlet inlet(mod);
     exo::msg::Outlet outlet(mod, {});
@@ -34,5 +36,5 @@ int main(int argc, char* argv[])
     // shutdown
     mod.exit();
 
-    return 0;
+    return 0;    
 }

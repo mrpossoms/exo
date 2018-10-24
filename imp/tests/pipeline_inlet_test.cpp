@@ -1,4 +1,5 @@
 #include "exo.hpp"
+#include "unix.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -7,11 +8,13 @@
 
 #include "test.h"
 {
-    exo::Mod mod("test_mod");
-    exo::msg::Inlet inlet(mod);
-    uint8_t byte_in = 0;
+    exo::unix::Pipeline::In inlet;
+    exo::msg::Payload<sizeof(uint8_t)> pay;
+    
+    uint8_t byte_in;
+    inlet >> pay.buffer();
+    pay >> byte_in;
 
-    inlet >> byte_in;
     assert(byte_in == 42);
 
     return 0;

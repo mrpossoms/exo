@@ -26,6 +26,9 @@ msg::Hdr msg::Hdr::from_stream(std::istream& is)
     return { is };
 }
 
+
+// Result msg::Payload::seek_set(size_t pos);
+
 Mod::Mod(ID&& name)
 {
     _name = name;

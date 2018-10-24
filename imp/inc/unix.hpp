@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string.h>
+
 #include <unordered_map>
 #include <functional>
 #include <sstream>
@@ -93,12 +95,29 @@ namespace exo
                 return NULL;
             }
         };
+
+        struct Pipeline
+        {
+            struct Out : public exo::msg::Outlet
+            {
+                exo::msg::Outlet& operator<<(exo::msg::Hdr& h);
+                exo::msg::Outlet& operator<<(exo::msg::PayloadBuffer&& buf);
+            };
+
+            struct In : public exo::msg::Inlet
+            {
+                exo::msg::Inlet& operator>>(exo::msg::Hdr& h);
+                exo::msg::Inlet& operator>>(exo::msg::PayloadBuffer&& buf);
+            };
+        };
+
+        template<typename T>
+        int module(T& mod, int argc, char** argv);
     }
 
     struct Context
     {
-        std::string proc_name;
         int argc;
-        char* argv[];
+        char** argv;
     };
 }
