@@ -16,7 +16,7 @@ if [ -z $(printenv | grep EXO_ROOT) ]; then
         exo_root=/etc/exo
     fi
 
-    echo "\nexport EXO_ROOT=$exo_root\n" >> $dot_file
+    echo "export EXO_ROOT=$exo_root" >> $dot_file
 
     # make sure appending worked
     if [ $? -ne 0 ]; then

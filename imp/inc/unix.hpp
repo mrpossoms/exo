@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string.h>
+
 #include <unordered_map>
 #include <functional>
 #include <sstream>
@@ -8,6 +10,8 @@ namespace exo
 {
     namespace unix
     {
+        static void daemonize();
+
         struct CLI
         {
             CLI(unsigned int argc, char* argv[])
@@ -93,12 +97,40 @@ namespace exo
                 return NULL;
             }
         };
+
+        struct Log : public exo::Log
+        {
+            Log(int verbosity, bool timestamp=false);
+
+        protected:
+            virtual void log(Log::Type type, std::string& msg);
+
+        private:
+            bool _show_time;
+        };
+
+        struct Pipeline
+        {
+            struct Out : public exo::msg::Outlet
+            {
+                exo::msg::Outlet& operator<<(exo::msg::Hdr& h);
+                exo::msg::Outlet& operator<<(exo::msg::PayloadBuffer&& buf);
+            };
+
+            struct In : public exo::msg::Inlet
+            {
+                exo::msg::Inlet& operator>>(exo::msg::Hdr& h);
+                exo::msg::Inlet& operator>>(exo::msg::PayloadBuffer&& buf);
+            };
+        };
+
+        template<typename T>
+        int module(T& mod, int argc, char** argv);
     }
 
     struct Context
     {
-        std::string proc_name;
         int argc;
-        char* argv[];
+        char** argv;
     };
 }
