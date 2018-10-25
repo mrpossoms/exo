@@ -3,6 +3,58 @@
 using namespace exo;
 
 
+Log* Log::instance(Log* logger, int log_level)
+{
+	static Log* inst;
+
+	if (inst == nullptr && logger != nullptr)
+	{
+		inst = logger;
+		inst->verbosity_level = log_level;
+	}
+
+	return inst;
+}
+
+void Log::good(int level, std::string&& msg)
+{
+	auto logger = Log::instance();
+	if (logger != nullptr && level <= logger->verbosity_level)
+	{
+		logger->log(Log::Type::good, msg);
+	}
+}
+
+void Log::info(int level, std::string&& msg)
+{
+	auto logger = Log::instance();
+	if (logger != nullptr && level <= logger->verbosity_level)
+	{
+		logger->log(Log::Type::info, msg);
+	}
+}
+
+
+void Log::warning(int level, std::string&& msg)
+{
+	auto logger = Log::instance();
+	if (logger != nullptr && level <= logger->verbosity_level)
+	{
+		logger->log(Log::Type::warning, msg);
+	}
+}
+
+void Log::error(int level, std::string&& msg)
+{
+	auto logger = Log::instance();
+	if (logger != nullptr && level <= logger->verbosity_level)
+	{
+		logger->log(Log::Type::error, msg);
+	}
+}
+
+
+
 std::ostream& msg::operator<<(std::ostream& os, const Hdr& h)
 {
     return os << h.type << h.magic << h.payload_length;

@@ -14,8 +14,29 @@ namespace exo
     const Result BAD = 1;
 
     struct Context;
-
     struct Mod;
+
+    struct Log
+    {
+        enum class Type
+        {
+            info,
+            error,
+            warning,
+            good,
+        };
+
+        static Log* instance(Log* logger=nullptr, int log_level=-1);
+        
+        static void good   (int level, std::string&& msg);
+        static void info   (int level, std::string&& msg);
+        static void warning(int level, std::string&& msg);
+        static void error  (int level, std::string&& msg);
+    
+    protected:
+        virtual void log(Log::Type type, std::string& msg) = 0;
+        int verbosity_level;
+    };
 
     namespace msg
     {

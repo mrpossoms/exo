@@ -19,7 +19,7 @@ OBJS=$(foreach src,$(SRCS:.cpp=.o),obj/$(TARGET)/$(src))
 #   |_|_\\_,_|_\___/__/
 #
 all: $(OBJS)
-	@echo "$(COLOR_GREEN) Built exo $(COLOR_OFF)"
+	@echo '$(COLOR_GREEN) Built exo $(COLOR_OFF)'
 
 obj/$(TARGET):
 	mkdir -p obj/$(TARGET)
@@ -29,7 +29,7 @@ obj/$(TARGET):
 
 obj/$(TARGET)/%.o: src/%.cpp obj/$(TARGET)
 	$(CMP) $(INC) $(FLAGS) -c $< -o $@
-	@echo "$(COLOR_GREEN) Built $@ $(COLOR_OFF)"
+	@echo '$(COLOR_GREEN) Built $@ $(COLOR_OFF)'
 
 tests/bin:
 	mkdir tests/bin

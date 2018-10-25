@@ -10,6 +10,8 @@ namespace exo
 {
     namespace unix
     {
+        static void daemonize();
+
         struct CLI
         {
             CLI(unsigned int argc, char* argv[])
@@ -94,6 +96,17 @@ namespace exo
 
                 return NULL;
             }
+        };
+
+        struct Log : public exo::Log
+        {
+            Log(int verbosity, bool timestamp=false);
+
+        protected:
+            virtual void log(Log::Type type, std::string& msg);
+
+        private:
+            bool _show_time;
         };
 
         struct Pipeline
