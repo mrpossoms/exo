@@ -98,16 +98,19 @@ namespace exo
             }
         };
 
-        struct Log : public exo::Log
+        namespace Log
         {
-            Log(int verbosity, bool timestamp=false);
+            struct Stderr : public exo::Log
+            {
+                Stderr(int verbosity, bool timestamp=false);
 
-        protected:
-            virtual void log(Log::Type type, std::string& msg);
+            protected:
+                virtual void log(Log::Type type, std::string& msg);
 
-        private:
-            bool _show_time;
-        };
+            private:
+                bool _show_time;
+            };
+        }
 
         struct Pipeline
         {
@@ -121,6 +124,7 @@ namespace exo
             {
                 exo::msg::Inlet& operator>>(exo::msg::Hdr& h);
                 exo::msg::Inlet& operator>>(exo::msg::PayloadBuffer&& buf);
+                exo::msg::Inlet& flush(size_t bytes);
             };
         };
 

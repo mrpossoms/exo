@@ -32,3 +32,9 @@ exo::msg::Inlet& Pipeline::In::operator>>(exo::msg::PayloadBuffer&& pay)
     read(STDIN_FILENO, pay.buf, pay.len);
     return *this;
 }
+
+exo::msg::Inlet& Pipeline::In::flush(size_t bytes)
+{
+    lseek(STDIN_FILENO, bytes, SEEK_CUR);
+    return *this;
+}

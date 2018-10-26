@@ -8,7 +8,7 @@
 
 #include "test.h"
 {
-    exo::Log::instance(new exo::unix::Log(1), 1);
+    exo::Log::instance(new exo::unix::Log::Stderr(1), 1);
 
     exo::Log::good(0, "This is good");
     exo::Log::info(0, "This is okay");

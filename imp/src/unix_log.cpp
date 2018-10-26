@@ -12,14 +12,14 @@ using namespace exo;
 #define UNIX_TERM_COLOR_OFF "\033[0m"
 
 
-exo::unix::Log::Log(int verbosity, bool timestamp)
+exo::unix::Log::Stderr::Stderr(int verbosity, bool timestamp)
 {
 	verbosity_level = verbosity;
 	_show_time = timestamp;
 }
 
 
-void exo::unix::Log::log(Log::Type type, std::string& msg)
+void exo::unix::Log::Stderr::log(Log::Type type, std::string& msg)
 {
 	static char* proc_name;
 

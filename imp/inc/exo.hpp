@@ -97,10 +97,8 @@ namespace exo
         {
             virtual Inlet& operator>>(Hdr& h) = 0;
             virtual Inlet& operator>>(PayloadBuffer&& buf) = 0;
+            virtual Inlet& flush(size_t bytes) = 0;
         };
-
-//        Outlet& operator<<(Outlet& os, const Hdr& h);
-//        Inlet& operator>>(Inlet& is, Hdr& h);
 
         /**
          * @brief Prefixes a Payload for serializing messages. A Hdr object indicates the
@@ -123,6 +121,7 @@ namespace exo
              */
             uint32_t payload_length;
 
+            Hdr() = default;
             Hdr(Inlet& is);
 
             /**
@@ -280,7 +279,7 @@ namespace exo
          * @param ctx Platform specific context.
          * @return OK on success.
          */
-        virtual Result enter(Context* ctx) = 0;
+        virtual Result enter(Context ctx) = 0;
 
         /**
          * @brief The primary update loop for the module.
