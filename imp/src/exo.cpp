@@ -1,4 +1,5 @@
 #include "exo.hpp"
+#include "../inc/exo.hpp"
 
 using namespace exo;
 
@@ -16,6 +17,7 @@ Log* Log::instance(Log* logger, int log_level)
 	return inst;
 }
 
+
 void Log::good(int level, std::string&& msg)
 {
 	auto logger = Log::instance();
@@ -24,6 +26,7 @@ void Log::good(int level, std::string&& msg)
 		logger->log(Log::Type::good, msg);
 	}
 }
+
 
 void Log::info(int level, std::string&& msg)
 {
@@ -54,26 +57,13 @@ void Log::error(int level, std::string&& msg)
 }
 
 
-
-std::ostream& msg::operator<<(std::ostream& os, const Hdr& h)
-{
-    return os << h.type << h.magic << h.payload_length;
-}
-
-
-std::istream& msg::operator>>(std::istream& is, Hdr& h)
-{
-    return is >> h.type >> h.magic >> h.payload_length;
-}
-
-
-msg::Hdr::Hdr(std::istream& is)
+msg::Hdr::Hdr(exo::msg::Inlet& is)
 {
     is >> *this;
 }
 
 
-msg::Hdr msg::Hdr::from_stream(std::istream& is)
+msg::Hdr msg::Hdr::from_inlet(Inlet &is)
 {
     return { is };
 }
