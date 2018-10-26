@@ -9,7 +9,11 @@ if [ $(basename $(pwd)) != "mod" ]; then
     exit 1
 fi
 
-name=$(prompt "Enter a new module name: ")
+name=$1	
+if [ -z $name ]; then
+	name=$(prompt "Enter a new module name: ")
+fi
+
 if [ -d $name ]; then
     echo "Error: '$name' already exists"
     exit 2

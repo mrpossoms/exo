@@ -6,9 +6,11 @@
 #
 include $(EXO_ROOT)/vars.mk
 
+MOD_NAME=$(shell basename $(shell pwd))
 MOD_SRC=$(shell ls *.cpp)
 OS_TARGET=$(exo get os_target)
 TARGET_OBJS=$(shell ls $(EXO_ROOT)/imp/obj/$(TARGET)/$(OS_TARGET)_*)
+MOD_OBJS=$(addprefix obj/$(TARGET)/,$(MOD_SRC:.cpp=.o))
 
 #----------------------------------------
 #    ___      _
@@ -17,8 +19,17 @@ TARGET_OBJS=$(shell ls $(EXO_ROOT)/imp/obj/$(TARGET)/$(OS_TARGET)_*)
 #   |_|_\\_,_|_\___/__/
 #
 .PHONY: all
-all: $(addprefix obj/$(TARGET)/,$(MOD_SRC:.cpp=.o)) exo
+all: $(MOD_OBJS) exo
+
+	$(if $(OS_TARGET)=='unix',make unix-mod)
 	@echo "$(COLOR_GREEN) Built module for $(TARGET) $(COLOR_OFF)"
+
+.PHONY: unix-mod
+unix-mod: bin/$(TARGET) $(MOD_OBJS) exo
+	$(CMP) $(FLAGS) $(EXO_ROOT)/imp/obj/$(TARGET)/*.o $(MOD_OBJS) -o bin/$(TARGET)/$(MOD_NAME)
+
+bin/$(TARGET):
+	mkdir -p $@
 
 obj/$(TARGET):
 	mkdir -p $@

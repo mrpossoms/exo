@@ -1,5 +1,4 @@
 #include "exo.hpp"
-#include "../inc/exo.hpp"
 
 using namespace exo;
 
