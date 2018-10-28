@@ -7,11 +7,20 @@
 
 namespace exo
 {
-    using Result = int;
+    // using Result = int;
     using ID = std::string;
 
-    const Result OK = 0;
-    const Result BAD = 1;
+    enum class Result
+    {
+        OK,
+        BAD,
+        READ_ERR,
+        WRITE_ERR,
+        CONNECTION_FAILURE,
+    };
+
+    // const Result OK = 0;
+    // const Result BAD = 1;
 
     struct Context;
     struct Mod;
@@ -66,7 +75,7 @@ namespace exo
          * @param msg String to log.
          */
         static void error(int level, std::string&& msg);
-    
+
     protected:
         /**
          * @brief Implementation for a specific platform, logging a string with severity specific filtering.
@@ -89,15 +98,15 @@ namespace exo
 
         struct Outlet
         {
-            virtual Outlet& operator<<(Hdr& h) = 0;
-            virtual Outlet& operator<<(PayloadBuffer&& buf) = 0;
+            virtual Result operator<<(Hdr& h) = 0;
+            virtual Result operator<<(PayloadBuffer&& buf) = 0;
         };
 
         struct Inlet
         {
-            virtual Inlet& operator>>(Hdr& h) = 0;
-            virtual Inlet& operator>>(PayloadBuffer&& buf) = 0;
-            virtual Inlet& flush(size_t bytes) = 0;
+            virtual Result operator>>(Hdr& h) = 0;
+            virtual Result operator>>(PayloadBuffer&& buf) = 0;
+            virtual Result flush(size_t bytes) = 0;
         };
 
         /**
@@ -194,10 +203,10 @@ namespace exo
                 if (pos < T)
                 {
                     _pos = pos;
-                    return exo::OK;
+                    return Result::OK;
                 }
 
-                return exo::BAD;
+                return Result::BAD;
             }
 
             /**
@@ -221,30 +230,30 @@ namespace exo
 
             template<typename P> Result enqueue(P& val)
             {
-                if (_pos + sizeof(P) > T) 
-                {                                   
-                    // TODO handle error                    
-                    return exo::BAD;                   
-                } 
+                if (_pos + sizeof(P) > T)
+                {
+                    // TODO handle error
+                    return Result::BAD;
+                }
 
                 memcpy(_buf + _pos, &val, sizeof(P));
                 _pos += sizeof(P);
 
-                return exo::OK;
+                return Result::OK;
             }
 
             template<typename P> Result dequeue(P& val)
             {
-                if (_pos + sizeof(P) > T) 
-                {                                   
-                    // TODO handle error                    
-                    return exo::BAD;                   
-                }                     
+                if (_pos + sizeof(P) > T)
+                {
+                    // TODO handle error
+                    return Result::BAD;
+                }
 
                 memcpy(&val, _buf + _pos, sizeof(P));
                 _pos += sizeof(P);
 
-                return exo::OK;
+                return Result::OK;
             }
         };
     }

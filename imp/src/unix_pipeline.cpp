@@ -7,34 +7,55 @@
 
 
 using namespace exo::unix;
+using namespace exo;
 
-exo::msg::Outlet& Pipeline::Out::operator<<(exo::msg::Hdr& h)
+Result Pipeline::Out::operator<<(msg::Hdr& h)
 {
-    write(STDOUT_FILENO, &h, sizeof(h));
-    return *this;
+    if (write(STDOUT_FILENO, &h, sizeof(h)) == sizeof(h))
+    {
+        return Result::OK;
+    }
+
+    return Result::WRITE_ERR;
 }
 
-exo::msg::Outlet& Pipeline::Out::operator<<(exo::msg::PayloadBuffer&& pay)
+Result Pipeline::Out::operator<<(msg::PayloadBuffer&& pay)
 {
-    write(STDOUT_FILENO, pay.buf, pay.len);
-    return *this;
+    if (write(STDOUT_FILENO, pay.buf, pay.len) == pay.len)
+    {
+        return Result::OK;
+    }
+
+    return Result::WRITE_ERR;
 }
 
 
-exo::msg::Inlet& Pipeline::In::operator>>(exo::msg::Hdr& h)
+Result Pipeline::In::operator>>(msg::Hdr& h)
 {
-    read(STDIN_FILENO, &h, sizeof(h));
-    return *this;
+    if (read(STDIN_FILENO, &h, sizeof(h)) == sizeof(h))
+    {
+        return Result::OK;
+    }
+
+    return Result::READ_ERR;
 }
 
-exo::msg::Inlet& Pipeline::In::operator>>(exo::msg::PayloadBuffer&& pay)
+Result Pipeline::In::operator>>(msg::PayloadBuffer&& pay)
 {
-    read(STDIN_FILENO, pay.buf, pay.len);
-    return *this;
+    if (read(STDIN_FILENO, pay.buf, pay.len) == pay.len)
+    {
+        return Result::OK;
+    }
+
+    return Result::READ_ERR;
 }
 
-exo::msg::Inlet& Pipeline::In::flush(size_t bytes)
+Result Pipeline::In::flush(size_t bytes)
 {
-    lseek(STDIN_FILENO, bytes, SEEK_CUR);
-    return *this;
+    if (lseek(STDIN_FILENO, bytes, SEEK_CUR) > -1)
+    {
+        return Result::OK;
+    }
+
+    return Result::BAD;
 }

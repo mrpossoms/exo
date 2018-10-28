@@ -5,9 +5,9 @@ import subprocess
 
 def getTestList():
 	tests = []
-	for file in os.listdir("./bin/tests"):
-            if file.endswith('.bin'):
-	        tests.append(os.path.join("./bin/tests/", file))
+	for file in os.listdir("./tests/scripts"):
+            if file.endswith('.sh'):
+	        tests.append(os.path.join("./tests/scripts", file))
 	return tests
 
 testNames = getTestList()

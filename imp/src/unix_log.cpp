@@ -46,7 +46,7 @@ void exo::unix::Log::Stderr::log(Log::Type type, std::string& msg)
 	dprintf(STDERR_FILENO, "[%s] ", proc_name);
 
 	if (_show_time)
-	dprintf(STDERR_FILENO, "@%d: ", time(nullptr));
+	dprintf(STDERR_FILENO, "@%ld: ", time(nullptr));
 
 	// write main message
 	write(STDERR_FILENO, msg.c_str(), msg.length());

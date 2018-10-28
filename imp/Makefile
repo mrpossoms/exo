@@ -11,6 +11,8 @@ INC+=-Iinc/
 #PLATFORMS=$(shell ls src/platforms)
 SRCS=$(shell ls src | grep .cpp)
 OBJS=$(foreach src,$(SRCS:.cpp=.o),obj/$(TARGET)/$(src))
+TEST_SRCS=$(shell ls tests | grep .cpp)
+TEST_EXES=$(foreach src,$(TEST_SRCS:.cpp=),tests/bin/$(src))
 
 #----------------------------------------
 #    ___      _
@@ -37,12 +39,11 @@ tests/bin:
 tests/bin/%: tests/%.cpp tests/bin
 	$(CMP) $(INC) $(FLAGS) -Itests/ $< src/*.cpp -o $@
 
-test:
-	@echo $(SRCS)
-	@echo "~~~~~~~~~~"
-	@echo $(TMP)
-	@echo "~~~~~~~~~~"
-	@echo $(OBJS)
+tests: $(TEST_EXES)	
+	@echo '$(COLOR_GREEN) Built all tests $(COLOR_OFF)'
+
+test: tests
+	./test_runner.py
 
 clean:
 	rm -rf obj
