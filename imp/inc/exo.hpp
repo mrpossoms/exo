@@ -14,9 +14,15 @@ namespace exo
     {
         OK,
         BAD,
+        ERROR,
+        OUT_OF_DATA,
         READ_ERR,
         WRITE_ERR,
         CONNECTION_FAILURE,
+        TIMEOUT,
+        RESOURCE_CREATE_FAILED,
+        BIND_FAILED,
+        LISTEN_FAILED,
     };
 
     // const Result OK = 0;

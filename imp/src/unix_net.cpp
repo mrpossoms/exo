@@ -11,6 +11,12 @@
 using namespace exo::unix;
 using namespace exo;
 
+//------------------------------------------------------------------------------
+//    _  _     _     _   _    ___       _
+//   | \| |___| |_  (_) (_)  / _ \ _  _| |_
+//   | .` / -_)  _|  _   _  | (_) | || |  _|
+//   |_|\_\___|\__| (_) (_)  \___/ \_,_|\__|
+//
 struct Net::Out::impl
 {
     const char* addr;
@@ -102,42 +108,42 @@ Result Net::Out::operator<<(msg::PayloadBuffer&& pay)
     return Result::WRITE_ERR;
 }
 
-#define NET_IN_MAX_CONNS 32
-
+//------------------------------------------------------------------------------
+//    _  _     _     _   _   ___
+//   | \| |___| |_  (_) (_) |_ _|_ _
+//   | .` / -_)  _|  _   _   | || ' \
+//   |_|\_\___|\__| (_) (_) |___|_||_|
+//
 struct Net::In::impl
 {
-    int client_socks[NET_IN_MAX_CONNS];
-    int open_conns;
+    uint16_t port;
+    int client_sock;
     int listen_sock;
 
     ~impl()
     {
-        for (auto i = NET_IN_MAX_CONNS; i--;)
-        {
-            close(client_socks[i]);
-        }
-
+        close(client_sock);
         close(listen_sock);
     }
 
-    bool setup()
+    Result setup()
     {
         listen_sock = ::socket(AF_INET, SOCK_STREAM, 0);
-        if (listen_sock < 0) { return false; }
+        if (listen_sock < 0) { return Result::RESOURCE_CREATE_FAILED; }
 
         struct sockaddr_in name = {};
         name.sin_family      = AF_INET;
         name.sin_port        = htons(port);
         name.sin_addr.s_addr = htonl(INADDR_ANY);
 
-        if (bind(_listen_fd, (const struct sockaddr*)&name, sizeof(name)))
+        if (bind(listen_sock, (const struct sockaddr*)&name, sizeof(name)))
         {
-            return false;
+            return Result::BIND_FAILED;
         }
 
-        if(listen(listen_sock, 32)) { return false; }
+        if(listen(listen_sock, 1)) { return Result::LISTEN_FAILED; }
 
-        return true;
+        return Result::OK;
     }
 
     bool is_setup()
@@ -145,7 +151,7 @@ struct Net::In::impl
         return listen_sock > 0;
     }
 
-    int read_ready()
+    Result get_ready_sockets(int* sock_ready)
     {
         fd_set rd_fds;
         int fd_max = listen_sock;
@@ -154,67 +160,88 @@ struct Net::In::impl
         // setup the fd set
         FD_ZERO(&rd_fds);
         FD_SET(listen_sock, &rd_fds);
-
-        for (auto i = open_conns; i--;)
-        {
-            FD_SET(client_socks[i], &rd_fds);
-            if (client_socks[i] > fd_max) { fd_max = client_socks[i]; }
-        }
+        FD_SET(client_sock, &rd_fds);
 
         switch(select(fd_max + 1, &rd_fds, nullptr, nullptr, &timeout))
         {
             case 0: // timeout
-                return -2;
+                return Result::TIMEOUT;
             case -1: // error
-                return -3;
+                return Result::ERROR;
             default: // stuff to read
+
+                // check to see if someone is trying to connect
                 if (FD_ISSET(listen_sock, &rd_fds))
                 {
                     struct sockaddr_in client_name = {};
                     socklen_t client_name_len = 0;
                     auto client_fd = accept(listen_sock, (struct sockaddr*)&client_name, &client_name_len);
 
-                    if (open_conns < NET_IN_MAX_CONNS)
+                    // add the fd to the list, or decline the connection
+                    if (client_sock == 0)
                     {
-                        client_socks[open_conns++] = client_fd;
+                        client_sock = client_fd;
                     }
                     else
                     {
-                        shutdown(client_fd);
+                        shutdown(client_fd, SHUT_RDWR);
                     }
                 }
 
-                for (int i = 0; i < open_conns; i++)
+                // track all the open connections, find the ones that
+                // have new data to read.
+                if (FD_ISSET(client_sock, &rd_fds))
                 {
-                    if (FD_ISSET(client_socks[i]))
+                    char test_c;
+                    if (recv(client_sock, &test_c, sizeof(test_c), MSG_PEEK) == 0)
                     {
-                        char test_c
-                        if (recv(client_socks[i], &test_c, sizeof(test_c), MSG_PEEK) == 0)
-                        {
-                            auto tmp = client_socks[i];
-                            client_socks[i] = client_socks[open_conns - 1];
-                            shutdown(tmp);
-                        }
-                        else
-                        {
-                            return client_socks[i];
-                        }
+                        shutdown(client_sock, SHUT_RDWR);
+                        client_sock = 0;
+                    }
+                    else
+                    {
+                        *sock_ready = client_sock;
+                        return Result::OK;
                     }
                 }
                 break;
         }
 
-        return -1;
+        return Result::OUT_OF_DATA;
     }
 };
 
 
+Net::In::In(uint16_t port) : _pimpl(new impl{port})
+{
+    // NOOP
+}
+
+
 Result Net::In::operator>>(msg::Hdr& h)
 {
-    if (read(STDIN_FILENO, &h, sizeof(h)) == sizeof(h))
+    if (!_pimpl->is_setup())
+    {
+        auto setup_res = _pimpl->setup();
+        if (setup_res != Result::OK)
+        {
+            return setup_res;
+        }
+    }
+
+    int socket = 0;
+    auto res = _pimpl->get_ready_sockets(&socket);
+
+    if (res == Result::TIMEOUT)
+    {
+        return Result::OUT_OF_DATA;
+    }
+
+    if (read(socket, &h, sizeof(h)) == sizeof(h))
     {
         return Result::OK;
     }
+
 
     return Result::READ_ERR;
 }
