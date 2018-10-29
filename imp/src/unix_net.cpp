@@ -24,6 +24,13 @@ struct Net::Out::impl
 
     int socket;
 
+    impl(const char* addr, uint16_t port)
+    {
+        this->addr = addr;
+        this->port = port;
+        socket = -1;
+    }
+
     ~impl()
     {
         close(socket);
@@ -39,11 +46,23 @@ struct Net::Out::impl
     {
         // create and check socket
         socket = ::socket(AF_INET, SOCK_STREAM, 0);
-        if (socket < 0) { return false; }
+        if (socket < 0)
+        {
+            exo::Log::error(4, "Socket creation failed");
+            close(socket);
+            socket = -1;
+            return false;
+        }
 
         // resolve host
         auto host = gethostbyname(addr);
-        if (host == nullptr) { return false; }
+        if (host == nullptr)
+        {
+            exo::Log::error(4, "Host resolution failed");
+            close(socket);
+            socket = -1;
+            return false;
+        }
 
         // fill in host_addr with resolved info
         struct sockaddr_in host_addr = {};
@@ -57,6 +76,8 @@ struct Net::Out::impl
         // attempt connection
         if (::connect(socket, (struct sockaddr *)&host_addr,sizeof(host_addr)) < 0)
         {
+            close(socket);
+            socket = -1;
             return false;
         }
 
@@ -100,6 +121,7 @@ Result Net::Out::operator<<(msg::PayloadBuffer&& pay)
         if (!_pimpl->connect()) { return Result::CONNECTION_FAILURE; }
     }
 
+    exo::Log::info(4, "Writing to: " + std::to_string(_pimpl->socket));
     if (write(_pimpl->socket, pay.buf, pay.len) == pay.len)
     {
         return Result::OK;
@@ -138,10 +160,19 @@ struct Net::In::impl
 
         if (bind(listen_sock, (const struct sockaddr*)&name, sizeof(name)))
         {
+            exo::Log::error(4, "Binding to port failed");
+            close(listen_sock);
+            listen_sock = -1;
             return Result::BIND_FAILED;
         }
 
-        if(listen(listen_sock, 1)) { return Result::LISTEN_FAILED; }
+        if(listen(listen_sock, 1))
+        {
+            exo::Log::error(4, "Listening failed");
+            close(listen_sock);
+            listen_sock = -1;
+            return Result::LISTEN_FAILED;
+        }
 
         return Result::OK;
     }
@@ -154,7 +185,7 @@ struct Net::In::impl
     Result get_ready_sockets(int* sock_ready)
     {
         fd_set rd_fds;
-        int fd_max = listen_sock;
+        int fd_max = listen_sock > client_sock ? listen_sock : client_sock;
         struct timeval timeout = { 0, 0 };
 
         // setup the fd set
@@ -162,11 +193,13 @@ struct Net::In::impl
         FD_SET(listen_sock, &rd_fds);
         FD_SET(client_sock, &rd_fds);
 
-        switch(select(fd_max + 1, &rd_fds, nullptr, nullptr, &timeout))
+        switch(select(fd_max + 1, &rd_fds, nullptr, nullptr, nullptr))
         {
             case 0: // timeout
+                exo::Log::warning(4, "Timeout");
                 return Result::TIMEOUT;
             case -1: // error
+                exo::Log::error(4, "Read error");
                 return Result::ERROR;
             default: // stuff to read
 
@@ -177,14 +210,17 @@ struct Net::In::impl
                     socklen_t client_name_len = 0;
                     auto client_fd = accept(listen_sock, (struct sockaddr*)&client_name, &client_name_len);
 
+                    exo::Log::info(4, "Incoming connection");
+
                     // add the fd to the list, or decline the connection
                     if (client_sock == 0)
                     {
                         client_sock = client_fd;
+                        exo::Log::info(4, "Client connected");
                     }
                     else
                     {
-                        shutdown(client_fd, SHUT_RDWR);
+                        close(client_fd);
                     }
                 }
 
@@ -195,11 +231,13 @@ struct Net::In::impl
                     char test_c;
                     if (recv(client_sock, &test_c, sizeof(test_c), MSG_PEEK) == 0)
                     {
-                        shutdown(client_sock, SHUT_RDWR);
+                        exo::Log::info(4, "Client disconnected");
+                        close(client_sock);
                         client_sock = 0;
                     }
                     else
                     {
+                        exo::Log::info(4, "Client has data");
                         *sock_ready = client_sock;
                         return Result::OK;
                     }
@@ -214,7 +252,13 @@ struct Net::In::impl
 
 Net::In::In(uint16_t port) : _pimpl(new impl{port})
 {
-    // NOOP
+    _pimpl->setup();
+}
+
+
+Net::In::~In()
+{
+    delete _pimpl;
 }
 
 
@@ -231,12 +275,12 @@ Result Net::In::operator>>(msg::Hdr& h)
 
     int socket = 0;
     auto res = _pimpl->get_ready_sockets(&socket);
-
     if (res == Result::TIMEOUT)
     {
         return Result::OUT_OF_DATA;
     }
 
+    if (socket > 0)
     if (read(socket, &h, sizeof(h)) == sizeof(h))
     {
         return Result::OK;
@@ -249,7 +293,24 @@ Result Net::In::operator>>(msg::Hdr& h)
 
 Result Net::In::operator>>(msg::PayloadBuffer&& pay)
 {
-    if (read(STDIN_FILENO, pay.buf, pay.len) == pay.len)
+    if (!_pimpl->is_setup())
+    {
+        auto setup_res = _pimpl->setup();
+        if (setup_res != Result::OK)
+        {
+            return setup_res;
+        }
+    }
+
+    int socket = 0;
+    auto res = _pimpl->get_ready_sockets(&socket);
+    if (res == Result::TIMEOUT)
+    {
+        return Result::OUT_OF_DATA;
+    }
+
+    if (socket > 0)
+    if (read(socket, pay.buf, pay.len) == pay.len)
     {
         return Result::OK;
     }
@@ -260,10 +321,19 @@ Result Net::In::operator>>(msg::PayloadBuffer&& pay)
 
 Result Net::In::flush(size_t bytes)
 {
-    if (lseek(STDIN_FILENO, bytes, SEEK_CUR) > -1)
+    uint64_t junk;
+    int junk_read = 0;
+
+    while (bytes > 0)
     {
-        return Result::OK;
+        auto to_read = bytes > sizeof(junk) ? sizeof(junk) : bytes;
+        auto bytes_read = read(_pimpl->client_sock, &junk, sizeof(junk));
+
+        if (bytes_read <= 0)
+        {
+            return Result::READ_ERR;
+        }
     }
 
-    return Result::BAD;
+    return Result::OK;
 }
