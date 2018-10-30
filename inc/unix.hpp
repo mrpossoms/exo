@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string.h>
+#include <unistd.h>
 
 #include <unordered_map>
 #include <functional>
@@ -116,7 +117,7 @@ namespace exo
         {
             struct Out : public exo::msg::Outlet
             {
-                exo::Result operator<<(exo::msg::Hdr& h);
+                exo::Result operator<<(exo::msg::Hdr&& h);
                 exo::Result operator<<(exo::msg::PayloadBuffer&& buf);
             };
 
@@ -134,7 +135,7 @@ namespace exo
             {
                 Out(const char* dst_addr, uint16_t port);
                 ~Out();
-                exo::Result operator<<(exo::msg::Hdr& h);
+                exo::Result operator<<(exo::msg::Hdr&& h);
                 exo::Result operator<<(exo::msg::PayloadBuffer&& buf);
 
             private:

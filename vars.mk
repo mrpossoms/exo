@@ -8,7 +8,7 @@ MOD_DIR=mod
 MSG_DIR=msg
 
 # global to all modules
-INC=-I$(EXO_ROOT)/imp/inc
+INC=-I$(EXO_ROOT)/inc
 FLAGS=-g -std=c++11
 
 EXO_IMP=imp
@@ -24,4 +24,4 @@ TARGET=$(shell $(CMP) -dumpmachine)
 
 .PHONY: exo
 exo:
-	make -C $(EXO_ROOT)/imp all
+	make -C $(EXO_ROOT) lib/libexo.a -j4

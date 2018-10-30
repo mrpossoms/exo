@@ -1,7 +1,7 @@
-#include "exo.hpp"
+#include <exo/exo.hpp>
 
-#ifdef __unix__
-#include "unix.hpp"
+#if defined(__APPLE__) || defined(__linux__)
+#include <exo/unix.hpp>
 #endif
 
 struct MOD_NAME : public exo::Mod
@@ -26,32 +26,32 @@ struct MOD_NAME : public exo::Mod
     exo::Result msg_received(exo::msg::Hdr& h, exo::msg::Inlet& in)
     {
         // TODO
-        return exo::OK;
+        return exo::Result::OK;
     }
 
     exo::Result enter(exo::Context ctx)
     {
         // TODO
-        return exo::OK;
+        return exo::Result::OK;
     }
 
     exo::Result update()
     {
         // TODO
-        return exo::OK;
+        return exo::Result::OK;
     }
 
     exo::Result exit()
     {
         // TODO
-        return exo::OK;
+        return exo::Result::OK;
     }
 };
 
 
 
 
-#ifdef __unix__
+#if defined(__APPLE__) || defined(__linux__)
 
 int main(int argc, char* argv[])
 {
@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 
     // Inlet and outlet setup
     exo::unix::Pipeline::In  inlet;
-    exo::unix::Pipeline::Out outlet; 
+    exo::unix::Pipeline::Out outlet;
 
     // Log level handling
     exo::unix::CLI::parser(argc, argv)
@@ -74,14 +74,16 @@ int main(int argc, char* argv[])
 
     res = mod.enter({ argc, argv });
 
-    if (res != exo::OK)
+    if (res != exo::Result::OK)
     {
         exo::Log::error(0, "MOD_NAME: enter() failed");
         return 1;
     }
 
+    exo::Log::good("Module running");
+
     // process messages and perform updates until
-    // mod.update() no longer returns exo::OK
+    // mod.update() no longer returns exo::Result::OK
     do
     {
         exo::msg::Hdr hdr;
@@ -100,7 +102,7 @@ int main(int argc, char* argv[])
             inlet.flush(hdr.payload_length);
         }
 
-    } while (mod.update() == exo::OK);
+    } while (mod.update() == exo::Result::OK);
 
     // tear down
     mod.exit();
@@ -111,4 +113,4 @@ int main(int argc, char* argv[])
 
     return 0;
 }
-#endif 
+#endif

@@ -56,9 +56,23 @@ void Log::error(int level, std::string&& msg)
 }
 
 
+msg::Hdr::Hdr(uint32_t type, uint32_t magic, uint32_t pay_len)
+{
+	this->type = type;
+	this->magic = magic;
+	this->payload_length = pay_len;
+}
+
+
 msg::Hdr::Hdr(exo::msg::Inlet& is)
 {
     is >> *this;
+}
+
+
+bool msg::Hdr::operator==(exo::msg::Hdr&& h)
+{
+	return h.type == type && magic == h.magic;
 }
 
 

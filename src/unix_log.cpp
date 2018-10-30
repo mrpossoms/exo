@@ -22,6 +22,8 @@ exo::unix::Log::Stderr::Stderr(int verbosity, bool timestamp)
 void exo::unix::Log::Stderr::log(Log::Type type, std::string& msg)
 {
 	static char* proc_name;
+	char buf[512] = {};
+	char* str = buf;
 
 	if (proc_name == nullptr)
 	{
@@ -32,26 +34,26 @@ void exo::unix::Log::Stderr::log(Log::Type type, std::string& msg)
 	{
 		case Log::Type::info: break;
 		case Log::Type::warning:
-			write(STDERR_FILENO, UNIX_TERM_YELLOW, strlen(UNIX_TERM_YELLOW));
+			str += sprintf(str, "%s", UNIX_TERM_YELLOW);
 			break;
 		case Log::Type::error:
-			write(STDERR_FILENO, UNIX_TERM_RED, strlen(UNIX_TERM_RED));
+			str += sprintf(str, "%s", UNIX_TERM_RED);
 			break;
 		case Log::Type::good:
-			write(STDERR_FILENO, UNIX_TERM_GREEN, strlen(UNIX_TERM_GREEN));
+			str += sprintf(str, "%s", UNIX_TERM_GREEN);
 			break;
 	}
 
 	// write prefix
-	dprintf(STDERR_FILENO, "[%s] ", proc_name);
+	str += sprintf(str, "[%s] ", proc_name);
 
 	if (_show_time)
-	dprintf(STDERR_FILENO, "@%ld: ", time(nullptr));
+	str += sprintf(str, "@%ld: ", time(nullptr));
 
 	// write main message
-	write(STDERR_FILENO, msg.c_str(), msg.length());
-	write(STDERR_FILENO, "\n", 1);
+	str += sprintf(str, "%s", msg.c_str());
 
 	// turn off coloring
-	write(STDERR_FILENO, UNIX_TERM_COLOR_OFF, strlen(UNIX_TERM_COLOR_OFF));
+	str += sprintf(str, "%s\n", UNIX_TERM_COLOR_OFF);
+	write(STDERR_FILENO, buf, strlen(buf));
 }

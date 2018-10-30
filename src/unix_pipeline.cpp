@@ -9,7 +9,7 @@
 using namespace exo::unix;
 using namespace exo;
 
-Result Pipeline::Out::operator<<(msg::Hdr& h)
+Result Pipeline::Out::operator<<(msg::Hdr&& h)
 {
     if (write(STDOUT_FILENO, &h, sizeof(h)) == sizeof(h))
     {

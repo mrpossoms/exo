@@ -98,7 +98,7 @@ Net::Out::~Out()
 }
 
 
-Result Net::Out::operator<<(msg::Hdr& h)
+Result Net::Out::operator<<(msg::Hdr&& h)
 {
     if (!_pimpl->is_connected())
     {

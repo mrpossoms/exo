@@ -104,7 +104,7 @@ namespace exo
 
         struct Outlet
         {
-            virtual Result operator<<(Hdr& h) = 0;
+            virtual Result operator<<(Hdr&& h) = 0;
             virtual Result operator<<(PayloadBuffer&& buf) = 0;
         };
 
@@ -137,7 +137,10 @@ namespace exo
             uint32_t payload_length;
 
             Hdr() = default;
+            Hdr(uint32_t type, uint32_t magic, uint32_t pay_len);
             Hdr(Inlet& is);
+
+            bool operator==(Hdr&& h);
 
             /**
              * @brief Makes a payload from an Inlet
@@ -159,6 +162,11 @@ namespace exo
             {
                 _size = T;
                 _pos = 0;
+            }
+
+            Payload(Inlet& in)
+            {
+                in >> this->buffer();
             }
 
             /**
@@ -261,6 +269,11 @@ namespace exo
 
                 return Result::OK;
             }
+        };
+
+        struct Msg
+        {
+            // virtual Hdr hdr() = 0;
         };
     }
 
