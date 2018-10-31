@@ -5,11 +5,28 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <signal.h>
 
 #include <iostream>
 
 using namespace exo::unix;
 using namespace exo;
+
+static inline struct sigaction disable_sigpipe()
+{
+    struct sigaction new_actn, old_actn;
+    new_actn.sa_handler = SIG_IGN;
+    sigemptyset (&new_actn.sa_mask);
+    new_actn.sa_flags = 0;
+    sigaction (SIGPIPE, &new_actn, &old_actn);
+
+    return old_actn;
+}
+
+static inline void enable_sigpipe(struct sigaction old_actn)
+{
+    sigaction (SIGPIPE, &old_actn, NULL);
+}
 
 //------------------------------------------------------------------------------
 //    _  _     _     _   _    ___       _
@@ -39,7 +56,19 @@ struct Net::Out::impl
     bool is_connected()
     {
         uint8_t none;
-        return write(socket, &none, 0) > -1 ? true : false;
+
+        auto old_act = disable_sigpipe();
+        auto res = write(socket, &none, 0) > -1 ? true : false;
+
+        if (socket > -1 && !res)
+        {
+            close(socket);
+            socket = -1;
+        }
+
+        enable_sigpipe(old_act);
+
+        return res;
     }
 
     bool connect()
@@ -105,11 +134,14 @@ Result Net::Out::operator<<(msg::Hdr&& h)
         if (!_pimpl->connect()) { return Result::CONNECTION_FAILURE; }
     }
 
+    auto old_act = disable_sigpipe();
     if (write(_pimpl->socket, &h, sizeof(h)) == sizeof(h))
     {
+        enable_sigpipe(old_act);
         return Result::OK;
     }
 
+    enable_sigpipe(old_act);
     return Result::WRITE_ERR;
 }
 
@@ -122,11 +154,15 @@ Result Net::Out::operator<<(msg::PayloadBuffer&& pay)
     }
 
     exo::Log::info(4, "Writing to: " + std::to_string(_pimpl->socket));
+
+    auto old_act = disable_sigpipe();
     if (write(_pimpl->socket, pay.buf, pay.len) == pay.len)
     {
+        enable_sigpipe(old_act);
         return Result::OK;
     }
 
+    enable_sigpipe(old_act);
     return Result::WRITE_ERR;
 }
 
