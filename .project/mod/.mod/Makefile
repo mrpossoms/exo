@@ -44,4 +44,4 @@ target_objs:
 
 .PHONY: clean
 clean:
-	rm -rf obj
+	rm -rf obj bin

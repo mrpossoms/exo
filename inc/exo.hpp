@@ -166,6 +166,8 @@ namespace exo
 
             Payload(Inlet& in)
             {
+                _size = T;
+                _pos = 0;
                 in >> this->buffer();
             }
 
