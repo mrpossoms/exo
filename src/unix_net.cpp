@@ -187,6 +187,7 @@ struct Net::In::impl
     Result setup()
     {
         listen_sock = ::socket(AF_INET, SOCK_STREAM, 0);
+        client_sock = -1;
         if (listen_sock < 0) { return Result::RESOURCE_CREATE_FAILED; }
 
         struct sockaddr_in name = {};
@@ -222,13 +223,15 @@ struct Net::In::impl
     {
         fd_set rd_fds;
         int fd_max = listen_sock > client_sock ? listen_sock : client_sock;
-        struct timeval timeout = { 0, 0 };
+        struct timeval timeout = { 1, 0 };
 
         // setup the fd set
         FD_ZERO(&rd_fds);
         FD_SET(listen_sock, &rd_fds);
-        FD_SET(client_sock, &rd_fds);
 
+        if (client_sock > -1) FD_SET(client_sock, &rd_fds);
+
+        exo::Log::info(4, "selecting on " + std::to_string(fd_max));
         switch(select(fd_max + 1, &rd_fds, nullptr, nullptr, nullptr))
         {
             case 0: // timeout
@@ -249,10 +252,11 @@ struct Net::In::impl
                     exo::Log::info(4, "Incoming connection");
 
                     // add the fd to the list, or decline the connection
-                    if (client_sock == 0)
+                    if (client_sock == -1)
                     {
                         client_sock = client_fd;
                         exo::Log::info(4, "Client connected");
+                        break;
                     }
                     else
                     {
@@ -262,14 +266,14 @@ struct Net::In::impl
 
                 // track all the open connections, find the ones that
                 // have new data to read.
-                if (FD_ISSET(client_sock, &rd_fds))
+                if (client_sock > -1 && FD_ISSET(client_sock, &rd_fds))
                 {
                     char test_c;
                     if (recv(client_sock, &test_c, sizeof(test_c), MSG_PEEK) == 0)
                     {
                         exo::Log::info(4, "Client disconnected");
                         close(client_sock);
-                        client_sock = 0;
+                        client_sock = -1;
                     }
                     else
                     {
@@ -309,14 +313,14 @@ Result Net::In::operator>>(msg::Hdr& h)
         }
     }
 
-    int socket = 0;
+    int socket = -1;
     auto res = _pimpl->get_ready_sockets(&socket);
-    if (res == Result::TIMEOUT)
+    if (res != Result::OK)
     {
         return Result::OUT_OF_DATA;
     }
 
-    if (socket > 0)
+    if (socket > -1)
     if (read(socket, &h, sizeof(h)) == sizeof(h))
     {
         return Result::OK;
@@ -338,14 +342,14 @@ Result Net::In::operator>>(msg::PayloadBuffer&& pay)
         }
     }
 
-    int socket = 0;
+    int socket = -1;
     auto res = _pimpl->get_ready_sockets(&socket);
-    if (res == Result::TIMEOUT)
+    if (res != Result::OK)
     {
         return Result::OUT_OF_DATA;
     }
 
-    if (socket > 0)
+    if (socket > -1)
     if (read(socket, pay.buf, pay.len) == pay.len)
     {
         return Result::OK;
