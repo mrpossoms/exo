@@ -21,6 +21,14 @@ function get_cfg_val {
     cat $path/$name
 }
 
+function invoke {
+    target=$1
+    arg=$2
+
+    if [ $arg == $target ]; then
+        $target
+    fi
+}
 
 function create_default_configs {
     mkdir $CFG_ROOT

@@ -1,4 +1,5 @@
 #!/bin/sh
+source exo-utils.sh
 
 function magic_msg_def {
     name=$1
@@ -6,11 +7,22 @@ function magic_msg_def {
     echo "-D"$(basename $name | sed "s|\.|_|" | awk '{print toupper($0)}')=$magic
 }
 
+function help
+{
+    echo 'Takes a file path, and returns the contents'
+    exit 0
+}
+
+function usage
+{
+    echo 'get [file-path]'
+    exit 0
+}
+
 basepath=$1
 
-if [ -z $basepath ]; then
-    basepath='.'
-fi
+invoke help $basepath
+invoke usage $basepath
 
 msgs=$(exo rls $basepath/msg | grep .h)
 

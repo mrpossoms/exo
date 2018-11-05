@@ -45,7 +45,7 @@ if [ $# -lt 1 ]; then
     echo "EXO Commands\n--------------"
     cmds=$(ls $EXO_ROOT/bin/exo-cmd-*.sh | sed "s|$EXO_ROOT/bin/exo-cmd-||" | sed "s|.sh||")
     for cmd in $cmds; do
-        echo "exo $cmd"
+        echo "exo $cmd -" $(exo $cmd help)
     done
     exit 0
 fi

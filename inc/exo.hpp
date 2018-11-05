@@ -104,13 +104,11 @@ namespace exo
 
         struct Outlet
         {
-            virtual Result operator<<(Hdr&& h) = 0;
             virtual Result operator<<(PayloadBuffer&& buf) = 0;
         };
 
         struct Inlet
         {
-            virtual Result operator>>(Hdr& h) = 0;
             virtual Result operator>>(PayloadBuffer&& buf) = 0;
             virtual Result flush(size_t bytes) = 0;
         };
@@ -138,16 +136,8 @@ namespace exo
 
             Hdr() = default;
             Hdr(uint32_t type, uint32_t magic, uint32_t pay_len);
-            Hdr(Inlet& is);
 
             bool operator==(Hdr&& h);
-
-            /**
-             * @brief Makes a payload from an Inlet
-             * @param is Inlet instance containing exo messages
-             * @return Hdr instance
-             */
-            static Hdr from_inlet(Inlet& is);
         };
 
         /**
@@ -179,6 +169,7 @@ namespace exo
              */
             template<typename S>
             Payload& put(S& structure) { enqueue<S>(structure); return *this; }
+            Payload& operator<<(Hdr&& val)     { enqueue<Hdr>(val); return *this; }
             Payload& operator<<(int8_t& val)   { enqueue<int8_t>(val); return *this; }
             Payload& operator<<(uint8_t& val)  { enqueue<uint8_t>(val); return *this; }
             Payload& operator<<(int16_t& val)  { enqueue<int16_t>(val); return *this; }
@@ -198,6 +189,7 @@ namespace exo
              */
             template<typename S>
             Payload& get(S& structure) { dequeue<S>(structure); return *this; }
+            Payload& operator>>(Hdr& val)      { dequeue<Hdr>(val); return *this; }
             Payload& operator>>(int8_t& val)   { dequeue<int8_t>(val); return *this; }
             Payload& operator>>(uint8_t& val)  { dequeue<uint8_t>(val); return *this; }
             Payload& operator>>(int16_t& val)  { dequeue<int16_t>(val); return *this; }

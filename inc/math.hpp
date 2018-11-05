@@ -152,5 +152,27 @@ namespace exo
 
 			S v[D]; // value store
 		};
+
+		template<typename S, ssize_t R, ssize_t C>
+		struct Mat
+		{
+			Mat(std::initializer_list<std::initializer_list<S>> init)
+			{
+				int ri = 0;
+				for (auto row : init)
+				{
+					int ci = 0;
+					for (auto c : row)
+					{
+						init[ri][ci] = c;
+						ci += 1;
+					}
+					ri += 1;
+				}
+
+			}
+
+			S m[R][C];
+		};
 	}
 }

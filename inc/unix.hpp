@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <unordered_map>
+#include <iostream>
 #include <functional>
 #include <sstream>
 
@@ -22,12 +22,51 @@ namespace exo
             }
 
             template<typename T>
-            CLI& optional(const char* name, std::function<void (T)> handler)
+            CLI& optional(const char* name, std::function<void (T)> handler, const char* desc="")
             {
-                char* value = find_arg_val(name);
-
-                if (value)
+                if (_show_help)
                 {
+                    std::cerr << name << ": (optional) " << desc << std::endl;
+                }
+                else
+                {
+                    char* value = find_arg_val(name);
+
+                    if (value)
+                    {
+                        T parsed;
+                        std::stringstream ss(value);
+                        ss >> parsed;
+
+                        if(ss)
+                        {
+                            handler(parsed);
+                        }
+                    }
+                }
+
+                return *this;
+            }
+
+            template<typename T>
+            CLI& required(const char* name, std::function<void (T)> handler, const char* desc="")
+            {
+                if (_show_help)
+                {
+                    std::cerr << name << ": (required) " << desc << std::endl;
+                }
+                else
+                {
+                    char* value = find_arg_val(name);
+
+                    if (!value)
+                    {
+                        // TODO shit the bed
+                        std::cerr << "Required argument '" << name << "' is missing." << std::endl;
+                        abort();
+                        return *this;
+                    }
+
                     T parsed;
                     std::stringstream ss(value);
                     ss >> parsed;
@@ -36,33 +75,24 @@ namespace exo
                     {
                         handler(parsed);
                     }
+                    else
+                    {
+                        // TODO parse error
+                    }
                 }
 
                 return *this;
             }
 
-            template<typename T>
-            CLI& required(const char* name, std::function<void (T)> handler)
+            CLI& help(const char* help_flag, const char* program_desc)
             {
-                char* value = find_arg_val(name);
+                _show_help = find_arg_val(help_flag) != nullptr;
 
-                if (!value)
+                if (_show_help)
                 {
-                    // TODO shit the bed
-                    return *this;
-                }
-
-                T parsed;
-                std::stringstream ss(value);
-                ss >> parsed;
-
-                if(ss)
-                {
-                    handler(parsed);
-                }
-                else
-                {
-                    // TODO parse error
+                    std::cerr << _argv[0] << std::endl << std::endl;
+                    std::cerr << program_desc << std::endl << std::endl;
+                    std::cerr << "ARGUMENTS:" << std::endl;
                 }
 
                 return *this;
@@ -76,10 +106,11 @@ namespace exo
         private:
             int _argc;
             char** _argv;
+            bool _show_help;
 
             char* find_arg_val(const char* name)
             {
-                if (!name) return NULL;
+                if (!name) return nullptr;
 
                 auto name_len = strlen(name);
 
@@ -90,12 +121,11 @@ namespace exo
                         // clip off any assignment characters
                         auto val = _argv[i] + name_len;
                         while(val[0] == '=') val++;
-
                         return val;
                     }
                 }
 
-                return NULL;
+                return nullptr;
             }
         };
 

@@ -1,10 +1,22 @@
 #!/bin/sh
-
 source exo-utils.sh
 
-PROJ_DIR=$(get_cfg_val $HOME/.exo template_path)
+function help {
+    echo "Creates a new empty exo project"
+    exit 0
+}
 
-name=$1	
+function usage {
+    echo "project [project-name]"
+    exit 0
+}
+
+PROJ_DIR=$(get_cfg_val $HOME/.exo template_path)
+name=$1
+
+invoke help $name
+invoke usage $name
+
 if [ -z $name ]; then
 	name=$(prompt "Enter a new project name: ")
 fi
