@@ -12,7 +12,7 @@ OS_TARGET=$(exo get os_target)
 TARGET_OBJS=$(shell ls $(EXO_ROOT)/obj/$(TARGET)/$(OS_TARGET)_*)
 MOD_OBJS=$(addprefix obj/$(TARGET)/,$(MOD_SRC:.cpp=.o))
 INC+=-I../../
-FLAGS+=$(shell exo magicdef)
+FLAGS+=$(shell exo magicdef .)
 
 
 #----------------------------------------
