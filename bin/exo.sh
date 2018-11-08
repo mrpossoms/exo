@@ -2,7 +2,7 @@
 
 CFG_ROOT=$HOME/.exo
 
-source exo-utils.sh
+source $EXO_ROOT/bin/exo-utils.sh
 
 export EXO_DIR=$(dirname $(which $0))
 # export EXO_DIR=$(pwd)
@@ -17,6 +17,7 @@ if [ -z $(printenv | grep EXO_ROOT) ]; then
     fi
 
     echo "export EXO_ROOT=$exo_root" >> $dot_file
+    echo "export PATH=$PATH:$exo_root/bin" >> $dot_file
 
     # make sure appending worked
     if [ $? -ne 0 ]; then
