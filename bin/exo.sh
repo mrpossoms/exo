@@ -2,7 +2,11 @@
 
 CFG_ROOT=$HOME/.exo
 
-source $EXO_ROOT/bin/exo-utils.sh
+if [ -z $EXO_ROOT ]; then
+	source $EXO_ROOT ./exo-utils.sh
+else
+	source $EXO_ROOT/bin/exo-utils.sh
+fi
 
 export EXO_DIR=$(dirname $(which $0))
 # export EXO_DIR=$(pwd)
