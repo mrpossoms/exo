@@ -1,6 +1,7 @@
 #!/bin/sh
 
 CFG_ROOT=$HOME/.exo
+DEFAULT_ROOT=/usr/share/exo
 
 if [ -z $EXO_ROOT ]; then
 	source $EXO_ROOT ./exo-utils.sh
@@ -13,15 +14,22 @@ export EXO_DIR=$(dirname $(which $0))
 SUB_CMD=$1
 
 if [ -z $(printenv | grep EXO_ROOT) ]; then
-    exo_root=$(prompt "Specify your EXO_ROOT [default /etc/exo]: ")
+    echo "Welcome to EXO!"
+    echo "Running this command will do some setup, and perform the following actions."
+    echo "* Add the EXO_ROOT environment variable to your shell's rc file"
+    echo "* Add the EXO_ROOT path to your PATH for running exo commands in the future"
+    echo "* Symlink the EXO_ROOT directory to this repository."
+    echo
+    exo_root=$(prompt "Specify your EXO_ROOT [default $DEFAULT_ROOT]: ")
     dot_file=$(prompt "Specify the full path to your shell's rc file: ")
 
     if [ -z $exo_root ]; then
-        exo_root=/etc/exo
+        exo_root=$DEFAULT_ROOT
     fi
 
+    ln -s $(pwd)/.. $exo_root    
     echo "export EXO_ROOT=$exo_root" >> $dot_file
-    echo "export PATH=$PATH:$exo_root/bin" >> $dot_file
+    echo "export PATH=\"$PATH:$exo_root/bin\"" >> $dot_file
 
     # make sure appending worked
     if [ $? -ne 0 ]; then
@@ -47,7 +55,8 @@ fi
 
 # check to see if a sub-command has been invoked
 if [ $# -lt 1 ]; then
-    echo "EXO Commands\n--------------"
+    echo "EXO Commands"
+    echo "--------------"
     cmds=$(ls $EXO_ROOT/bin/exo-cmd-*.sh | sed "s|$EXO_ROOT/bin/exo-cmd-||" | sed "s|.sh||")
     for cmd in $cmds; do
         echo "exo $cmd -" $(exo $cmd help)

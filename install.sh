@@ -1,3 +1,3 @@
-sudo ln -s $(pwd) /etc/exo
+#!/bin/sh
 cd bin
 ./exo
