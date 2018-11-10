@@ -1,3 +1,10 @@
+function on_failure {
+    if [ $? != 0 ]; then
+        echo "Error: $1"
+	exit 1	
+    fi
+}
+
 function prompt {
     prompt_msg=$1
     >&2 printf "%s" "$prompt_msg"

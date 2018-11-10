@@ -100,10 +100,11 @@ struct Net::Out::impl
             (char *)&host_addr.sin_addr.s_addr,
             host->h_length
         );
-        host_addr.sin_port = htons(port);
+        host_addr.sin_port   = htons(port);
+	host_addr.sin_family = AF_INET;
 
         // attempt connection
-        if (::connect(socket, (struct sockaddr *)&host_addr,sizeof(host_addr)) < 0)
+	if (::connect(socket, (struct sockaddr *)&host_addr,sizeof(host_addr)) < 0)
         {
             close(socket);
             socket = -1;

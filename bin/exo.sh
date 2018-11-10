@@ -27,15 +27,14 @@ if [ -z $(printenv | grep EXO_ROOT) ]; then
         exo_root=$DEFAULT_ROOT
     fi
 
-    ln -s $(pwd)/.. $exo_root    
-    echo "export EXO_ROOT=$exo_root" >> $dot_file
-    echo "export PATH=\"$PATH:$exo_root/bin\"" >> $dot_file
+    sudo ln -s $(pwd)/.. $exo_root 
+    on_failure "Couldn't create simlink to '$exo_root'"
 
-    # make sure appending worked
-    if [ $? -ne 0 ]; then
-        echo "Error writing to '$dot_file'"
-        exit 1
-    fi
+    echo "export EXO_ROOT=$exo_root" >> $dot_file
+    on_failure "Couldn't append EXO_ROOT to '$dot_file'"
+
+    echo "export PATH=\"$PATH:$exo_root/bin\"" >> $dot_file
+    on_failure "Couldn't append to your PATH variable at '$dot_file'"
 
     echo "All good, please restart your shell."
     exit 0
