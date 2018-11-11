@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 CFG_ROOT=$HOME/.exo
 DEFAULT_ROOT=/usr/share/exo

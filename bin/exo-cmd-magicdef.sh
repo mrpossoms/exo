@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 source exo-utils.sh
 
 function magic_msg_def {
