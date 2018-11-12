@@ -10,7 +10,7 @@
 {
     exo::Log::instance(new exo::unix::Log::Stderr(5, true), 5);
     exo::unix::Net::In inlet(1337);
-    exo::msg::Payload<sizeof(uint8_t)> pay;
+    exo::msg::Payload<sizeof(uint8_t) + sizeof(exo::msg::Hdr)> pay;
     bool continuous = false;
 
     exo::unix::CLI::parser(argc, argv).optional<bool>("-c", [&](bool c){
@@ -26,6 +26,8 @@
         {
             if ((inlet >> pay.buffer()) == exo::Result::OK)
             {
+                exo::msg::Hdr hdr;
+                pay >> hdr;
                 pay >> byte_in;
                 exo::Log::info(4, "data: " + std::to_string(byte_in));
                 assert(byte_in == 42);
@@ -35,6 +37,8 @@
     else
     {
         while((inlet >> pay.buffer()) != exo::Result::OK);
+        exo::msg::Hdr hdr;
+        pay >> hdr;
         pay >> byte_in;
         assert(byte_in == 42);
     }

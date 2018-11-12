@@ -23,6 +23,7 @@ namespace exo
         RESOURCE_CREATE_FAILED,
         BIND_FAILED,
         LISTEN_FAILED,
+        CORRUPTION,
     };
 
     // const Result OK = 0;
@@ -94,6 +95,8 @@ namespace exo
 
     namespace msg
     {
+        const static uint32_t sanity = 0xDEADBEEF;
+
         struct Hdr;
 
         struct PayloadBuffer
@@ -133,6 +136,11 @@ namespace exo
              * @brief Size of payload in bytes.
              */
             uint32_t payload_length;
+
+            /**
+             * @brief Smoke test value used to check general validity of the header.
+             */
+            uint32_t sanity = 0xDEADBEEF;
 
             Hdr() = default;
             Hdr(uint32_t type, uint32_t magic, uint32_t pay_len);
@@ -266,7 +274,7 @@ namespace exo
         };
 
         struct Msg
-        {
+        { 
             // virtual Hdr hdr() = 0;
         };
     }

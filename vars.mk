@@ -9,7 +9,7 @@ MSG_DIR=msg
 
 # global to all modules
 INC=-I$(EXO_ROOT)/inc
-FLAGS=-g -std=c++11
+FLAGS=-g -std=c++11 -fPIC
 
 EXO_IMP=imp
 

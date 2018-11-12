@@ -71,6 +71,12 @@ struct Net::Out::impl
         return res;
     }
 
+    void disconnect()
+    {
+        close(socket);
+        socket = -1;
+    }
+
     bool connect()
     {
         // create and check socket
@@ -78,8 +84,7 @@ struct Net::Out::impl
         if (socket < 0)
         {
             exo::Log::error(4, "Socket creation failed");
-            close(socket);
-            socket = -1;
+            disconnect();
             return false;
         }
 
@@ -88,8 +93,7 @@ struct Net::Out::impl
         if (host == nullptr)
         {
             exo::Log::error(4, "Host resolution failed");
-            close(socket);
-            socket = -1;
+            disconnect();
             return false;
         }
 
@@ -101,13 +105,12 @@ struct Net::Out::impl
             host->h_length
         );
         host_addr.sin_port   = htons(port);
-	host_addr.sin_family = AF_INET;
+        host_addr.sin_family = AF_INET;
 
         // attempt connection
 	if (::connect(socket, (struct sockaddr *)&host_addr,sizeof(host_addr)) < 0)
         {
-            close(socket);
-            socket = -1;
+            disconnect();
             return false;
         }
 
@@ -157,14 +160,25 @@ Result Net::Out::operator<<(msg::PayloadBuffer&& pay)
     exo::Log::info(4, "Writing to: " + std::to_string(_pimpl->socket));
 
     auto old_act = disable_sigpipe();
-    if (write(_pimpl->socket, pay.buf, pay.len) == pay.len)
+    auto to_write = pay.len;
+
+    for(auto bytes = pay.len; bytes > 0;)
     {
-        enable_sigpipe(old_act);
-        return Result::OK;
+        auto written = write(_pimpl->socket, pay.buf, pay.len);
+        if (written >= 0)
+        {
+            bytes -= written;
+        }
+        else
+        { 
+            enable_sigpipe(old_act);
+            _pimpl->disconnect();         
+            return Result::WRITE_ERR;
+        }
     }
 
     enable_sigpipe(old_act);
-    return Result::WRITE_ERR;
+    return Result::OK;
 }
 
 //------------------------------------------------------------------------------
@@ -218,6 +232,12 @@ struct Net::In::impl
     bool is_setup()
     {
         return listen_sock > 0;
+    }
+
+    void disconnect()
+    {
+        close(client_sock);
+        client_sock = -1;
     }
 
     Result get_ready_sockets(int* sock_ready)
@@ -324,6 +344,12 @@ Result Net::In::operator>>(msg::Hdr& h)
     if (socket > -1)
     if (read(socket, &h, sizeof(h)) == sizeof(h))
     {
+        if (h.sanity != msg::sanity)
+        {
+            _pimpl->disconnect();
+            return Result::CORRUPTION;
+        }
+
         return Result::OK;
     }
 
