@@ -1,6 +1,6 @@
 #include <exo/exo.hpp>
 
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 #include <exo/unix.hpp>
 #endif
 
@@ -49,9 +49,7 @@ struct MOD_NAME : public exo::Mod
 };
 
 
-
-
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 
 int main(int argc, char* argv[])
 {
