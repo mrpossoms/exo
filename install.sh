@@ -2,4 +2,10 @@
 cd bin
 ./exo
 cd ..
-make install
+
+dot_file_path=/tmp/$USER
+if [ -f /tmp/$USER ]; then
+	path=$(cat /tmp/$U
+	make install
+fi
+

@@ -13,6 +13,8 @@ export EXO_DIR=$(dirname $(which $0))
 # export EXO_DIR=$(pwd)
 SUB_CMD=$1
 
+# Perform first time setup if the EXO_ROOT env var is
+# missing from the user's environment
 if [ -z $(printenv | grep EXO_ROOT) ]; then
     echo "Welcome to EXO!"
     echo "Running this command will do some setup, and perform the following actions."
@@ -30,27 +32,20 @@ if [ -z $(printenv | grep EXO_ROOT) ]; then
     sudo ln -s $(pwd)/.. $exo_root 
     on_failure "Couldn't create simlink to '$exo_root'"
 
+    cp $dot_file $dot_file.exo.bk
     echo "export EXO_ROOT=$exo_root" >> $dot_file
     on_failure "Couldn't append EXO_ROOT to '$dot_file'"
 
     echo "export PATH=\"$PATH:$exo_root/bin\"" >> $dot_file
     on_failure "Couldn't append to your PATH variable at '$dot_file'"
+    echo $dot_file > /tmp/$USER
+
+    create_default_configs $dot_file
 
     echo "All good, please restart your shell."
     exit 0
 fi
 
-# check for defaults folder in user's home directory
-# if it doesn't exist, create it.
-if [ ! -d $CFG_ROOT ]; then
-    answer=$(prompt ".exo doesn't exist, create it? [y/n]: ")
-
-    if [ $answer == 'y' ]; then
-        create_default_configs
-    else
-        exit 1
-    fi
-fi
 
 # check to see if a sub-command has been invoked
 if [ $# -lt 1 ]; then

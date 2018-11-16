@@ -38,8 +38,16 @@ function invoke {
 }
 
 function create_default_configs {
+    dot_file=$1
+
+    if [ -z $dot_file ]; then
+        echo "Error: no dotfile path provided"
+        exit 1
+    fi
+
+    CFG_ROOT=$HOME/.exo
     mkdir $CFG_ROOT
 
     set_cfg_val $CFG_ROOT exo_base $EXO_ROOT
-    set_cfg_val $CFG_ROOT template_path $EXO_ROOT/.project
+    set_cfg_val $CFG_ROOT user_dot_file $dot_file
 }
