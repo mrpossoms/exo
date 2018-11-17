@@ -16,7 +16,7 @@ As an author of an exo project, there are two primary components that you will a
 ## Setup
 From your shell, simply run
 ```shell
-$ ./install.sh
+$ scripts/install.sh
 ```
 You will then be prompted to provide a path for exo to be symlinked into, and a path your your specific shell's rc file (.bashrc, .zshrc, etc...). After that source your rc file or restart your shell.
 
