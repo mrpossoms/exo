@@ -5,7 +5,7 @@ rc_file=$2
 
 if [ $1 = "ci-test" ]; then
 
-	exo_root="" # use default
+	exo_root=/usr/share/exo
 	rc_file=$HOME/.bashrc
 fi
 
