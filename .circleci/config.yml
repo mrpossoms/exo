@@ -13,13 +13,14 @@ jobs:
       - run:
           name: Compile link exo into path create env-vars
           command: scripts/install.sh ci-test
-
+      
+      - run: echo 'export EXO_ROOT=/usr/share/exo' >> $BASH_ENV
+      
+      - run: echo 'export PATH=$EXO_ROOT/bin:$PATH' >> $BASH_ENV
+      
       - run:
           name: Compile library
           command: make install
-          environment:
-            EXO_ROOT: /usr/share/exo
-            PATH: $PATH:$EXO_ROOT/bin
 
       - run:
           name: Check installation 
