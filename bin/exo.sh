@@ -25,9 +25,9 @@ if [ -z $(printenv | grep EXO_ROOT) ]; then
 
     # if one argument has been provided, try to use it as the user's dot file
     # and the default exo root
-    if [ ! -z $ ]; then
+    if [ ! -z $1 ]; then
         dot_file=$1
-	exo_root=
+	exo_root=$2
     else
     # otherwise go through the normal prompts
 	exo_root=$(prompt "Specify your EXO_ROOT [default $DEFAULT_ROOT]: ")

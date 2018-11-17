@@ -12,7 +12,7 @@ jobs:
 
       - run:
           name: Compile library and install exo
-          command: scripts/install.sh
+          command: scripts/install.sh ci-test
 
       - run:
           name: Check installation 
