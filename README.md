@@ -1,4 +1,5 @@
 # exo
+Build: [![CircleCI](https://circleci.com/gh/mrpossoms/exo/tree/master.svg?style=svg)](https://circleci.com/gh/mrpossoms/exo/tree/master)
 exo is a loose framework of bash scripts, and C++ source that help to create modular robotics software that can run anywhere. exo aims to facilitate solving of the following problems.
 
 * graceful, and safe failure
