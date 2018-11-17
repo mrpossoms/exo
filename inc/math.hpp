@@ -9,6 +9,13 @@ namespace exo
 		struct Vec
 		{
 			Vec() = default;
+			Vec(S* arr)
+			{
+				for (int i = D; i--;)
+				{
+					v[i] = arr[i];
+				}	
+			}
 			Vec(std::initializer_list<S> init)
 			{
 				if (init.size() < D)
@@ -28,10 +35,12 @@ namespace exo
 				}
 			}
 
+
 			inline S& operator[](int i)
 			{
 				return v[i];
 			}
+
 
 			inline Vec<S,D> operator+(Vec<S,D>& v)
 			{
@@ -43,6 +52,7 @@ namespace exo
 				return out;
 			}
 
+
 			inline Vec<S,D> operator-(Vec<S,D>& v)
 			{
 				Vec<S,D> out;
@@ -52,6 +62,7 @@ namespace exo
 				}
 				return out;
 			}
+
 
 			inline Vec<S,D> operator*(Vec<S,D>& v)
 			{
@@ -63,6 +74,7 @@ namespace exo
 				return out;
 			}
 
+
 			inline Vec<S,D> operator*(S s)
 			{
 				Vec<S,D> out;
@@ -72,6 +84,7 @@ namespace exo
 				}
 				return out;
 			}
+
 
 			inline Vec<S,D>  operator/(Vec<S,D>& v)
 			{
@@ -93,6 +106,7 @@ namespace exo
 				return *this;
 			}
 
+
 			inline Vec<S,D>& operator-=(Vec<S,D>& v)
 			{
 				for (auto i = D; i--;)
@@ -101,6 +115,7 @@ namespace exo
 				}
 				return *this;
 			}
+
 
 			inline Vec<S,D>& operator*=(Vec<S,D>& v)
 			{
@@ -111,6 +126,7 @@ namespace exo
 				return *this;
 			}
 
+
 			inline Vec<S,D>& operator*=(S s)
 			{
 				for (auto i = D; i--;)
@@ -120,6 +136,7 @@ namespace exo
 				return *this;
 			}
 
+
 			inline Vec<S,D>& operator/=(Vec<S,D>& v)
 			{
 				for (auto i = D; i--;)
@@ -127,6 +144,13 @@ namespace exo
 					this->v[i] /= v.v[i];
 				}
 				return *this;
+			}
+
+
+			template<ssize_t ND>
+			inline Vec<S, ND> as_dimension()
+			{
+				return Vec<S, ND>(this->v);
 			}
 
 
@@ -140,8 +164,12 @@ namespace exo
 				return sum;
 			}
 
+			static Vec<S,3> cross(Vec<S,3>& a, Vec<S,3>& b)
+			{
+				return Vec::cross(std::move(a), std::move(b));
+			}
 
-			static Vec<S,3> cross(Vec<S,3> a, Vec<S,3> b)
+			static Vec<S,3> cross(Vec<S,3>&& a, Vec<S,3>&& b)
 			{
 				return {
 					a[1]*b[2] - a[2]*b[1],
@@ -173,6 +201,48 @@ namespace exo
 			}
 
 			S m[R][C];
+		};
+
+		struct Quat : public Vec<float, 4>
+		{
+			Quat() : Vec({ 0, 0, 0, 1 })
+			{
+				// NOP
+			}
+
+			Quat(float x, float y, float z, float w) : Vec({ x, y, z, w })
+			{
+				// NOP
+			}
+
+			Quat operator*(Quat& other)
+			{
+				return *this * std::move(other);
+			}
+
+			Quat operator*(Quat&& other)
+			{
+				auto t3 = this->as_dimension<3>();
+				auto o3 = this->as_dimension<3>();
+
+				auto r = Vec::cross(t3, o3);
+				auto w = t3 * other[3];
+				r += w;
+				w = o3 * this->v[3];
+				r += w;
+
+				return { 
+					r[0], r[1], r[2],
+					this->v[3] * other.v[3] - t3.dot(o3)
+				};
+			}
+
+			Quat& operator*=(Quat&& other)
+			{
+				*this = *this * other;
+
+				return *this;
+			}
 		};
 	}
 }
