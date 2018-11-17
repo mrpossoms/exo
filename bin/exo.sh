@@ -48,6 +48,7 @@ if [ -z $(printenv | grep EXO_ROOT) ]; then
     echo "export PATH=\"$PATH:$exo_root/bin\"" >> $dot_file
     on_failure "Couldn't append to your PATH variable at '$dot_file'"
     echo $dot_file > /tmp/$USER.dotfile
+    echo $exo_root > /tmp/$UESR.exo_root
 
     create_default_configs $dot_file
 

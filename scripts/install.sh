@@ -13,13 +13,15 @@ cd bin
 ./exo $exo_root $rc_file
 cd ..
 
-dot_file_path=/tmp/$USER.dotfile
+dot_file_path=$(cat /tmp/$USER.dotfile)
+exo_root_path=$(cat /tmp/$USER.exo_root)
+
 if [ -f $dot_file_path ]; then
-	path=$(cat $dot_file_path)
-	echo "Using dotfile: " $path
+	echo "Using dotfile: " $dot_file_path
 	echo "[Dotfile contents] ---------------"
-	cat $path
-	source $path
+	cat $dot_file_path
+	export EXO_ROOT=$(cat $exo_root_path)
+	export PATH="$PATH:$EXO_ROOT/bin"
 	echo "[Env vars] -----------------------"
 	printenv
 	make install
