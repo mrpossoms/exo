@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Checks for the core components of a valid
 # exo installation

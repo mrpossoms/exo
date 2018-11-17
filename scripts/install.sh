@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 exo_root=$1
 rc_file=$2
