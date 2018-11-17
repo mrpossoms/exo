@@ -6,7 +6,7 @@ rc_file=$2
 if [ $1 = "ci-test" ]; then
 	is_ci_test=true
 	exo_root=/usr/share/exo
-	rc_file=/etc/profile
+	rc_file=$HOME/.bashrc
 fi
 
 cd bin

@@ -17,6 +17,9 @@ jobs:
       - run:
           name: Compile library
           command: make install
+          environment:
+            EXO_ROOT: /usr/share/exo
+            PATH: $PATH:$EXO_ROOT/bin
 
       - run:
           name: Check installation 
