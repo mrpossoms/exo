@@ -1,0 +1,25 @@
+version: 2
+
+jobs:
+  build:
+
+    docker:
+      - image: mrpossoms/ubuntu-artful-dev 
+        environment:
+
+    steps:
+      - checkout
+
+      - run:
+          name: Compile library and install exo
+          command: scripts/install.sh
+
+      - run:
+          name: Check installation 
+          command: scripts/check.sh
+
+      - run:
+          name: Run tests
+          command: make test
+
+

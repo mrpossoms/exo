@@ -22,8 +22,17 @@ if [ -z $(printenv | grep EXO_ROOT) ]; then
     echo "* Add the EXO_ROOT path to your PATH for running exo commands in the future"
     echo "* Symlink the EXO_ROOT directory to this repository."
     echo
-    exo_root=$(prompt "Specify your EXO_ROOT [default $DEFAULT_ROOT]: ")
-    dot_file=$(prompt "Specify the full path to your shell's rc file: ")
+
+    # if one argument has been provided, try to use it as the user's dot file
+    # and the default exo root
+    if [ ! -z $ ]; then
+        dot_file=$1
+	exo_root=
+    else
+    # otherwise go through the normal prompts
+	exo_root=$(prompt "Specify your EXO_ROOT [default $DEFAULT_ROOT]: ")
+	dot_file=$(prompt "Specify the full path to your shell's rc file: ")
+    fi
 
     if [ -z $exo_root ]; then
         exo_root=$DEFAULT_ROOT
