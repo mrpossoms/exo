@@ -38,7 +38,7 @@ if [ -z $(printenv | grep EXO_ROOT) ]; then
         exo_root=$DEFAULT_ROOT
     fi
 
-    sudo ln -s $(pwd)/.. $exo_root 
+    ln -s $(pwd)/.. $exo_root 
     on_failure "Couldn't create simlink to '$exo_root'"
 
     cp $dot_file $dot_file.exo.bk

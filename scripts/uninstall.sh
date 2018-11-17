@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # remove the symlink to the exo repo
-sudo rm $EXO_ROOT
+rm $EXO_ROOT
 
 # find the dot file from settings, replace with backed up repo
 dot_file_path=$(cat $HOME/.exo/user_dot_file)

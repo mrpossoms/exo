@@ -59,7 +59,7 @@ clean:
 	rm -rf tests/bin
 
 install: static
-	sudo ln -s $(shell pwd)/inc /usr/local/include/exo
-	sudo ln -s $(shell pwd)/lib/libexo.a /usr/local/lib/libexo.a
+	ln -s $(shell pwd)/inc /usr/local/include/exo
+	ln -s $(shell pwd)/lib/libexo.a /usr/local/lib/libexo.a
 
 .PHONY: all install test obj/%.o static
