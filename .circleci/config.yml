@@ -11,8 +11,12 @@ jobs:
       - checkout
 
       - run:
-          name: Compile library and install exo
+          name: Compile link exo into path create env-vars
           command: scripts/install.sh ci-test
+
+      - run:
+          name: Compile library
+          command: make install
 
       - run:
           name: Check installation 
