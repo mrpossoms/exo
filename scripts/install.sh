@@ -13,9 +13,9 @@ cd bin
 ./exo $exo_root $rc_file
 cd ..
 
-dot_file_path=/tmp/$USER
-if [ -f /tmp/$USER ]; then
-	path=$(cat /tmp/$USER)
+dot_file_path=/tmp/$USER.dotfile
+if [ -f $dot_file_path ]; then
+	source $(cat $dot_file_path)
 	make install
 fi
 
