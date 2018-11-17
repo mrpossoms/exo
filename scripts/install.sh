@@ -17,9 +17,11 @@ dot_file_path=/tmp/$USER.dotfile
 if [ -f $dot_file_path ]; then
 	path=$(cat $dot_file_path)
 	echo "Using dotfile: " $path
-	echo "[Dotfile contents]"
+	echo "[Dotfile contents] ---------------"
 	cat $path
 	source $path
+	echo "[Env vars] -----------------------"
+	printenv
 	make install
 fi
 
