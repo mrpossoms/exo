@@ -15,7 +15,11 @@ cd ..
 
 dot_file_path=/tmp/$USER.dotfile
 if [ -f $dot_file_path ]; then
-	source $(cat $dot_file_path)
+	path=$(cat $dot_file_path)
+	echo "Using dotfile: " $path
+	echo "[Dotfile contents]"
+	cat $path
+	source $path
 	make install
 fi
 
