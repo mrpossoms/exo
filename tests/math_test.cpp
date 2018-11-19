@@ -33,5 +33,11 @@ using namespace exo::math;
 	assert(ortho[1] == 0);
 	assert(ortho[2] == 1);
 
+	// Test quaternions
+	auto q = Quat::from_axis_angle({0, 0, 1}, M_PI / 2);
+
+	bool expect_true = q.rotate({ 1, 0, 0 }).is_near(Vec<float, 3>{ 0, 1, 0 }, 0.1);
+	assert(expect_true);
+
 	return 0;
 }
