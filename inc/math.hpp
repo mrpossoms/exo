@@ -9,14 +9,16 @@ namespace exo
 		template<typename S, ssize_t D>
 		struct Vec
 		{
-			Vec() = default;
+			Vec()
+			{
+				for (int i = D; i--;) { v[i] = 0; }
+			}
+
 			Vec(S* arr)
 			{
-				for (int i = D; i--;)
-				{
-					v[i] = arr[i];
-				}	
+				for (int i = D; i--;) { v[i] = arr[i]; }	
 			}
+
 			Vec(std::initializer_list<S> init)
 			{
 				if (init.size() < D)
@@ -321,6 +323,40 @@ namespace exo
 
 				return { axis[0], axis[1], axis[2], cosf(a_2) };
 			}
+		};
+
+		template<typename S, ssize_t D>
+		struct Basis
+		{
+			Basis()
+			{
+				for(int i = D; i--;)
+				{
+					vectors[i][i] = 1;
+				}
+			}
+
+			Basis(std::initializer_list<Vec<S, D>> basis_vectors)
+			{
+				int i = 0;
+				for (auto vector : basis_vectors)
+				{
+					vectors[i++] = vector;
+				}
+			}
+
+			inline Basis<S, 3> rotate(Quat& q) { return rotate(std::move(q)); }
+			inline Basis<S, 3> rotate(Quat&& q)
+			{
+				return {
+					q.rotate(vectors[0]),
+					q.rotate(vectors[1]),
+					q.rotate(vectors[2])
+				};
+			}
+
+			Vec<S, D> vectors[D];
+			Vec<S, D> origin;
 		};
 	}
 }
