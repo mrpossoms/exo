@@ -24,17 +24,20 @@ basepath=$1
 invoke help $basepath
 invoke usage $basepath
 
+
 msgs=$(exo rls $basepath/msg | grep .h)
 
 # generate checksums
 for msg in $msgs; do
-    echo $(exo magic $msg) > $(echo $msg | sed "s|\.h|\.magic|")
+    ext="${msg##*.}"
+    echo $(exo magic $msg) > $(echo $msg | sed "s|\.$ext|\.magic|")
 done
 
 # print all the symbol flags
 SYMBOLS=""
 for msg in $msgs; do
-    symbol=$(magic_msg_def $(echo $msg | sed "s|\.h|\.magic|"))
+    ext="${msg##*.}"
+    symbol=$(magic_msg_def $(echo $msg | sed "s|\.$ext|\.magic|"))
     # SYMBOLS="$SYMBOLS $symbol"
     printf "%s " $symbol
 done

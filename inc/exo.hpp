@@ -24,6 +24,7 @@ namespace exo
         BIND_FAILED,
         LISTEN_FAILED,
         CORRUPTION,
+        INCOMPATIBLE_MESSAGE,
     };
 
     // const Result OK = 0;
