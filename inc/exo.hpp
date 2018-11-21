@@ -146,6 +146,9 @@ namespace exo
             Hdr() = default;
             Hdr(uint32_t type, uint32_t magic, uint32_t pay_len);
 
+            bool operator!=(Hdr& h);
+            bool operator!=(Hdr&& h);
+            bool operator==(Hdr& h);
             bool operator==(Hdr&& h);
         };
 

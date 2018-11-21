@@ -63,7 +63,13 @@ msg::Hdr::Hdr(uint32_t type, uint32_t magic, uint32_t pay_len)
 	this->payload_length = pay_len;
 }
 
+bool msg::Hdr::operator!=(exo::msg::Hdr& h) { return *this != std::move(h); }
+bool msg::Hdr::operator!=(exo::msg::Hdr&& h)
+{
+	return h.type != type || magic != h.magic;
+}
 
+bool msg::Hdr::operator==(exo::msg::Hdr& h) { return *this == std::move(h); }
 bool msg::Hdr::operator==(exo::msg::Hdr&& h)
 {
 	return h.type == type && magic == h.magic;
