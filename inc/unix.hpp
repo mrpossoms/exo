@@ -189,8 +189,7 @@ namespace exo
 
         namespace fs
         {
-            bool file_exists(std::string path);
-            bool dir_exists(std::string path);
+            exo::Result exists(std::string path);
         }
     }
 
