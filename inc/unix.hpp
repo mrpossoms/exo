@@ -186,6 +186,12 @@ namespace exo
                 impl* _pimpl;
             };
         };
+
+        namespace fs
+        {
+            bool file_exists(std::string path);
+            bool dir_exists(std::string path);
+        }
     }
 
     struct Context
