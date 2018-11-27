@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    exo::Log::good("Module running");
+    exo::Log::good(1, "Module running");
 
     // process messages and perform updates until
     // mod.update() no longer returns exo::Result::OK

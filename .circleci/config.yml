@@ -1,0 +1,33 @@
+version: 2
+
+jobs:
+  build:
+
+    docker:
+      - image: mrpossoms/ubuntu-artful-dev 
+        environment:
+
+    steps:
+      - checkout
+
+      - run:
+          name: Compile link exo into path create env-vars
+          command: scripts/install.sh ci-test
+      
+      - run: echo 'export EXO_ROOT=/usr/share/exo' >> $BASH_ENV
+      
+      - run: echo 'export PATH=$EXO_ROOT/bin:$PATH' >> $BASH_ENV
+      
+      - run:
+          name: Compile library
+          command: make install
+
+      - run:
+          name: Check installation 
+          command: scripts/check.sh
+
+      - run:
+          name: Run tests
+          command: make test
+
+

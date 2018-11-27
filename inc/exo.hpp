@@ -24,6 +24,8 @@ namespace exo
         BIND_FAILED,
         LISTEN_FAILED,
         CORRUPTION,
+        INCOMPATIBLE_MESSAGE,
+        NO_PERMISSION,
     };
 
     // const Result OK = 0;
@@ -145,6 +147,9 @@ namespace exo
             Hdr() = default;
             Hdr(uint32_t type, uint32_t magic, uint32_t pay_len);
 
+            bool operator!=(Hdr& h);
+            bool operator!=(Hdr&& h);
+            bool operator==(Hdr& h);
             bool operator==(Hdr&& h);
         };
 

@@ -106,7 +106,7 @@ namespace exo
         private:
             int _argc;
             char** _argv;
-            bool _show_help;
+            bool _show_help = 0;
 
             char* find_arg_val(const char* name)
             {
@@ -186,6 +186,11 @@ namespace exo
                 impl* _pimpl;
             };
         };
+
+        namespace fs
+        {
+            exo::Result exists(std::string path);
+        }
     }
 
     struct Context
