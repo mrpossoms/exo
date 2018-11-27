@@ -8,7 +8,7 @@
 using namespace exo::unix;
 using namespace exo;
 
-Result exists(std::string path)
+Result fs::exists(std::string path)
 {
 	struct stat statbuf;
 

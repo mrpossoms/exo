@@ -161,6 +161,9 @@ namespace exo
 				return *this;	
 			}
 
+			inline bool operator!=(Vec<S,D>& v) { return !(*this == std::move(v)); }
+			inline bool operator!=(Vec<S,D>&& v) { return !(*this == v); }
+
 			inline bool operator==(Vec<S,D>& v) { return *this == std::move(v); }
 			inline bool operator==(Vec<S,D>&& v)
 			{
