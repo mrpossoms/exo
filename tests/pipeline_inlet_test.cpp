@@ -1,5 +1,5 @@
 #include "exo.hpp"
-#include "unix.hpp"
+#include "nix.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -8,7 +8,7 @@
 
 #include "test.h"
 {
-    exo::unix::Pipeline::In inlet;
+    exo::nix::Pipeline::In inlet;
     exo::msg::Payload<sizeof(uint8_t)> pay;
     
     uint8_t byte_in;

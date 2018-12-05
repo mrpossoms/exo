@@ -1,5 +1,5 @@
 #include "exo.hpp"
-#include "unix.hpp"
+#include "nix.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -10,7 +10,7 @@
 {
     int correct = 0;
 
-    exo::unix::CLI::parser(argc, argv)
+    exo::nix::CLI::parser(argc, argv)
         .help("--help",
               "Tests the functionality of the cli argument parser.")
         .required<int>("--foo", [&](int i) {

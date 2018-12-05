@@ -1,11 +1,11 @@
 #include "exo.hpp"
-#include "unix.hpp"
+#include "nix.hpp"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-using namespace exo::unix;
+using namespace exo::nix;
 using namespace exo;
 
 Result fs::exists(std::string path)
