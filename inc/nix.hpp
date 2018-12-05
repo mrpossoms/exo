@@ -9,7 +9,7 @@
 
 namespace exo
 {
-    namespace unix
+    namespace nix
     {
         static void daemonize();
 

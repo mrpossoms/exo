@@ -1,5 +1,5 @@
 #include "exo.hpp"
-#include "unix.hpp"
+#include "nix.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -8,12 +8,12 @@
 
 #include "test.h"
 {
-    exo::Log::instance(new exo::unix::Log::Stderr(5, true), 5);
-    exo::unix::Net::In inlet(1337);
+    exo::Log::instance(new exo::nix::Log::Stderr(5, true), 5);
+    exo::nix::Net::In inlet(1337);
     exo::msg::Payload<sizeof(uint8_t) + sizeof(exo::msg::Hdr)> pay;
     bool continuous = false;
 
-    exo::unix::CLI::parser(argc, argv).optional<bool>("-c", [&](bool c){
+    exo::nix::CLI::parser(argc, argv).optional<bool>("-c", [&](bool c){
         continuous = c;
         exo::Log::info(4, "continuous: " + std::to_string(c));
     });

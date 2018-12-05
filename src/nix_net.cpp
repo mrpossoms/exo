@@ -1,5 +1,5 @@
 #include "exo.hpp"
-#include "unix.hpp"
+#include "nix.hpp"
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-using namespace exo::unix;
+using namespace exo::nix;
 using namespace exo;
 
 static inline struct sigaction disable_sigpipe()

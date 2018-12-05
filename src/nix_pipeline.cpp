@@ -1,12 +1,12 @@
 #include "exo.hpp"
-#include "unix.hpp"
+#include "nix.hpp"
 
 #include <unistd.h>
 
 #include <iostream>
 
 
-using namespace exo::unix;
+using namespace exo::nix;
 using namespace exo;
 
 Result Pipeline::Out::operator<<(msg::Hdr&& h)
