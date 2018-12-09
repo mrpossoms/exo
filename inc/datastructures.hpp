@@ -53,6 +53,9 @@ namespace exo
             }
 
 
+            T& peek_back() { return _list[_size - 1]; }
+
+
             bool remove_at(size_t idx)
             {
                 if (idx >= _size) { return false; }

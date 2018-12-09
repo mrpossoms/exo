@@ -54,7 +54,10 @@ exo::Result get_message(exo::nix::Net::In& inlet, TestMessage& msg)
         while(true)
         {
             TestMessage msg;
-            get_message(inlet, msg);
+            if (get_message(inlet, msg) == exo::Result::OK)
+            {
+                exo::Log::info(0, std::string(msg.str) + "\n");
+            }
         }
     }
     else

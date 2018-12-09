@@ -299,7 +299,7 @@ struct Net::In::impl
         }
     }
 
-    Result get_ready_clients(Client* ready_client)
+    Result get_ready_clients(Client** ready_client)
     {
         // return all the ready sockets before performing another select
         if (ready_clients.size() > 0)
@@ -308,10 +308,10 @@ struct Net::In::impl
             // their respective headers and payloads
             while (ready_clients.size() > 0)
             {
-                Client c;
-                ready_clients.peek_back(c);
 
-                if (c.got_header() && c.got_payload())
+                auto c = &ready_clients.peek_back();
+
+                if (c->got_header() && c->got_payload())
                 {
                     ready_clients.pop_back();
                 }
@@ -323,7 +323,7 @@ struct Net::In::impl
 
             if (ready_clients.size() > 0)
             {
-                ready_clients.peek_back(*ready_client);
+                *ready_client = &ready_clients.peek_back();
                 return Result::MORE_TO_READ;
             }
 
@@ -390,7 +390,7 @@ struct Net::In::impl
                     {
                         clients.push_back( {client_fd} );
                         exo::Log::info(4, "Client connected");
-                        return Result::MORE_TO_READ;
+                        return Result::NOT_READY;
                     }
                     else
                     {
@@ -434,7 +434,7 @@ Result Net::In::operator>>(msg::Hdr& h)
         }
     }
 
-    Net::In::impl::Client client;
+    Net::In::impl::Client* client;
     auto res = _pimpl->get_ready_clients(&client);
 
     switch (res)
@@ -448,7 +448,7 @@ Result Net::In::operator>>(msg::Hdr& h)
             return res;
     }
 
-    return client >> h;
+    return (*client) >> h;
 }
 
 
@@ -463,7 +463,7 @@ Result Net::In::operator>>(msg::PayloadBuffer&& pay)
         }
     }
 
-    Net::In::impl::Client client;
+    Net::In::impl::Client* client;
     auto res = _pimpl->get_ready_clients(&client);
 
     switch (res)
@@ -477,7 +477,7 @@ Result Net::In::operator>>(msg::PayloadBuffer&& pay)
             return res;
     }
 
-    return client >> std::move(pay);
+    return (*client) >> std::move(pay);
 }
 
 
