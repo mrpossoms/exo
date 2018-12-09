@@ -8,7 +8,7 @@
 
 #define DESCRIPTION "Tests the network implementation for outlets."
 
-exo::Result send_msg(exo::nix::Net::Out& outlet, TestMessage& msg)
+exo::Result send_message(exo::nix::Net::Out& outlet, TestMessage& msg)
 {
     // create the header, pack the payload
     exo::msg::Payload<sizeof(TestMessage) + sizeof(exo::msg::Hdr)> payload;
@@ -35,11 +35,11 @@ exo::Result send_msg(exo::nix::Net::Out& outlet, TestMessage& msg)
 
     if (continuous)
     {
-        while(true) send_msg(outlet, msg);
+        while(true) send_message(outlet, msg);
     }
     else
     {
-        while((send_msg(outlet, msg)) != exo::Result::OK);
+        while((send_message(outlet, msg)) != exo::Result::OK);
     }
 
     return 0;

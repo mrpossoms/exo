@@ -8,6 +8,11 @@ namespace exo
     {
         template<typename T, size_t CAP>
         struct BoundedList {
+            BoundedList()
+            {
+                _size = 0;
+            }
+
             bool push_back(T e)
             {
                 if (_size >= CAP) { return false; }
