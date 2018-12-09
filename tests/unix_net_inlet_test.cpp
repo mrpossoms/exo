@@ -1,16 +1,45 @@
 #include "exo.hpp"
 #include "nix.hpp"
+#include "msg.hpp"
 
 #include <iostream>
 #include <fstream>
 
 #define DESCRIPTION "Tests the network implementation for inlets."
 
+exo::Result get_message(exo::nix::Net::In& inlet, TestMessage& msg)
+{
+    exo::msg::Hdr hdr;
+    exo::msg::Payload<sizeof(msg)> payload;
+
+    auto res = (inlet >> hdr);
+    if (exo::Result::OUT_OF_DATA == res) { return res; }
+    if (exo::Result::NOT_READY == res) { return res; }
+
+    // if (res == exo::Result::OK)
+    {
+        // make sure the header is valid
+        if (hdr != TestMessage::hdr()) { return exo::Result::INCOMPATIBLE_MESSAGE; }
+
+        // read the payload from the inlet, and extract the message struct
+        auto res = inlet >> payload.buffer();
+        if (res == exo::Result::OK)
+        {
+            payload.get<TestMessage>(msg);
+        }
+
+        return res;
+    }
+
+}
+
 #include "test.h"
 {
     exo::Log::instance(new exo::nix::Log::Stderr(5, true), 5);
     exo::nix::Net::In inlet(1337);
-    exo::msg::Payload<sizeof(uint8_t) + sizeof(exo::msg::Hdr)> pay;
+    TestMessage msg;
+
+    exo::msg::Payload<sizeof(msg) + sizeof(exo::msg::Hdr)> pay;
     bool continuous = false;
 
     exo::nix::CLI::parser(argc, argv).optional<bool>("-c", [&](bool c){
@@ -24,23 +53,21 @@
     {
         while(true)
         {
-            if ((inlet >> pay.buffer()) == exo::Result::OK)
-            {
-                exo::msg::Hdr hdr;
-                pay >> hdr;
-                pay >> byte_in;
-                exo::Log::info(4, "data: " + std::to_string(byte_in));
-                assert(byte_in == 42);
-            }
+            TestMessage msg;
+            get_message(inlet, msg);
         }
     }
     else
     {
-        while((inlet >> pay.buffer()) != exo::Result::OK);
-        exo::msg::Hdr hdr;
-        pay >> hdr;
-        pay >> byte_in;
-        assert(byte_in == 42);
+        exo::Result res = exo::Result::OK;
+
+        while (true)
+        {
+            if (get_message(inlet, msg) == exo::Result::OK) { break; }
+            else { usleep(10000); }
+        }
+
+        assert(strcmp(msg.str, PROPER_GREETING) == 0);
     }
 
     return 0;

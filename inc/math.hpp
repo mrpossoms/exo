@@ -16,7 +16,7 @@ namespace exo
 
 			Vec(S* arr)
 			{
-				for (int i = D; i--;) { v[i] = arr[i]; }	
+				for (int i = D; i--;) { v[i] = arr[i]; }
 			}
 
 			Vec(std::initializer_list<S> init)
@@ -158,7 +158,7 @@ namespace exo
 				{
 					this->v[i] /= s;
 				}
-				return *this;	
+				return *this;
 			}
 
 			inline bool operator!=(Vec<S,D>& v) { return !(*this == std::move(v)); }
@@ -184,7 +184,7 @@ namespace exo
 
 			S dot(Vec<S,D>& v)
 			{
-				S sum;
+				S sum = 0;
 				for (auto i = D; i--;)
 				{
 					sum += this->v[i] * v.v[i];
@@ -267,7 +267,7 @@ namespace exo
 				w = o3 * this->v[3];
 				r += w;
 
-				return { 
+				return {
 					r[0], r[1], r[2],
 					this->v[3] * other.v[3] - t3.dot(o3)
 				};

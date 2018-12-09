@@ -1,5 +1,6 @@
 #include "exo.hpp"
 #include "nix.hpp"
+#include "datastructures.hpp"
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -170,9 +171,9 @@ Result Net::Out::operator<<(msg::PayloadBuffer&& pay)
             bytes -= written;
         }
         else
-        { 
+        {
             enable_sigpipe(old_act);
-            _pimpl->disconnect();         
+            _pimpl->disconnect();
             return Result::WRITE_ERR;
         }
     }
@@ -189,20 +190,74 @@ Result Net::Out::operator<<(msg::PayloadBuffer&& pay)
 //
 struct Net::In::impl
 {
+    struct Client : public exo::msg::Inlet
+    {
+        Client() = default;
+
+        Client(int sock)
+        {
+            _sock = sock;
+        }
+
+        Client(Client& c)
+        {
+            _sock = c._sock;
+        }
+
+        int sock() { return _sock; }
+
+        bool got_header() { return _hdr.sanity == exo::msg::sanity; }
+
+        bool got_payload() { return _got_payload; }
+
+        exo::Result operator>>(msg::Hdr& h)
+        {
+            if (read(_sock, &h, sizeof(h)) != sizeof(h))
+            {
+                return exo::Result::OUT_OF_DATA;
+            }
+
+            _hdr = h;
+
+            return exo::Result::OK;
+        }
+
+        exo::Result operator>>(msg::PayloadBuffer&& pay)
+        {
+            if (read(_sock, pay.buf, pay.len) != pay.len)
+            {
+                return exo::Result::OUT_OF_DATA;
+            }
+
+            _got_payload = true;
+
+            return exo::Result::OK;
+        }
+
+        bool operator==(Client& c) { return c._sock == _sock; }
+
+    private:
+        int _sock = -1;
+        exo::msg::Hdr _hdr = {};
+        bool _got_payload  = false;
+    };
+
+    static const int max_clients = 32;
     uint16_t port;
-    int client_sock;
+    exo::ds::BoundedList<Client, max_clients> clients;
+    exo::ds::BoundedList<Client, max_clients> ready_clients;
+    // int last_client_sock;
     int listen_sock;
 
     ~impl()
     {
-        close(client_sock);
+        disconnect();
         close(listen_sock);
     }
 
     Result setup()
     {
         listen_sock = ::socket(AF_INET, SOCK_STREAM, 0);
-        client_sock = -1;
         if (listen_sock < 0) { return Result::RESOURCE_CREATE_FAILED; }
 
         struct sockaddr_in name = {};
@@ -236,21 +291,60 @@ struct Net::In::impl
 
     void disconnect()
     {
-        close(client_sock);
-        client_sock = -1;
+        while (clients.size() > 0)
+        {
+            Client c;
+            clients.pop_back(c);
+            close(c.sock());
+        }
     }
 
-    Result get_ready_sockets(int* sock_ready)
+    Result get_ready_clients(Client* ready_client)
     {
+        // return all the ready sockets before performing another select
+        if (ready_clients.size() > 0)
+        {
+            // remove any ready clients that have already gotten
+            // their respective headers and payloads
+            while (ready_clients.size() > 0)
+            {
+                Client c;
+                ready_clients.peek_back(c);
+
+                if (c.got_header() && c.got_payload())
+                {
+                    ready_clients.pop_back();
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (ready_clients.size() > 0)
+            {
+                ready_clients.peek_back(*ready_client);
+                return Result::MORE_TO_READ;
+            }
+
+            return Result::OUT_OF_DATA;
+        }
+
         fd_set rd_fds;
-        int fd_max = listen_sock > client_sock ? listen_sock : client_sock;
+        int fd_max = listen_sock;
         struct timeval timeout = { 1, 0 };
 
         // setup the fd set
         FD_ZERO(&rd_fds);
         FD_SET(listen_sock, &rd_fds);
 
-        if (client_sock > -1) FD_SET(client_sock, &rd_fds);
+        // mark all open connections for the select
+        for (int i = clients.size(); i--;)
+        {
+            auto sock = clients[i].sock();
+            FD_SET(sock, &rd_fds);
+            fd_max = sock > fd_max ? sock : fd_max;
+        }
 
         exo::Log::info(4, "selecting on " + std::to_string(fd_max));
         switch(select(fd_max + 1, &rd_fds, nullptr, nullptr, nullptr))
@@ -262,6 +356,25 @@ struct Net::In::impl
                 exo::Log::error(4, "Read error");
                 return Result::ERROR;
             default: // stuff to read
+                // track all the open connections, find the ones that
+                // have new data to read.
+                for (int i = clients.size(); i--;)
+                if (FD_ISSET(clients[i].sock(), &rd_fds))
+                {
+                    char test_c;
+                    if (recv(clients[i].sock(), &test_c, sizeof(test_c), MSG_PEEK) == 0)
+                    {
+                        exo::Log::info(4, "Client disconnected");
+                        close(clients[i].sock());
+
+                        clients.remove_at(i);
+                    }
+                    else
+                    {
+                        exo::Log::info(4, "Client has data");
+                        ready_clients.push_back(clients[i]);
+                    }
+                }
 
                 // check to see if someone is trying to connect
                 if (FD_ISSET(listen_sock, &rd_fds))
@@ -273,11 +386,11 @@ struct Net::In::impl
                     exo::Log::info(4, "Incoming connection");
 
                     // add the fd to the list, or decline the connection
-                    if (client_sock == -1)
+                    if (clients.size() < max_clients)
                     {
-                        client_sock = client_fd;
+                        clients.push_back( {client_fd} );
                         exo::Log::info(4, "Client connected");
-                        break;
+                        return Result::MORE_TO_READ;
                     }
                     else
                     {
@@ -285,25 +398,12 @@ struct Net::In::impl
                     }
                 }
 
-                // track all the open connections, find the ones that
-                // have new data to read.
-                if (client_sock > -1 && FD_ISSET(client_sock, &rd_fds))
-                {
-                    char test_c;
-                    if (recv(client_sock, &test_c, sizeof(test_c), MSG_PEEK) == 0)
-                    {
-                        exo::Log::info(4, "Client disconnected");
-                        close(client_sock);
-                        client_sock = -1;
-                    }
-                    else
-                    {
-                        exo::Log::info(4, "Client has data");
-                        *sock_ready = client_sock;
-                        return Result::OK;
-                    }
-                }
-                break;
+                // recurse once, this will return the first ready client
+                // if (clients.size() > 0)
+                // {
+                //     return get_ready_clients(ready_client);
+                // }
+                if (ready_clients.size() > 0) { return Result::NOT_READY; }
         }
 
         return Result::OUT_OF_DATA;
@@ -334,27 +434,21 @@ Result Net::In::operator>>(msg::Hdr& h)
         }
     }
 
-    int socket = -1;
-    auto res = _pimpl->get_ready_sockets(&socket);
-    if (res != Result::OK)
+    Net::In::impl::Client client;
+    auto res = _pimpl->get_ready_clients(&client);
+
+    switch (res)
     {
-        return Result::OUT_OF_DATA;
+        case Result::MORE_TO_READ:
+        case Result::OK:
+            // all is well, continue
+            break;
+        default:
+            // something went wrong
+            return res;
     }
 
-    if (socket > -1)
-    if (read(socket, &h, sizeof(h)) == sizeof(h))
-    {
-        if (h.sanity != msg::sanity)
-        {
-            _pimpl->disconnect();
-            return Result::CORRUPTION;
-        }
-
-        return Result::OK;
-    }
-
-
-    return Result::READ_ERR;
+    return client >> h;
 }
 
 
@@ -369,20 +463,21 @@ Result Net::In::operator>>(msg::PayloadBuffer&& pay)
         }
     }
 
-    int socket = -1;
-    auto res = _pimpl->get_ready_sockets(&socket);
-    if (res != Result::OK)
+    Net::In::impl::Client client;
+    auto res = _pimpl->get_ready_clients(&client);
+
+    switch (res)
     {
-        return Result::OUT_OF_DATA;
+        case Result::MORE_TO_READ:
+        case Result::OK:
+            // all is well, continue
+            break;
+        default:
+            // something went wrong
+            return res;
     }
 
-    if (socket > -1)
-    if (read(socket, pay.buf, pay.len) == pay.len)
-    {
-        return Result::OK;
-    }
-
-    return Result::READ_ERR;
+    return client >> std::move(pay);
 }
 
 
@@ -391,10 +486,13 @@ Result Net::In::flush(size_t bytes)
     uint64_t junk;
     int junk_read = 0;
 
+    Net::In::impl::Client client;
+    _pimpl->ready_clients.pop_back(client);
+
     while (bytes > 0)
     {
         auto to_read = bytes > sizeof(junk) ? sizeof(junk) : bytes;
-        auto bytes_read = read(_pimpl->client_sock, &junk, sizeof(junk));
+        auto bytes_read = read(client.sock(), &junk, sizeof(junk));
 
         if (bytes_read <= 0)
         {
