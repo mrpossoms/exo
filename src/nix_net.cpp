@@ -109,7 +109,7 @@ struct Net::Out::impl
         host_addr.sin_family = AF_INET;
 
         // attempt connection
-	if (::connect(socket, (struct sockaddr *)&host_addr,sizeof(host_addr)) < 0)
+        if (::connect(socket, (struct sockaddr *)&host_addr,sizeof(host_addr)) < 0)
         {
             disconnect();
             return false;
@@ -246,7 +246,6 @@ struct Net::In::impl
     uint16_t port;
     exo::ds::BoundedList<Client, max_clients> clients;
     exo::ds::BoundedList<Client, max_clients> ready_clients;
-    // int last_client_sock;
     int listen_sock;
 
     ~impl()
@@ -308,7 +307,6 @@ struct Net::In::impl
             // their respective headers and payloads
             while (ready_clients.size() > 0)
             {
-
                 auto c = &ready_clients.peek_back();
 
                 if (c->got_header() && c->got_payload())
@@ -321,6 +319,7 @@ struct Net::In::impl
                 }
             }
 
+            // return the next ready client
             if (ready_clients.size() > 0)
             {
                 *ready_client = &ready_clients.peek_back();
@@ -398,11 +397,6 @@ struct Net::In::impl
                     }
                 }
 
-                // recurse once, this will return the first ready client
-                // if (clients.size() > 0)
-                // {
-                //     return get_ready_clients(ready_client);
-                // }
                 if (ready_clients.size() > 0) { return Result::NOT_READY; }
         }
 
