@@ -16,7 +16,7 @@ namespace exo
 
 			Vec(S* arr)
 			{
-				for (int i = D; i--;) { v[i] = arr[i]; }	
+				for (int i = D; i--;) { v[i] = arr[i]; }
 			}
 
 			Vec(std::initializer_list<S> init)
@@ -158,7 +158,7 @@ namespace exo
 				{
 					this->v[i] /= s;
 				}
-				return *this;	
+				return *this;
 			}
 
 			inline bool operator!=(Vec<S,D>& v) { return !(*this == std::move(v)); }
@@ -180,6 +180,9 @@ namespace exo
 			{
 				return Vec<S, ND>(this->v);
 			}
+
+
+			S len() { return sqrt(dot(*this)); }
 
 
 			S dot(Vec<S,D>& v)
@@ -216,6 +219,21 @@ namespace exo
 
 			S v[D]; // value store
 		};
+		using Vec3f = Vec<float, 3>;
+
+		template<typename S, ssize_t D>
+		struct Ray
+		{
+			Ray(Vec<S, D> origin, Vec<S, D> direction)
+			{
+				this->origin = origin;
+				this->direction = direction;
+			}
+
+			Vec<S, D> origin;
+			Vec<S, D> direction;
+		};
+		using Ray3f = Ray<float, 3>;
 
 		template<typename S, ssize_t R, ssize_t C>
 		struct Mat
@@ -267,7 +285,7 @@ namespace exo
 				w = o3 * this->v[3];
 				r += w;
 
-				return { 
+				return {
 					r[0], r[1], r[2],
 					this->v[3] * other.v[3] - t3.dot(o3)
 				};
