@@ -180,7 +180,6 @@ namespace exo
                 exo::Result operator>>(exo::msg::Hdr& h);
                 exo::Result operator>>(exo::msg::PayloadBuffer&& buf);
                 exo::Result flush(size_t bytes);
-
             private:
                 struct impl;
                 impl* _pimpl;

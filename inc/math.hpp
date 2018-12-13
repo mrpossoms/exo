@@ -187,7 +187,7 @@ namespace exo
 
 			S dot(Vec<S,D>& v)
 			{
-				S sum;
+				S sum = 0;
 				for (auto i = D; i--;)
 				{
 					sum += this->v[i] * v.v[i];

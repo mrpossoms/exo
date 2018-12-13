@@ -57,7 +57,7 @@ static inline void bad(const char* format, ...){
 
 int NEAR(float x, float y)
 {
-	return fabs(x - y) <= 0.0001;
+	return fabs(x - y) <= 0.001;
 }
 
 int run_test(int argc, char* argv[]);

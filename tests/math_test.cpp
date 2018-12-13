@@ -17,7 +17,7 @@ using namespace exo::math;
 	assert(v2[2] == 4);
 
 	// test dot
-	assert(v2.dot(v2) == 29);
+	assert(NEAR(v2.dot(v2), 29));
 
 	// test indexing and assignment
 	v2[0] = 1000;
