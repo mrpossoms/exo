@@ -203,6 +203,11 @@ namespace exo
 				return diff.dot(diff) <= threshold;
 			}
 
+			static S cross(Vec<S,2>& a, Vec<S,2>& b)
+			{
+				return a[0]*b[1] - a[1]*b[0];
+			}
+
 			static Vec<S,3> cross(Vec<S,3>& a, Vec<S,3>& b)
 			{
 				return Vec::cross(std::move(a), std::move(b));
