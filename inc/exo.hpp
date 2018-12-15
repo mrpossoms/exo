@@ -17,6 +17,8 @@ namespace exo
         ERROR,
         OUT_OF_DATA,
         READ_ERR,
+        MORE_TO_READ,
+        NOT_READY,
         WRITE_ERR,
         CONNECTION_FAILURE,
         TIMEOUT,
@@ -115,7 +117,6 @@ namespace exo
         struct Inlet
         {
             virtual Result operator>>(PayloadBuffer&& buf) = 0;
-            virtual Result flush(size_t bytes) = 0;
         };
 
         /**
@@ -279,7 +280,7 @@ namespace exo
         };
 
         struct Msg
-        { 
+        {
             // virtual Hdr hdr() = 0;
         };
     }
