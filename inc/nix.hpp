@@ -32,7 +32,11 @@ namespace exo
                 {
                     char* value = find_arg_val(name);
 
-                    if (value)
+                    if  (typeid(T) == typeid(bool))
+                    {
+                        handler({}); 
+                    }
+                    else if (value)
                     {
                         T parsed;
                         std::stringstream ss(value);
@@ -128,6 +132,7 @@ namespace exo
                 return nullptr;
             }
         };
+
 
         namespace Log
         {
