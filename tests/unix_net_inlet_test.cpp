@@ -36,7 +36,7 @@ exo::Result get_message(exo::nix::Net::In& inlet, TestMessage& msg)
 #include "test.h"
 {
     exo::Log::instance(new exo::nix::Log::Stderr(5, true), 5);
-    exo::nix::Net::In inlet(1337);
+    exo::nix::Net::In inlet(31337);
     TestMessage msg;
 
     exo::msg::Payload<sizeof(msg) + sizeof(exo::msg::Hdr)> pay;

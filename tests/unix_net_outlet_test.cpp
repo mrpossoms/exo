@@ -22,7 +22,7 @@ exo::Result send_message(exo::nix::Net::Out& outlet, TestMessage& msg)
 #include "test.h"
 {
     exo::Log::instance(new exo::nix::Log::Stderr(5, true), 5);
-    exo::nix::Net::Out outlet("127.0.0.1", 1337);
+    exo::nix::Net::Out outlet("127.0.0.1", 31337);
     bool continuous = false;
 
     exo::nix::CLI::parser(argc, argv).optional<bool>("-c", [&](bool c){

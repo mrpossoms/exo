@@ -6,7 +6,7 @@
 #
 include $(EXO_ROOT)/vars.mk
 
-FLAGS+=-std=c++11 -g
+FLAGS+=
 INC+=-Iinc/
 #PLATFORMS=$(shell ls src/platforms)
 SRCS=$(shell ls src | grep .cpp)

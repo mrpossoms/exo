@@ -192,6 +192,8 @@ struct Net::In::impl
 {
     struct Client : public exo::msg::Inlet
     {
+        bool corrupt = false;
+
         Client() = default;
 
         Client(int sock)
@@ -215,6 +217,12 @@ struct Net::In::impl
             if (read(_sock, &h, sizeof(h)) != sizeof(h))
             {
                 return exo::Result::OUT_OF_DATA;
+            }
+
+            if (h.sanity != exo::msg::sanity)
+            {
+                corrupt = true;
+                return exo::Result::CORRUPTION;
             }
 
             _hdr = h;
@@ -298,6 +306,12 @@ struct Net::In::impl
         }
     }
 
+    void close_con(Client& c)
+    {
+        close(c.sock());
+        clients.remove(c);
+    }
+
     Result get_ready_clients(Client** ready_client)
     {
         // return all the ready sockets before performing another select
@@ -309,8 +323,17 @@ struct Net::In::impl
             {
                 auto c = &ready_clients.peek_back();
 
-                if (c->got_header() && c->got_payload())
+                if ((c->got_header() && c->got_payload()) || c->corrupt)
                 {
+                    if (c->corrupt)
+                    {
+                        // if a client's sanity check didn't match up then
+                        // something weird is happening. We should terminate that
+                        // connection.
+                        exo::Log::error(4, "Client sent corrupt data, closing");
+                        close_con(*c);
+                    }
+
                     ready_clients.pop_back();
                 }
                 else
@@ -345,7 +368,7 @@ struct Net::In::impl
             fd_max = sock > fd_max ? sock : fd_max;
         }
 
-        exo::Log::info(4, "selecting on " + std::to_string(fd_max));
+        exo::Log::info(5, "selecting on " + std::to_string(fd_max));
         switch(select(fd_max + 1, &rd_fds, nullptr, nullptr, nullptr))
         {
             case 0: // timeout
@@ -370,7 +393,7 @@ struct Net::In::impl
                     }
                     else
                     {
-                        exo::Log::info(4, "Client has data");
+                        exo::Log::info(5, "Client has data");
                         ready_clients.push_back(clients[i]);
                     }
                 }
@@ -397,7 +420,13 @@ struct Net::In::impl
                     }
                 }
 
-                if (ready_clients.size() > 0) { return Result::NOT_READY; }
+                if (ready_clients.size() > 0)
+                {
+                    // If we've gotten here, >= 1 client has sent us something, but
+                    // we return not ready anyway so that the logic at the beginning
+                    // of this function can manage the ready clients
+                    return Result::NOT_READY;
+                }
         }
 
         return Result::OUT_OF_DATA;

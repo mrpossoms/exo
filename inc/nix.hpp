@@ -32,19 +32,22 @@ namespace exo
                 {
                     char* value = find_arg_val(name);
 
-                    if  (typeid(T) == typeid(bool))
+                    if (value)
                     {
-                        handler({}); 
-                    }
-                    else if (value)
-                    {
-                        T parsed;
-                        std::stringstream ss(value);
-                        ss >> parsed;
-
-                        if(ss)
+                        if  (typeid(T) == typeid(bool))
                         {
-                            handler(parsed);
+                            handler({});
+                        }
+                        else
+                        {
+                            T parsed;
+                            std::stringstream ss(value);
+                            ss >> parsed;
+
+                            if(ss)
+                            {
+                                handler(parsed);
+                            }
                         }
                     }
                 }
