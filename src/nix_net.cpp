@@ -232,9 +232,22 @@ struct Net::In::impl
 
         exo::Result operator>>(msg::PayloadBuffer&& pay)
         {
-            if (read(_sock, pay.buf, pay.len) != pay.len)
+            auto to_read = pay.len;
+            auto end = (uint8_t*)pay.buf;
+
+            // Allow the payload to be read in chunks at a time
+            while (to_read > 0)
             {
-                return exo::Result::OUT_OF_DATA;
+                auto bytes_read = read(_sock, end, to_read);
+
+                switch(bytes_read)
+                {
+                    case -1: return exo::Result::ERROR;
+                    case  0: return exo::Result::OUT_OF_DATA;
+                    default:
+                        to_read -= bytes_read;
+                        end += bytes_read;
+                }
             }
 
             _got_payload = true;
