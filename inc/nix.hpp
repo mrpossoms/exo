@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include <iostream>
 #include <functional>
@@ -198,7 +199,8 @@ namespace exo
         struct Negotiator
         {
             Negotiator(uint32_t negotiation_timeout_ms)
-            {            
+            {   
+
                 fd_set rfds;
                 struct timeval tv;
 
@@ -245,12 +247,13 @@ namespace exo
 
                                 if (value)
                                 {
+                                    kvp = value + strlen(value) + 1;
                                     _demand_args[std::string(key)] = std::string(value);
                                 }
                             }
-                        }  
+                        }
                     } break;
-                }
+                }         
             }
 
             Negotiator& react_to(std::string key, std::function<void (std::string&)> handler)
@@ -267,7 +270,9 @@ namespace exo
 
             Negotiator& send_request()
             {
-                write(STDOUT_FILENO, _request_string.c_str(), _request_string.length());
+                auto written = write(STDOUT_FILENO, _request_string.c_str(), _request_string.length());
+                assert(written == _request_string.length());
+                return *this;
             }
 
             static Negotiator instance(uint32_t negotiation_timeout_ms)
