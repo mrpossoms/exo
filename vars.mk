@@ -16,6 +16,8 @@ EXO_IMP=imp
 COLOR_GREEN=\033[0;32m
 COLOR_OFF=\033[0m
 
+OS=$(shell uname)
+
 ifndef CMP
 CMP=g++
 endif

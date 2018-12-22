@@ -190,6 +190,7 @@ namespace exo
                 exo::Result operator>>(exo::msg::Hdr& h);
                 exo::Result operator>>(exo::msg::PayloadBuffer&& buf);
                 exo::Result flush(size_t bytes);
+                void timeout (unsigned int timeout_ms);
             private:
                 struct impl;
                 impl* _pimpl;

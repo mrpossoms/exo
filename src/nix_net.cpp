@@ -268,6 +268,9 @@ struct Net::In::impl
     exo::ds::BoundedList<Client, max_clients> clients;
     exo::ds::BoundedList<Client, max_clients> ready_clients;
     int listen_sock;
+    int timeout_ms = 0;
+
+    impl(uint16_t port) { this->port = port; }
 
     ~impl()
     {
@@ -367,7 +370,10 @@ struct Net::In::impl
 
         fd_set rd_fds;
         int fd_max = listen_sock;
-        struct timeval timeout = { 1, 0 };
+        struct timeval timeout = {
+            timeout_ms / 1000,
+            (timeout_ms % 1000) * 1000
+        };
 
         // setup the fd set
         FD_ZERO(&rd_fds);
@@ -382,7 +388,8 @@ struct Net::In::impl
         }
 
         exo::Log::info(5, "selecting on " + std::to_string(fd_max));
-        switch(select(fd_max + 1, &rd_fds, nullptr, nullptr, nullptr))
+        auto timeout_ptr = timeout_ms ? &timeout : nullptr;
+        switch(select(fd_max + 1, &rd_fds, nullptr, nullptr, timeout_ptr))
         {
             case 0: // timeout
                 exo::Log::warning(4, "Timeout");
@@ -537,4 +544,10 @@ Result Net::In::flush(size_t bytes)
     }
 
     return Result::OK;
+}
+
+
+void Net::In::timeout(unsigned int timeout_ms)
+{
+    _pimpl->timeout_ms = timeout_ms;
 }
