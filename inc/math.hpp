@@ -243,6 +243,8 @@ namespace exo
 		template<typename S, ssize_t R, ssize_t C>
 		struct Mat
 		{
+			Mat() = default;
+
 			Mat(std::initializer_list<std::initializer_list<S>> init)
 			{
 				int ri = 0;
@@ -257,6 +259,28 @@ namespace exo
 					ri += 1;
 				}
 
+			}
+
+			template <ssize_t MC>
+			Mat<S, R, MC> operator* (Mat<S, C, MC>& m)
+			{
+				Mat<S, R, MC> r;
+
+				for (int row = R; row--;)
+				for (int col = MC; col--;)
+				{
+					for (int i = C; i--;)
+					{
+						r[row][col] += this->m[row][i] * m[i][col];
+					}
+				}
+
+				return r;
+			}
+
+			S* operator[] (ssize_t row)
+			{
+				if (row < R) { return m[row]; }
 			}
 
 			S m[R][C];
