@@ -54,6 +54,9 @@ tests: $(TEST_EXES)
 test: tests
 	./test_runner.py
 
+test-%: tests/bin/%
+	./$<
+
 clean:
 	rm -rf obj lib
 	rm -rf tests/bin
