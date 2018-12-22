@@ -26,7 +26,7 @@
     {
         std::string foo, answer;
 
-        exo::nix::Negotiator::instance(200)
+        exo::nix::Negotiator::instance(2000)
         .react_to("foo", [&](std::string value) { foo = value; })
         .react_to("answer", [&](std::string value) { answer = value; });
         assert(foo == "bar");

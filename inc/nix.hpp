@@ -199,7 +199,7 @@ namespace exo
         struct Negotiator
         {
             Negotiator(uint32_t negotiation_timeout_ms)
-            {   
+            {
 
                 fd_set rfds;
                 struct timeval tv;
@@ -219,19 +219,19 @@ namespace exo
                         exo::Log::error(1, "Negotiator: select() error");
                         break;
                     default:
-                    { 
+                    {
                         // reads a key-value string from the previous negotiator
                         // of a format like "key0=value0;key1=value1;..."
                         char buf[2048];
                         size_t len = read(STDIN_FILENO, buf, sizeof(buf));
                         if (len > 0)
                         {
-                            // replace all the semi-colons with null terminators 
+                            // replace all the semi-colons with null terminators
                             for (int i = len; i--; ) if (buf[i] == ';') { buf[i] = '\0'; }
 
                             char* kvp = buf;
 
-                            while ((int)(kvp - buf) < len)
+                            while ((int)(kvp - static_cast<char*>(buf)) < len)
                             {
                                 size_t kvp_len = strlen(kvp);
                                 char *key = kvp, *value = nullptr;
@@ -253,7 +253,7 @@ namespace exo
                             }
                         }
                     } break;
-                }         
+                }
             }
 
             Negotiator& react_to(std::string key, std::function<void (std::string&)> handler)
