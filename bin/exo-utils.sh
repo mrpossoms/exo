@@ -6,31 +6,31 @@ function on_failure {
 }
 
 function prompt {
-    prompt_msg=$1
+    prompt_msg="$1"
     >&2 printf "%s" "$prompt_msg"
     read -r value
     echo $value
 }
 
 function set_cfg_val {
-    path=$1
-    name=$2
-    value=$3
+    path="$1"
+    name="$2"
+    value="$3"
 
     echo $value > $path/$name
 }
 
 
 function get_cfg_val {
-    path=$1
-    name=$2
+    path="$1"
+    name="$2"
 
     cat $path/$name
 }
 
 function invoke {
-    target=$1
-    arg=$2
+    target="$1"
+    arg="$2"
 
     if [ $arg == $target ]; then
         $target
@@ -38,7 +38,7 @@ function invoke {
 }
 
 function create_default_configs {
-    dot_file=$1
+    dot_file="$1"
 
     if [ -z $dot_file ]; then
         echo "Error: no dotfile path provided"

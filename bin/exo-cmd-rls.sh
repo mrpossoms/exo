@@ -13,8 +13,8 @@ function usage {
 
 path=$1/
 
-invoke help $1
-invoke usage $1
+invoke help "$1"
+invoke usage "$1"
 
 files=$(ls $path)
 

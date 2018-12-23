@@ -2,7 +2,7 @@
 source exo-utils.sh
 
 function magic_msg_def {
-    name=$1
+    name="$1"
     magic=$(exo get $name)
     echo "-D"$(basename $name | sed "s|\.|_|" | awk '{print toupper($0)}')=$magic
 }
@@ -19,7 +19,7 @@ function usage
     exit 0
 }
 
-basepath=$1
+basepath="$1"
 
 invoke help $basepath
 invoke usage $basepath

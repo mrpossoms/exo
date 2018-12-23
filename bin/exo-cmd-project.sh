@@ -12,7 +12,7 @@ function usage {
 }
 
 PROJ_DIR=$(get_cfg_val $HOME/.exo template_path)
-name=$1
+name="$1"
 
 invoke help $name
 invoke usage $name

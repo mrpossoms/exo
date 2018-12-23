@@ -2,8 +2,9 @@
 
 exo_root=$1
 rc_file=$2
+is_ci_test=false
 
-if [ $1 = "ci-test" ]; then
+if [ "ci-test" = "$1" ]; then
 	is_ci_test=true
 	exo_root=/usr/share/exo
 	rc_file=$HOME/.bashrc

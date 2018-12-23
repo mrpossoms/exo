@@ -13,7 +13,7 @@ function usage
 }
 
 # the key-file whose value we are looking for
-key=$1
+key="$1"
 
 invoke help $key
 invoke usage $key

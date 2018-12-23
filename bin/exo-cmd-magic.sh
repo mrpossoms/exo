@@ -12,7 +12,7 @@ function usage
 }
 
 # the key-file whose value we are looking for
-msg_name=$1
+msg_name="$1"
 
 invoke help $msg_name
 invoke usage $msg_name
