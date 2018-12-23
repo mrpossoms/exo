@@ -317,15 +317,16 @@ namespace exo
 				auto fpn = far + near;
 
 				return {
-					{ 2 / rml,       0,        0, -rpl / rml },
-					{       0, 2 / tmb,        0, -tpb / tmb },
-					{       0,       0, -2 / fmn, -fpn / fmn },
-					{       0,       0,        0,          1 }
-				}
+					{ 2/rml,     0,      0, -rpl/rml },
+					{     0, 2/tmb,      0, -tpb/tmb },
+					{     0,     0, -2/fmn, -fpn/fmn },
+					{     0,     0,      0,        1 }
+				};
 			}
 
 			S m[R][C];
 		};
+		using Mat4f = Mat<float, 4, 4>;
 
 		struct Quat : public Vec<float, 4>
 		{
