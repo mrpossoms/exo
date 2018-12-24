@@ -39,5 +39,24 @@ using namespace exo::math;
 	bool expect_true = q.rotate({ 1, 0, 0 }).is_near(Vec<float, 3>{ 0, 1, 0 }, 0.1);
 	assert(expect_true);
 
+	{ // check matrix equality testing
+		auto I0 = Mat<float, 3, 3>::I();
+		auto I1 = Mat<float, 3, 3>::I();
+
+		assert(I0 == I1);
+	}
+
+	{ // check matrix multiplication correctness
+		auto R = Mat<float, 3, 3>{
+			{ (float)rand(), (float)rand(), (float)rand(), },
+			{ (float)rand(), (float)rand(), (float)rand(), },
+			{ (float)rand(), (float)rand(), (float)rand(), },
+		};
+		auto I  = Mat<float, 3, 3>::I();
+		auto res = R * I;
+
+		assert(res == R);	
+	}
+
 	return 0;
 }

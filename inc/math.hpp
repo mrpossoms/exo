@@ -224,6 +224,8 @@ namespace exo
 
 			S v[D]; // value store
 		};
+		using Vec2i = Vec<int, 2>;
+		using Vec2f = Vec<float, 2>;
 		using Vec3f = Vec<float, 3>;
 
 		template<typename S, ssize_t D>
@@ -243,6 +245,11 @@ namespace exo
 		template<typename S, ssize_t R, ssize_t C>
 		struct Mat
 		{
+			Mat()
+			{
+				bzero(m, sizeof(m));
+			}
+
 			Mat(std::initializer_list<std::initializer_list<S>> init)
 			{
 				int ri = 0;
@@ -251,7 +258,7 @@ namespace exo
 					int ci = 0;
 					for (auto c : row)
 					{
-						init[ri][ci] = c;
+						m[ri][ci] = c;
 						ci += 1;
 					}
 					ri += 1;
@@ -259,8 +266,67 @@ namespace exo
 
 			}
 
+			template <ssize_t MC>
+			Mat<S, R, MC> operator* (Mat<S, C, MC>& m)
+			{
+				Mat<S, R, MC> r;
+
+				for (int row = R; row--;)
+				for (int col = MC; col--;)
+				{
+					for (int i = C; i--;)
+					{
+						r[row][col] += this->m[row][i] * m[i][col];
+					}
+				}
+
+				return r;
+			}
+
+			S* operator[] (ssize_t row)
+			{
+				if (row < R) { return m[row]; }
+			}
+
+			bool operator== (Mat<S, R, C> M)
+			{
+				return memcmp(this->m, M.m, sizeof(M.m)) == 0;
+			}
+
+			// template <typename STORAGE, ssize_t ROWS, ssize_t COLS>
+			static Mat<S, R, C> I()
+			{
+				Mat<S, R, C> res;
+
+				for (int r = R; r--;)
+				for (int c = C; c--;)
+				{
+					if (r == c) { res[r][c] = 1; }
+				}
+
+				return res;
+			}
+
+			static Mat<S, 4, 4> ortho(S left, S right, S top, S bottom, S near, S far)
+			{
+				auto tmb = top - bottom;
+				auto tpb = top + bottom;
+				auto rml = right - left;
+				auto rpl = right + left;
+				auto fmn = far - near;
+				auto fpn = far + near;
+
+				return {
+					{ 2/rml,     0,      0, -rpl/rml },
+					{     0, 2/tmb,      0, -tpb/tmb },
+					{     0,     0, -2/fmn, -fpn/fmn },
+					{     0,     0,      0,        1 }
+				};
+			}
+
 			S m[R][C];
 		};
+		using Mat4f = Mat<float, 4, 4>;
 
 		struct Quat : public Vec<float, 4>
 		{
