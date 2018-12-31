@@ -20,7 +20,6 @@ function set_cfg_val {
     echo $value > $path/$name
 }
 
-
 function get_cfg_val {
     path="$1"
     name="$2"
@@ -32,8 +31,12 @@ function invoke {
     target="$1"
     arg="$2"
 
-    if [ $arg == $target ]; then
-        $target
+    if [ -z $arg ] || [ -z $target ]; then
+        exit 0
+    fi
+    
+    if [ $arg = $target ]; then
+        exit 1
     fi
 }
 

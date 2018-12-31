@@ -10,7 +10,7 @@ FLAGS+=
 INC+=-Iinc/
 #PLATFORMS=$(shell ls src/platforms)
 SRCS=$(shell ls src | grep .cpp)
-OBJS=$(foreach src,$(SRCS:.cpp=.o),obj/$(TARGET)/$(src))
+#OBJS=$(foreach src,$(SRCS:.cpp=.o),obj/$(TARGET)/$(src))
 TEST_SRCS=$(shell ls tests | grep .cpp)
 TEST_EXES=$(foreach src,$(TEST_SRCS:.cpp=),tests/bin/$(src))
 
@@ -26,27 +26,21 @@ all: $(OBJS)
 lib:
 	mkdir -p lib
 
-lib/libexo.a: lib $(OBJS)
-	ar rcs $@ $(OBJS)
-
-static: lib/libexo.a
-	@echo "$(COLOR_GREEN) Built $@ $(COLOR_OFF)"
-
 obj/$(TARGET):
 	mkdir -p obj/$(TARGET)
 
 #obj/%.o: obj/$(TARGET)/%.o
 #	@echo "$(COLOR_GREEN) Built $@ $(COLOR_OFF)"
 
-obj/$(TARGET)/%.o: src/%.cpp obj/$(TARGET)
-	$(CMP) $(INC) $(FLAGS) -c $< -o $@
-	@echo "$(COLOR_GREEN) Built $@ $(COLOR_OFF)"
+#obj/$(TARGET)/%.o: src/%.cpp obj/$(TARGET)
+#	$(CMP) $(INC) $(FLAGS) -c $< -o $@
+#	@echo "$(COLOR_GREEN) Built $@ $(COLOR_OFF)"
 
 tests/bin:
 	mkdir tests/bin
 
 tests/bin/%: tests/%.cpp tests/bin
-	$(CMP) $(INC) $(FLAGS) -Itests/ $< src/*.cpp -o $@
+	$(CMP) $(INC) $(FLAGS) -Itests/ $< -o $@
 
 tests: $(TEST_EXES)
 	@echo "$(COLOR_GREEN) Built all tests $(COLOR_OFF)"
@@ -58,11 +52,9 @@ test-%: tests/bin/%
 	./$<
 
 clean:
-	rm -rf obj lib
 	rm -rf tests/bin
 
-install: static
+install: 
 	ln -s $(shell pwd)/inc /usr/local/include/exo
-	ln -s $(shell pwd)/lib/libexo.a /usr/local/lib/libexo.a
 
-.PHONY: all install test obj/%.o static
+.PHONY: all install test 

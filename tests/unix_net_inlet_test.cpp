@@ -7,71 +7,60 @@
 
 #define DESCRIPTION "Tests the network implementation for inlets."
 
-exo::Result get_message(exo::nix::Net::In& inlet, TestMessage& msg)
-{
-    exo::msg::Hdr hdr;
-    exo::msg::Payload<sizeof(msg)> payload;
-
-    auto res = (inlet >> hdr);
-    if (exo::Result::OUT_OF_DATA == res) { return res; }
-    if (exo::Result::NOT_READY == res) { return res; }
-
-    // if (res == exo::Result::OK)
-    {
-        // make sure the header is valid
-        if (hdr != TestMessage::hdr()) { return exo::Result::INCOMPATIBLE_MESSAGE; }
-
-        // read the payload from the inlet, and extract the message struct
-        auto res = inlet >> payload.buffer();
-        if (res == exo::Result::OK)
-        {
-            payload.get<TestMessage>(msg);
-        }
-
-        return res;
-    }
-
-}
+#include "unix_net_util.hpp"
 
 #include "test.h"
 {
     exo::Log::instance(new exo::nix::Log::Stderr(5, true), 5);
-    exo::nix::Net::In inlet(31337);
-    TestMessage msg;
 
-    exo::msg::Payload<sizeof(msg) + sizeof(exo::msg::Hdr)> pay;
     bool continuous = false;
+    uint16_t inlet_port = 31337;
 
-    exo::nix::CLI::parser(argc, argv).optional<bool>("-c", [&](bool c){
-        continuous = c;
-        exo::Log::info(4, "continuous: " + std::to_string(c));
-    });
+    { // parse arguments
+        exo::nix::CLI::parser(argc, argv)
+        .optional<bool>("-c", [&](bool c){
+            continuous = c;
+            exo::Log::info(4, "continuous: " + std::to_string(c));
+        })
+        .optional<uint16_t>("--port", [&](uint16_t port) {
+            inlet_port = port;
+            exo::Log::info(4, "using inlet port: " + std::to_string(port));
+        })
+        ;
+    }
 
-    uint8_t byte_in;
+    exo::nix::Net::In inlet(inlet_port);
 
-    if (continuous)
-    {
-        while(true)
+    { // communicate
+        TestMessage msg;
+        exo::msg::Payload<sizeof(msg) + sizeof(exo::msg::Hdr)> pay;
+
+        if (continuous)
         {
-            TestMessage msg;
-            if (get_message(inlet, msg) == exo::Result::OK)
+            while(true)
             {
-                exo::Log::info(0, std::string(msg.str) + "\n");
+                TestMessage msg;
+                if (get_message(inlet, msg) == exo::Result::OK)
+                {
+                    exo::Log::info(0, std::string(msg.str) + "\n");
+                }
             }
         }
-    }
-    else
-    {
-        exo::Result res = exo::Result::OK;
-
-        while (true)
+        else
         {
-            if (get_message(inlet, msg) == exo::Result::OK) { break; }
-            else { usleep(10000); }
-        }
+            exo::Result res = exo::Result::OK;
 
-        assert(strcmp(msg.str, PROPER_GREETING) == 0);
+            while (true)
+            {
+                if (get_message(inlet, msg) == exo::Result::OK) { break; }
+                else { usleep(10000); }
+            }
+
+            assert(strcmp(msg.str, PROPER_GREETING) == 0);
+        }
     }
+
+
 
     return 0;
 }

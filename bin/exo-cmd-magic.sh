@@ -3,7 +3,7 @@ source exo-utils.sh
 
 function help
 {
-    echo 'Takes a file path, and returns a checksum value for that file'
+    echo 'Takes a file path, or list of file paths, and returns a checksum value for that file'
 }
 
 function usage
@@ -11,10 +11,20 @@ function usage
     echo 'magic [file-path]'
 }
 
-# the key-file whose value we are looking for
-msg_name="$1"
 
-invoke help $msg_name
-invoke usage $msg_name
+$(invoke help "$1")
+help_shown=$?
+$(invoke usage "$1")
+usage_shown=$?
 
-cksum $msg_name | awk '{split($0,a," "); print a[1]}'
+if [ $help_shown -gt 0 ] || [ $usage_shown -gt 0 ]; then
+	exit 0
+fi
+
+sum=0
+for file in "$@"; do
+	chk=$(cksum $file | awk '{split($0,a," "); print a[1]}')
+	sum=$(($sum ^ $chk))
+done
+
+echo $sum

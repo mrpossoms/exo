@@ -182,6 +182,19 @@ namespace exo
 			}
 
 
+			std::string to_string()
+			{
+				std::string str = "(";
+				for (int i = 0; i < D; ++i)
+				{
+					str += std::to_string(v[i]);
+					if (i < D - 1) { str += ", "; }
+				} str += ")";
+
+				return str;
+			}
+
+
 			S len() { return sqrt(dot(*this)); }
 
 
@@ -286,6 +299,7 @@ namespace exo
 			S* operator[] (ssize_t row)
 			{
 				if (row < R) { return m[row]; }
+				return nullptr;
 			}
 
 			bool operator== (Mat<S, R, C> M)
