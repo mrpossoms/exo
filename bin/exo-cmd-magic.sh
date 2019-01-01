@@ -21,10 +21,17 @@ if [ $help_shown -gt 0 ] || [ $usage_shown -gt 0 ]; then
 	exit 0
 fi
 
+files=$@
+prefix=
+if [ -z "$files" ]; then
+	files=$(exo rls $EXO_ROOT/inc | grep '.hpp')
+	prefix="-DEXO_MAGIC="
+fi
+
 sum=0
-for file in "$@"; do
+for file in $files; do
 	chk=$(cksum $file | awk '{split($0,a," "); print a[1]}')
 	sum=$(($sum ^ $chk))
 done
 
-echo $sum
+printf "%s%s" $prefix $sum

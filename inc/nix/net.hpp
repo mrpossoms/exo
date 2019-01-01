@@ -353,7 +353,7 @@ private:
     uint16_t _port;
     exo::ds::BoundedList<Client, max_clients> _clients;
     exo::ds::BoundedList<Client, max_clients> _ready_clients;
-    int _listen_sock;
+    int _listen_sock = -1;
     int _timeout_ms = 0;
 
     Result setup()
