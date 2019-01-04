@@ -32,21 +32,11 @@ fi
 
 chksum_files=$(exo rls $basepath | egrep $file_regex)
 
-# generate checksums
-# for msg in $chksum_files; do
-#     ext="${msg##*.}"
-#     echo $(exo magic $file) > $(echo $msg | sed "s|\.$ext|\.magic|")
-# done
-
 # print all the symbol flags
 SYMBOLS=""
 for file in $chksum_files; do
     ext="${file##*.}"
-    #symbol=$(magic_msg_def $(echo $msg | sed "s|\.$ext|\.magic|"))
     magic_name=$(echo $file | sed "s|\.$ext|\.magic|")
     symbol=$(magic_msg_def $magic_name $(exo magic $file))
-    # SYMBOLS="$SYMBOLS $symbol"
     printf "%s " $symbol
 done
-
-# printf  $SYMBOLS

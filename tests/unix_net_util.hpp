@@ -13,7 +13,7 @@ exo::Result get_message(exo::nix::Net::In& inlet, TestMessage& msg)
     if (exo::Result::OUT_OF_DATA == res) { return res; }
     if (exo::Result::NOT_READY == res) { return res; }
 
-    // if (res == exo::Result::OK)
+    if (res == exo::Result::OK)
     {
         // make sure the header is valid
         if (hdr != TestMessage::hdr()) { return exo::Result::INCOMPATIBLE_MESSAGE; }

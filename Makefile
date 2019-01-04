@@ -8,9 +8,7 @@ include $(EXO_ROOT)/vars.mk
 
 FLAGS+=
 INC+=-Iinc/
-#PLATFORMS=$(shell ls src/platforms)
 SRCS=$(shell ls src | grep .cpp)
-#OBJS=$(foreach src,$(SRCS:.cpp=.o),obj/$(TARGET)/$(src))
 TEST_SRCS=$(shell ls tests | grep .cpp)
 TEST_EXES=$(foreach src,$(TEST_SRCS:.cpp=),tests/bin/$(src))
 
@@ -25,13 +23,6 @@ all: $(OBJS)
 
 obj/$(TARGET):
 	mkdir -p obj/$(TARGET)
-
-#obj/%.o: obj/$(TARGET)/%.o
-#	@echo "$(COLOR_GREEN) Built $@ $(COLOR_OFF)"
-
-#obj/$(TARGET)/%.o: src/%.cpp obj/$(TARGET)
-#	$(CMP) $(INC) $(FLAGS) -c $< -o $@
-#	@echo "$(COLOR_GREEN) Built $@ $(COLOR_OFF)"
 
 tests/bin:
 	mkdir tests/bin
