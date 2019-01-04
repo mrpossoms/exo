@@ -23,9 +23,6 @@ TEST_EXES=$(foreach src,$(TEST_SRCS:.cpp=),tests/bin/$(src))
 all: $(OBJS)
 	@echo "$(COLOR_GREEN) Built exo $(COLOR_OFF)"
 
-lib:
-	mkdir -p lib
-
 obj/$(TARGET):
 	mkdir -p obj/$(TARGET)
 
