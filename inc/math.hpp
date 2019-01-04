@@ -78,7 +78,6 @@ namespace exo
 				return out;
 			}
 
-
 			inline Vec<S,D> operator*(S s)
 			{
 				Vec<S,D> out;
@@ -100,6 +99,15 @@ namespace exo
 				return out;
 			}
 
+			inline Vec<S,D> operator/(S s)
+			{
+				Vec<S,D> out;
+				for (auto i = D; i--;)
+				{
+					out.v[i] = this->v[i] / s;
+				}
+				return out;			
+			}
 
 			inline Vec<S,D> operator+=(Vec<S,D>& v) { return *this += std::move(v); }
 			inline Vec<S,D>& operator+=(Vec<S,D>&& v)
