@@ -156,6 +156,7 @@ namespace exo
 
         struct Inlet
         {
+            virtual Result operator>>(Hdr& hdr) = 0;
             virtual Result operator>>(PayloadBuffer&& buf) = 0;
         };
 
