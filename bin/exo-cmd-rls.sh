@@ -12,9 +12,14 @@ function usage {
 }
 
 path=$1/
+include_files=true
 
-invoke help $1
-invoke usage $1
+invoke help "$1"
+invoke usage "$1"
+
+if [ '-d' = $2 ]; then
+    include_files=false
+fi
 
 files=$(ls $path)
 
@@ -24,9 +29,14 @@ for file in $files; do
     file=$path$file
 
     if [ -f $file ]; then
-        echo "$file"
+        if [ $include_files = true ]; then
+            echo "$file"
+        fi
     elif [ -d $file ]; then
-        $0 $file
+        if [ $include_files = false ]; then
+            echo "$file"
+        fi        
+        $0 $file $2
     fi
 
 done

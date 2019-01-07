@@ -11,7 +11,7 @@ fi
 
 export EXO_DIR=$(dirname $(which $0))
 # export EXO_DIR=$(pwd)
-SUB_CMD=$1
+SUB_CMD="$1"
 
 # Perform first time setup if the EXO_ROOT env var is
 # missing from the user's environment
@@ -25,9 +25,9 @@ if [ -z $(printenv | grep EXO_ROOT) ]; then
 
     # if one argument has been provided, try to use it as the user's dot file
     # and the default exo root
-    if [ ! -z $1 ]; then
-        exo_root=$1
-        dot_file=$2
+    if [ ! -z "$1" ]; then
+        exo_root="$1"
+        dot_file="$2"
     else
     # otherwise go through the normal prompts
 	exo_root=$(prompt "Specify your EXO_ROOT [default $DEFAULT_ROOT]: ")
@@ -48,7 +48,9 @@ if [ -z $(printenv | grep EXO_ROOT) ]; then
     echo "export PATH=\"$PATH:$exo_root/bin\"" >> $dot_file
     on_failure "Couldn't append to your PATH variable at '$dot_file'"
     echo $dot_file > /tmp/$USER.dotfile
-    echo $exo_root > /tmp/$UESR.exo_root
+    on_failure "Couldn't write to '/tmp/$USER.dotfile'"
+    echo $exo_root > /tmp/$USER.exo_root
+    on_failure "Couldn't write to '/tmp/$USER.exo_root'"
 
     create_default_configs $dot_file
 

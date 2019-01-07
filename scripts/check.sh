@@ -11,10 +11,6 @@ if [ ! -d /usr/local/include/exo ]; then
 	exit 2
 fi
 
-if [ ! -f /usr/local/lib/libexo.a ]; then
-	exit 3
-fi
-
 if [ ! -d $HOME/.exo ]; then
 	exit 4
 fi

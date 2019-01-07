@@ -1,2 +1,2 @@
 #!/bin/sh
-./tests/bin/math_test
+./tests/bin/math

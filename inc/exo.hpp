@@ -27,6 +27,7 @@ namespace exo
         LISTEN_FAILED,
         CORRUPTION,
         INCOMPATIBLE_MESSAGE,
+        INCOMPATIBLE_EXO_VERSION,
         NO_PERMISSION,
     };
 
@@ -57,35 +58,74 @@ namespace exo
          * @param log_level Verbosity level for this instance.
          * @return Pointer to current Log instance.
          */
-        static Log* instance(Log* logger=nullptr, int log_level=-1);
+        static Log* instance(Log* logger=nullptr, int log_level=-1)
+        {
+            static Log* inst;
+
+            if (inst == nullptr && logger != nullptr)
+            {
+                inst = logger;
+                inst->verbosity_level = log_level;
+            }
+
+            return inst;
+        }
 
         /**
          * @brief Logs a message as a 'good' type.
          * @param level Verbosity level that must be surpassed or equal to for this log to occur.
          * @param msg String to log.
          */
-        static void good(int level, std::string&& msg);
+        static void good(int level, std::string&& msg)
+        {
+            auto logger = Log::instance();
+            if (logger != nullptr && level <= logger->verbosity_level)
+            {
+                logger->log(Log::Type::good, msg);
+            }
+        }
 
         /**
          * @brief Logs a message as a 'info' type.
          * @param level Verbosity level that must be surpassed or equal to for this log to occur.
          * @param msg String to log.
          */
-        static void info(int level, std::string&& msg);
+        static void info(int level, std::string&& msg)
+        {
+            auto logger = Log::instance();
+            if (logger != nullptr && level <= logger->verbosity_level)
+            {
+                logger->log(Log::Type::info, msg);
+            }
+        }
 
         /**
          * @brief Logs a message as a 'warning' type.
          * @param level Verbosity level that must be surpassed or equal to for this log to occur.
          * @param msg String to log.
          */
-        static void warning(int level, std::string&& msg);
+        static void warning(int level, std::string&& msg)
+        {
+            auto logger = Log::instance();
+            if (logger != nullptr && level <= logger->verbosity_level)
+            {
+                logger->log(Log::Type::warning, msg);
+            }
+        }
 
         /**
          * @brief Logs a message as a 'error' type.
          * @param level Verbosity level that must be surpassed or equal to for this log to occur.
          * @param msg String to log.
          */
-        static void error(int level, std::string&& msg);
+        static void error(int level, std::string&& msg)
+        {
+            auto logger = Log::instance();
+            if (logger != nullptr && level <= logger->verbosity_level)
+            {
+                logger->log(Log::Type::error, msg);
+            }
+        }
 
     protected:
         /**
@@ -133,7 +173,12 @@ namespace exo
             /**
              * @brief Magic number for tracking payload compatibility.
              */
-            uint32_t magic;
+            uint32_t msg_magic;
+
+            /**
+             * @brief Magic number for tracking exo version compatibility
+             */
+            uint32_t exo_magic;
 
             /**
              * @brief Size of payload in bytes.
@@ -146,12 +191,32 @@ namespace exo
             uint32_t sanity = 0xDEADBEEF;
 
             Hdr() = default;
-            Hdr(uint32_t type, uint32_t magic, uint32_t pay_len);
+            Hdr(uint32_t type, uint32_t magic, uint32_t pay_len)
+            {
+                this->type = type;
+                this->msg_magic = magic;
+                this->exo_magic = EXO_MAGIC;
+                this->payload_length = pay_len;
+            }
 
-            bool operator!=(Hdr& h);
-            bool operator!=(Hdr&& h);
-            bool operator==(Hdr& h);
-            bool operator==(Hdr&& h);
+            Result is_compatible(exo::msg::Hdr&& h)
+            {
+                if (h.exo_magic != exo_magic) { return Result::INCOMPATIBLE_EXO_VERSION; }
+                if (h.msg_magic != msg_magic) { return Result::INCOMPATIBLE_MESSAGE; }
+                else { return Result::OK; }
+            }
+
+            bool operator!=(exo::msg::Hdr& h) { return *this != std::move(h); }
+            bool operator!=(exo::msg::Hdr&& h)
+            {
+                return h.type != type;
+            }
+
+            bool operator==(exo::msg::Hdr& h) { return *this == std::move(h); }
+            bool operator==(exo::msg::Hdr&& h)
+            {
+                return h.type == type;
+            }
         };
 
         /**
@@ -293,7 +358,7 @@ namespace exo
         /**
          * @param name system wide unique identifier
          */
-        Mod(ID&& name);
+        Mod(ID&& name) { _name = name; }
 
         /**
          * @brief used to check compatibility between this module, and a specific message type.

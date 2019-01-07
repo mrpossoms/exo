@@ -18,7 +18,7 @@ if [ $(basename $(pwd)) != "mod" ]; then
     exit 1
 fi
 
-name=$1
+name="$1"
 
 invoke help $name
 invoke usage $name

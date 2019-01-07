@@ -78,7 +78,6 @@ namespace exo
 				return out;
 			}
 
-
 			inline Vec<S,D> operator*(S s)
 			{
 				Vec<S,D> out;
@@ -100,6 +99,15 @@ namespace exo
 				return out;
 			}
 
+			inline Vec<S,D> operator/(S s)
+			{
+				Vec<S,D> out;
+				for (auto i = D; i--;)
+				{
+					out.v[i] = this->v[i] / s;
+				}
+				return out;			
+			}
 
 			inline Vec<S,D> operator+=(Vec<S,D>& v) { return *this += std::move(v); }
 			inline Vec<S,D>& operator+=(Vec<S,D>&& v)
@@ -179,6 +187,19 @@ namespace exo
 			inline Vec<S, ND> as_dimension()
 			{
 				return Vec<S, ND>(this->v);
+			}
+
+
+			std::string to_string()
+			{
+				std::string str = "(";
+				for (int i = 0; i < D; ++i)
+				{
+					str += std::to_string(v[i]);
+					if (i < D - 1) { str += ", "; }
+				} str += ")";
+
+				return str;
 			}
 
 
@@ -286,6 +307,7 @@ namespace exo
 			S* operator[] (ssize_t row)
 			{
 				if (row < R) { return m[row]; }
+				return nullptr;
 			}
 
 			bool operator== (Mat<S, R, C> M)

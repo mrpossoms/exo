@@ -2,8 +2,8 @@
 source exo-utils.sh
 
 function magic_msg_def {
-    name=$1
-    magic=$(exo get $name)
+    name="$1"
+    magic="$2"
     echo "-D"$(basename $name | sed "s|\.|_|" | awk '{print toupper($0)}')=$magic
 }
 
@@ -19,27 +19,24 @@ function usage
     exit 0
 }
 
-basepath=$1
+basepath="$1"
+file_regex="$2"
 
 invoke help $basepath
 invoke usage $basepath
 
+# if a grep style regex wasn't passed to match files just look for headers
+if [ -z $file_regex ]; then
+    file_regex='\.h'
+fi
 
-msgs=$(exo rls $basepath/msg | grep .h)
-
-# generate checksums
-for msg in $msgs; do
-    ext="${msg##*.}"
-    echo $(exo magic $msg) > $(echo $msg | sed "s|\.$ext|\.magic|")
-done
+chksum_files=$(exo rls $basepath | egrep $file_regex)
 
 # print all the symbol flags
 SYMBOLS=""
-for msg in $msgs; do
-    ext="${msg##*.}"
-    symbol=$(magic_msg_def $(echo $msg | sed "s|\.$ext|\.magic|"))
-    # SYMBOLS="$SYMBOLS $symbol"
+for file in $chksum_files; do
+    ext="${file##*.}"
+    magic_name=$(echo $file | sed "s|\.$ext|\.magic|")
+    symbol=$(magic_msg_def $magic_name $(exo magic $file))
     printf "%s " $symbol
 done
-
-# printf  $SYMBOLS

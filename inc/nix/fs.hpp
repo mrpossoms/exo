@@ -1,14 +1,20 @@
-#include "exo.hpp"
-#include "nix.hpp"
+#pragma once
+
+#include "../exo.hpp"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-using namespace exo::nix;
-using namespace exo;
+namespace exo
+{
+namespace nix
+{
 
-Result fs::exists(std::string path)
+namespace fs
+{
+
+Result exists(std::string path)
 {
 	struct stat statbuf;
 
@@ -18,4 +24,10 @@ Result fs::exists(std::string path)
 		case ENOENT:  return Result::BAD;
 		default:      return Result::ERROR;
 	}
+}
+
+}
+
+}
+
 }
