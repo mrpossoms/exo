@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../exo.hpp"
+
 namespace exo
 {
 
