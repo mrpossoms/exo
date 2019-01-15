@@ -15,6 +15,7 @@ namespace exo
         OK,
         BAD,
         ERROR,
+        OMIT,
         OUT_OF_DATA,
         READ_ERR,
         MORE_TO_READ,
