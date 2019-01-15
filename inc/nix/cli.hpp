@@ -9,7 +9,14 @@ namespace nix
 
 struct CLI
 {
+    CLI() = default;
+
     CLI(unsigned int argc, char* argv[])
+    {
+        set(argc, argv);
+    }
+
+    void set(unsigned int argc, char* argv[])
     {
         _argc = argc;
         _argv = argv;
