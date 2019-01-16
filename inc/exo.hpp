@@ -51,6 +51,8 @@ namespace exo
             good,
         };
 
+        int verbosity_level = 0;
+
         /**
          * @brief Before calling any logging functions, a platform specific
          *        log instance must be assigned with this method. This method can also
@@ -135,7 +137,6 @@ namespace exo
          * @param msg String to log.
          */
         virtual void log(Log::Type type, std::string& msg) = 0;
-        int verbosity_level;
     };
 
     namespace msg
@@ -203,8 +204,16 @@ namespace exo
 
             Result is_compatible(exo::msg::Hdr&& h)
             {
-                if (h.exo_magic != exo_magic) { return Result::INCOMPATIBLE_EXO_VERSION; }
-                if (h.msg_magic != msg_magic) { return Result::INCOMPATIBLE_MESSAGE; }
+                if (h.exo_magic != exo_magic)
+                {
+                    exo::Log::error(1, "Hdr: exo_magic mismatch");
+                    return Result::INCOMPATIBLE_EXO_VERSION;
+                }
+                if (h.msg_magic != msg_magic)
+                {
+                    exo::Log::error(1, "Hdr: msg_magic mismatch");
+                    return Result::INCOMPATIBLE_MESSAGE;
+                }
                 else { return Result::OK; }
             }
 
