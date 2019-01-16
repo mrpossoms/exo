@@ -1,5 +1,5 @@
 #pragma once
-#include "exo.hpp"
+#include "../exo.hpp"
 #include <math.h>
 
 namespace exo
@@ -106,7 +106,7 @@ namespace exo
 				{
 					out.v[i] = this->v[i] / s;
 				}
-				return out;			
+				return out;
 			}
 
 			inline Vec<S,D> operator+=(Vec<S,D>& v) { return *this += std::move(v); }
