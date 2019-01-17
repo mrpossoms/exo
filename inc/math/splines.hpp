@@ -1,31 +1,33 @@
 #pragma once
 
+#include "linalg.hpp"
+
 namespace exo
 {
 namespace math
 {
 
 template<typename S, ssize_t D>
-struct CatmulRom {
+struct CatmullRom {
     /**
      * @brief Represents a curve segment that contains exactly 4 control points.
      *        any other points in the array are ignored.
      */
-    CatmulRom(Vec<S, D>* control_points)
+    CatmullRom(Vec<S, D>* control_points)
     {
-        _control_points = control_points;
+        _p = control_points;
     }
 
+    /**
+     * @brief Compute knots for a centripetal Catmull-Rom spline
+     */
     void compute_knots()
     {
-        for (int i = 1; i < 3; ++i)
+        for (int i = 0; i < 3; ++i)
         {
-            auto& p_i   = _control_points[i];
-            auto& p_i_1 = _control_points[i + 1];
+            auto t = (S)pow((_p[i + 1] - _p[i]).len(), 0.5);
 
-            auto t = (S)pow((p_i_1 - p_i).len(), 0.5);
-
-            _t_knots[i] = _t_knots[i - 1] + t;
+            _t[i + 1] = t + _t[i];
         }
     }
 
@@ -33,27 +35,32 @@ struct CatmulRom {
     {
         Vec<S, D> A[3] = {};
         Vec<S, D> B[2] = {};
-        auto P = _control_points;
+
+        // t is assumed [0, 1], scale to range [_t0, _t3]
+        t *= (_t[2] - _t[1]);
+        t += _t[1];
 
         { // compute A's
             for (int i = 0; i < 3; ++i)
             {
-                auto t_i = _t_knots[i], t_i_1 = _t_knots[i + 1];
-                auto den = t_i_1 - t_i;
-                A[i] = P[i] * ((t_i_1 - t) / den) + P[i + 1] * ((t - t_i) / den);
+                auto den = _t[i + 1] - _t[i];
+                A[i] = _p[i] * ((_t[i + 1] - t) / den) + _p[i + 1] * ((t - _t[i]) / den);
             }
         }
 
         { // compute B's
             for (int i = 0; i < 2; ++i)
             {
-                auto t_i = _t_knots[i], t_i_2 = _t_knots[i + 2];
-                auto den = t_i_2 - t_i;
-                B[i] = A[i] * ((t_i_2 - t) / den) + A[i + 1] * ((t - t_i) / den);
+                auto den = _t[i + 2] - _t[i];
+                B[i] = A[i] * ((_t[i + 2] - t) / den) + A[i + 1] * ((t - _t[i]) / den);
             }
         }
 
 
+        { // compute C
+            auto den = _t[2] - _t[1];
+            return B[0] * ((_t[2] - t) / den) + B[1] * ((t - _t[1]) / den);
+        }
     }
 
     Vec<S, D> slope(S t)
@@ -63,8 +70,8 @@ struct CatmulRom {
 
 private:
 
-    Vec<S, D>* _control_points = nullptr;
-    S _t_knots[4] = {};
+    Vec<S, D>* _p = nullptr;
+    S _t[4] = {};
 };
 
 }
