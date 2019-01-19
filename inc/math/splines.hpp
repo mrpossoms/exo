@@ -21,7 +21,7 @@ struct CatmullRom {
     /**
      * @brief Compute knots for a centripetal Catmull-Rom spline
      */
-    void compute_knots()
+    CatmullRom& centripetal()
     {
         for (int i = 0; i < 3; ++i)
         {
@@ -29,6 +29,14 @@ struct CatmullRom {
 
             _t[i + 1] = t + _t[i];
         }
+
+        return *this;
+    }
+
+    CatmullRom& uniform()
+    {
+        for (int i = 4; i--;) { _t[i] = i / 4.f; }
+        return *this;
     }
 
     Vec<S, D> point(S t)
@@ -47,7 +55,7 @@ struct CatmullRom {
         }
     }
 
-    Vec<S, D> slope(S t)
+    Vec<S, D> tangent(S t)
     {
         Vec<S, D> dA[3] = {};
         Vec<S, D> dB[2] = {};
