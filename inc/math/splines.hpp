@@ -19,7 +19,8 @@ struct CatmullRom {
     }
 
     /**
-     * @brief Compute knots for a centripetal Catmull-Rom spline
+     * @brief Compute centripetal time knots
+     * @returns CatmullRom reference
      */
     CatmullRom& centripetal()
     {
@@ -33,12 +34,21 @@ struct CatmullRom {
         return *this;
     }
 
+    /**
+     * @brief Compute uniform time knots
+     * @returns CatmullRom reference
+     */
     CatmullRom& uniform()
     {
         for (int i = 4; i--;) { _t[i] = i / 4.f; }
         return *this;
     }
 
+    /**
+     * @brief Computes a point on the spline
+     * @parameter t interpolation between control points p1 and p2
+     * @returns point on curve at time t
+     */
     Vec<S, D> point(S t)
     {
         // t is assumed [0, 1], scale to range [_t0, _t3]
@@ -55,6 +65,11 @@ struct CatmullRom {
         }
     }
 
+    /**
+     * @brief Computes the tangent of the spline
+     * @parameter t interpolation between control points p1 and p2
+     * @returns tangent of curve at time t
+     */
     Vec<S, D> tangent(S t)
     {
         Vec<S, D> dA[3] = {};
