@@ -9,13 +9,17 @@ namespace math
 
 template<typename S, ssize_t D>
 struct CatmullRom {
+    Vec<S, D>* P = nullptr;
+
+    CatmullRom() = default;
+
     /**
      * @brief Represents a curve segment that contains exactly 4 control points.
      *        any other points in the array are ignored.
      */
     CatmullRom(Vec<S, D>* control_points)
     {
-        _p = control_points;
+        P = control_points;
     }
 
     /**
@@ -26,7 +30,7 @@ struct CatmullRom {
     {
         for (int i = 0; i < 3; ++i)
         {
-            auto t = (S)pow((_p[i + 1] - _p[i]).len(), 0.5);
+            auto t = (S)pow((P[i + 1] - P[i]).len(), 0.5);
 
             _t[i + 1] = t + _t[i];
         }
@@ -85,7 +89,7 @@ struct CatmullRom {
         { // compute dA's
             for (int i = 0; i < 3; ++i)
             {
-                dA[i] = (_p[i + 1] - _p[0]) / (_t[i + 1] - _t[i]);
+                dA[i] = (P[i + 1] - P[0]) / (_t[i + 1] - _t[i]);
             }
         }
 
@@ -104,8 +108,6 @@ struct CatmullRom {
     }
 
 private:
-
-    Vec<S, D>* _p = nullptr;
     S _t[4] = {};
     Vec<S, D> A[3] = {};
     Vec<S, D> B[2] = {};
@@ -115,7 +117,7 @@ private:
         for (int i = 0; i < 3; ++i)
         {
             auto den = _t[i + 1] - _t[i];
-            A[i] = _p[i] * ((_t[i + 1] - t) / den) + _p[i + 1] * ((t - _t[i]) / den);
+            A[i] = P[i] * ((_t[i + 1] - t) / den) + P[i + 1] * ((t - _t[i]) / den);
         }
     }
 
