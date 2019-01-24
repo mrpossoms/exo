@@ -189,6 +189,17 @@ namespace exo
 				return Vec<S, ND>(this->v);
 			}
 
+			template<typename T>
+			inline Vec<T, D> cast()
+			{
+				Vec<T, D> v;
+				for (int i = 0; i < D; ++i)
+				{
+					v[i] = (T)this->v[i];
+				}
+
+				return v;
+			}
 
 			std::string to_string()
 			{

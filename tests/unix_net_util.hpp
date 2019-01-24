@@ -24,10 +24,9 @@ exo::Result get_message(exo::nix::Net::In& inlet, TestMessage& msg)
         {
             payload.get<TestMessage>(msg);
         }
-
-        return res;
     }
 
+    return res;
 }
 
 exo::Result send_message(exo::nix::Net::Out& outlet, TestMessage& msg)
