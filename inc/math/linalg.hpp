@@ -216,6 +216,7 @@ namespace exo
 
 			S len() { return sqrt(dot(*this)); }
 
+			Vec<S,D> norm() { return *this / len(); }
 
 			S dot(Vec<S,D>& v)
 			{
