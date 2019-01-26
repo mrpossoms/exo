@@ -160,6 +160,7 @@ namespace exo
         {
             virtual Result operator>>(Hdr& hdr) = 0;
             virtual Result operator>>(PayloadBuffer&& buf) = 0;
+            virtual Result flush(size_t bytes) = 0;
         };
 
         /**
@@ -385,6 +386,14 @@ namespace exo
          * @return OK on success.
          */
         virtual Result msg_received(msg::Hdr& h, msg::Inlet& inlet) = 0;
+
+        /**
+         * @brief this method is optional, but should be called when a no
+         *        messages have been received for more than the timeout period
+         *        of an inlet, or some other timeout event.
+         * @return OK on proper handling
+         */
+        virtual Result timedout() = 0;
 
         /**
          * @brief called when this module is first initialized.

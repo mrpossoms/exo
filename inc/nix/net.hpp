@@ -43,6 +43,10 @@ static inline void enable_sigpipe(struct sigaction old_actn)
 //
 struct Out : public exo::msg::Outlet
 {
+    Out() = default;
+
+    Out(Out& i) = default;
+
     Out(const char* dst_addr, uint16_t port)
     {
         _addr = dst_addr;
@@ -247,6 +251,25 @@ struct In : public exo::msg::Inlet
             return exo::Result::OK;
         }
 
+        exo::Result flush(size_t bytes)
+        {
+            uint64_t junk;
+            int junk_read = 0;
+
+            while (bytes > 0)
+            {
+                auto to_read = bytes > sizeof(junk) ? sizeof(junk) : bytes;
+                auto bytes_read = read(_sock, &junk, sizeof(junk));
+
+                if (bytes_read <= 0)
+                {
+                    return Result::READ_ERR;
+                }
+            }
+
+            return Result::OK;
+        }
+
         bool operator==(Client& c) { return c._sock == _sock; }
 
     private:
@@ -254,6 +277,10 @@ struct In : public exo::msg::Inlet
         exo::msg::Hdr _hdr = {};
         bool _got_payload  = false;
     };
+
+    In() = default;
+
+    In(In& i) = default;
 
     In(uint16_t port)
     {
@@ -324,22 +351,10 @@ struct In : public exo::msg::Inlet
 
     exo::Result flush(size_t bytes)
     {
-        uint64_t junk;
-        int junk_read = 0;
-
         Client client;
         _ready_clients.pop_back(client);
 
-        while (bytes > 0)
-        {
-            auto to_read = bytes > sizeof(junk) ? sizeof(junk) : bytes;
-            auto bytes_read = read(client.sock(), &junk, sizeof(junk));
-
-            if (bytes_read <= 0)
-            {
-                return Result::READ_ERR;
-            }
-        }
+        client.flush(bytes);
 
         return Result::OK;
     }
