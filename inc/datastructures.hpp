@@ -19,6 +19,15 @@ namespace exo
                 _size = 0;
             }
 
+            BoundedList(std::initializer_list<T> items)
+            {
+                _size = 0;
+                for (auto item : items)
+                {
+                    push_back(item);
+                }
+            }
+
             /**
              * @brief Append element to the end of the list.
              * @param e Element to add to the BoundedList

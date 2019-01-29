@@ -45,7 +45,12 @@ struct Out : public exo::msg::Outlet
 {
     Out() = default;
 
-    Out(Out& i) = default;
+    Out(const Out& i)
+    {
+        _addr = i._addr;
+        _port = i._port;
+        _socket = -1;
+    }
 
     Out(const char* dst_addr, uint16_t port)
     {
