@@ -32,6 +32,31 @@ namespace exo
         NO_PERMISSION,
     };
 
+    static std::string result_to_string(Result& res)
+    {
+        switch(res)
+        {
+            case Result::OK: return "OK";
+            case Result::BAD: return "BAD";
+            case Result::ERROR: return "ERROR";
+            case Result::OMIT: return "OMIT";
+            case Result::OUT_OF_DATA: return "OUT_OF_DATA";
+            case Result::READ_ERR: return "READ_ERR";
+            case Result::MORE_TO_READ: return "MORE_TO_READ";
+            case Result::NOT_READY: return "NOT_READY";
+            case Result::WRITE_ERR: return "WRITE_ERR";
+            case Result::CONNECTION_FAILURE: return "CONNECTION_FAILURE";
+            case Result::TIMEOUT: return "TIMEOUT";
+            case Result::RESOURCE_CREATE_FAILED: return "RESOURCE_CREATE_FAILED";
+            case Result::BIND_FAILED: return "BIND_FAILED";
+            case Result::LISTEN_FAILED: return "LISTEN_FAILED";
+            case Result::CORRUPTION: return "CORRUPTION";
+            case Result::INCOMPATIBLE_MESSAGE: return "INCOMPATIBLE_MESSAGE";
+            case Result::INCOMPATIBLE_EXO_VERSION: return "INCOMPATIBLE_EXO_VERSION";
+            case Result::NO_PERMISSION: return "NO_PERMISSION";
+        }
+    }
+
     // const Result OK = 0;
     // const Result BAD = 1;
 

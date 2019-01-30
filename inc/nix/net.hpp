@@ -340,6 +340,8 @@ struct In : public exo::msg::Inlet
         Client* client;
         auto res = get_ready_clients(&client);
 
+        exo::Log::info(7, exo::result_to_string(res));
+
         switch (res)
         {
             case Result::MORE_TO_READ:
@@ -459,6 +461,7 @@ private:
             // return the next ready client
             if (_ready_clients.size() > 0)
             {
+                exo::Log::info(3, "Ready clients: " + std::to_string(_ready_clients.size()));
                 *ready_client = &_ready_clients.peek_back();
                 return Result::MORE_TO_READ;
             }
