@@ -89,7 +89,7 @@ struct Out : public exo::msg::Outlet
             if (!connect()) { return Result::CONNECTION_FAILURE; }
         }
 
-        exo::Log::info(4, "Writing to: " + std::to_string(_socket));
+        exo::Log::info(4, "Writing to: " + std::to_string(_port));
 
         auto old_act = disable_sigpipe();
         auto to_write = pay.len;
