@@ -275,6 +275,43 @@ struct In : public exo::msg::Inlet
             return Result::OK;
         }
 
+        exo::Result forward(msg::Hdr& hdr, exo::msg::Outlet& outlet)
+        {
+
+            { // forward the header
+                exo::msg::Payload<sizeof(msg::Hdr)> hdr_payload;
+                auto hdr_buf = hdr_payload.buffer();
+                memcpy(hdr_buf.buf, &hdr, hdr_buf.len);
+
+                auto res = outlet << hdr_payload.buffer();
+                if (res != exo::Result::OK) { return res; }
+            }
+
+            // write the whole payload
+            size_t bytes = hdr.payload_length;
+            while (bytes > 0)
+            {
+                exo::msg::Payload<4096> block;
+
+                // read each section of the payload by block sized chunks
+                auto pay = block.buffer();
+                auto res = read(_sock, pay.buf, pay.len);
+
+                if (res < 0)
+                {
+                    return Result::READ_ERR;
+                }
+                else
+                {
+                    bytes -= res;
+                    auto res = outlet << block.buffer();
+                    if (res != exo::Result::OK) { return res; }
+                }
+            }
+
+            return Result::OK;
+        }
+
         bool operator==(Client& c) { return c._sock == _sock; }
 
     private:
@@ -362,6 +399,16 @@ struct In : public exo::msg::Inlet
         _ready_clients.pop_back(client);
 
         client.flush(bytes);
+
+        return Result::OK;
+    }
+
+    exo::Result forward(msg::Hdr& hdr, exo::msg::Outlet& outlet)
+    {
+        Client client;
+        _ready_clients.pop_back(client);
+
+        client.forward(hdr, outlet);
 
         return Result::OK;
     }

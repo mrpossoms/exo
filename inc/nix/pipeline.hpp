@@ -63,6 +63,43 @@ struct Pipeline
 
 		    return Result::BAD;
         }
+
+        exo::Result forward(msg::Hdr& hdr, exo::msg::Outlet& outlet)
+        {
+
+            { // forward the header
+                exo::msg::Payload<sizeof(msg::Hdr)> hdr_payload;
+                auto hdr_buf = hdr_payload.buffer();
+                memcpy(hdr_buf.buf, &hdr, hdr_buf.len);
+
+                auto res = outlet << hdr_payload.buffer();
+                if (res != exo::Result::OK) { return res; }
+            }
+
+            // write the whole payload
+            size_t bytes = hdr.payload_length;
+            while (bytes > 0)
+            {
+                exo::msg::Payload<4096> block;
+
+                // read each section of the payload by block sized chunks
+                auto pay = block.buffer();
+                auto res = read(STDIN_FILENO, pay.buf, pay.len);
+
+                if (res < 0)
+                {
+                    return Result::READ_ERR;
+                }
+                else
+                {
+                    bytes -= res;
+                    auto res = outlet << block.buffer();
+                    if (res != exo::Result::OK) { return res; }
+                }
+            }
+
+            return Result::OK;
+        }
     };
 };
 
