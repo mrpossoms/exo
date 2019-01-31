@@ -186,7 +186,7 @@ namespace exo
             virtual Result operator>>(Hdr& hdr) = 0;
             virtual Result operator>>(PayloadBuffer&& buf) = 0;
             virtual Result flush(size_t bytes) = 0;
-            virtual Result forward(Hdr& hdr, Outlet& outlet) = 0;
+            virtual Result forward(Hdr& hdr, Outlet* outlets[]) = 0;
         };
 
         /**

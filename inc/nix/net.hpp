@@ -275,7 +275,7 @@ struct In : public exo::msg::Inlet
             return Result::OK;
         }
 
-        exo::Result forward(msg::Hdr& hdr, exo::msg::Outlet& outlet)
+        exo::Result forward(msg::Hdr& hdr, exo::msg::Outlet* outlets[])
         {
 
             { // forward the header
@@ -283,8 +283,11 @@ struct In : public exo::msg::Inlet
                 auto hdr_buf = hdr_payload.buffer();
                 memcpy(hdr_buf.buf, &hdr, hdr_buf.len);
 
-                auto res = outlet << hdr_payload.buffer();
-                if (res != exo::Result::OK) { return res; }
+                for (int i = 0; outlets[i] != nullptr; ++i)
+                {
+                    auto res = (*outlets[i]) << hdr_payload.buffer();
+                    if (res != exo::Result::OK) { return res; }
+                }
             }
 
             // write the whole payload
@@ -304,8 +307,12 @@ struct In : public exo::msg::Inlet
                 else
                 {
                     bytes -= res;
-                    auto res = outlet << block.buffer();
-                    if (res != exo::Result::OK) { return res; }
+
+                    for (int i = 0; outlets[i] != nullptr; ++i)
+                    {
+                        auto res = (*outlets[i]) << block.buffer();
+                        if (res != exo::Result::OK) { return res; }
+                    }
                 }
             }
 
@@ -403,12 +410,12 @@ struct In : public exo::msg::Inlet
         return Result::OK;
     }
 
-    exo::Result forward(msg::Hdr& hdr, exo::msg::Outlet& outlet)
+    exo::Result forward(msg::Hdr& hdr, exo::msg::Outlet* outlets[])
     {
         Client client;
         _ready_clients.pop_back(client);
 
-        client.forward(hdr, outlet);
+        client.forward(hdr, outlets);
 
         return Result::OK;
     }
