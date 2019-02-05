@@ -1,6 +1,7 @@
 #pragma once
 
 #include <libgen.h>
+#include <limits.h>
 
 #include <string>
 #include <iostream>
