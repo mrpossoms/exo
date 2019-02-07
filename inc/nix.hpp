@@ -17,6 +17,7 @@
 #include "nix/pipeline.hpp"
 #include "nix/net.hpp"
 #include "nix/fs.hpp"
+#include "nix/config.hpp"
 
 namespace exo
 {

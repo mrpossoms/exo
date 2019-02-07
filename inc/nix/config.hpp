@@ -2,13 +2,14 @@
 
 #include <libgen.h>
 #include <limits.h>
+#include <pwd.h>
 
 #include <string>
 #include <iostream>
 #include <fstream>
 #include "../exo.hpp"
 
-static void r_mkdir(const char *dir)
+static exo::Result r_mkdir(const char *dir)
 {
     char tmp[256];
     char *p = NULL;
@@ -18,28 +19,38 @@ static void r_mkdir(const char *dir)
     snprintf(tmp, sizeof(tmp), "%s", dir);
     len = strlen(tmp);
 
-    if(tmp[len - 1] == '/') tmp[len - 1] = 0;
+    if (tmp[len - 1] == '/') tmp[len - 1] = 0;
 
-    for(p = tmp + 1; *p; p++)
+    for (p = tmp + 1; *p; p++)
     {
-        if(*p == '/')
+        if (*p == '/')
         {
             *p = 0;
-            if (mkdir(tmp, mode) && errno != 17)
+            if (mkdir(tmp, mode) && errno != EEXIST)
             {
                 exo::Log::error(0, "Config: Failed to create " + std::string(tmp) + " errno (" + std::to_string(errno) + ")");
+		goto escape;
             }
-            // chmod(tmp, mode)
-
 
             *p = '/';
         }
     }
 
-    if (mkdir(tmp, mode))
+    if (mkdir(tmp, mode) && errno != EEXIST)
     {
         exo::Log::error(0, "Config: Failed to create " + std::string(tmp) + " errno (" + std::to_string(errno) + ")");
+	goto escape;
     }
+
+    return exo::Result::OK;
+
+escape:
+	switch (errno)
+	{
+		case EPERM: return exo::Result::NO_PERMISSION;
+		case ENOENT: return exo::Result::BAD;
+		default: return exo::Result::ERROR;
+	}
 }
 
 namespace exo
@@ -57,9 +68,17 @@ struct Config
 {
     std::string base_path;
 
-    Config(std::string&& path)
+    Config(std::string& path)
     {
         base_path = path;
+
+	if (r_mkdir(path.c_str()) == exo::Result::NO_PERMISSION)
+	{
+		struct passwd* pw = getpwuid(getuid());
+		const char* homedir = pw->pw_dir;
+		base_path = std::string(homedir) + path;
+		exo::Log::warning(0, "Path not accessible, using " + base_path);
+	}
     }
 
     struct Value
