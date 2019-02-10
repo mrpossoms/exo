@@ -68,17 +68,30 @@ struct Config
 {
     std::string base_path;
 
+    Config(std::string&& path)
+    {
+        base_path = path;
+
+        if (r_mkdir(path.c_str()) == exo::Result::NO_PERMISSION)
+        {
+            struct passwd* pw = getpwuid(getuid());
+            const char* homedir = pw->pw_dir;
+            base_path = std::string(homedir) + path;
+            exo::Log::warning(0, "Path not accessible, using " + base_path);
+        }
+    }
+
     Config(std::string& path)
     {
         base_path = path;
 
-	if (r_mkdir(path.c_str()) == exo::Result::NO_PERMISSION)
-	{
-		struct passwd* pw = getpwuid(getuid());
-		const char* homedir = pw->pw_dir;
-		base_path = std::string(homedir) + path;
-		exo::Log::warning(0, "Path not accessible, using " + base_path);
-	}
+        if (r_mkdir(path.c_str()) == exo::Result::NO_PERMISSION)
+        {
+            struct passwd* pw = getpwuid(getuid());
+            const char* homedir = pw->pw_dir;
+            base_path = std::string(homedir) + path;
+            exo::Log::warning(0, "Path not accessible, using " + base_path);
+        }
     }
 
     struct Value
