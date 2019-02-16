@@ -53,6 +53,7 @@ template <class TYPE>
 struct Kilometer : public Meter<TYPE, 1000, 1> { Kilometer(TYPE v) : Meter<TYPE, 1000, 1>(v) { } };
 
 using M = Meter<float>;
+using Mm = Millimeter<float>;
 using Cm = Centimeter<float>;
 using Dm = Decimeter<float>;
 using Km = Kilometer<float>;
