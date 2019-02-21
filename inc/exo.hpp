@@ -32,6 +32,7 @@ namespace exo
         NO_PERMISSION,
     };
 
+
     static std::string result_to_string(Result& res)
     {
         switch(res)
@@ -57,8 +58,6 @@ namespace exo
         }
     }
 
-    // const Result OK = 0;
-    // const Result BAD = 1;
 
     struct Context;
     struct Mod;
@@ -163,6 +162,7 @@ namespace exo
          */
         virtual void log(Log::Type type, std::string& msg) = 0;
     };
+
 
     namespace msg
     {
@@ -387,6 +387,45 @@ namespace exo
             // virtual Hdr hdr() = 0;
         };
     }
+
+
+    /**
+     * @brief Interface for a discrete work unit. A task implements the actual
+     *        process for performing a specific action, and incorporates an
+     *        alternate execution path to handle failures.
+     */
+    struct Task
+    {
+        /**
+         * @brief Attempt to perform the user defined behavior. Otherwise,
+         *        handle the failure.
+         * @return exo::Result::OK, otherwise, the returned result from the failed
+         *         perform() method.
+         */
+        exo::Result run()
+        {
+            auto res = perform();
+            if (exo::Result::OK != res) { on_failure(); }
+
+            return res;
+        }
+
+    protected:
+        /**
+         * @brief Execute user defined behavior of the implementing task
+         * @returns exo::Result::OK for success, all others are seen as failure
+         */
+        virtual exo::Result perform() = 0;
+
+        /**
+         * @brief Execute user defined behavior when performing the task fails.
+         *        This method should cleanup resources, or ensure the system
+         *        is put into a safe state. By default, it does nothing.
+         * @returns exo::Result::OK for success, all others are seen as failure
+         */
+        virtual exo::Result on_failure() { return exo::Result::OK; }
+    };
+
 
     /**
      * @brief Interface for exo modules.
