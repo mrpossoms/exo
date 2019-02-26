@@ -14,7 +14,7 @@ namespace nix
 namespace fs
 {
 
-Result exists(std::string path)
+static Result exists(std::string path)
 {
 	struct stat statbuf;
 
