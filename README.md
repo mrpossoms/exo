@@ -7,8 +7,9 @@ exo is a loose framework of bash scripts, and C++ source that help to create mod
 * cross-compilation
 * simulation environment integration
 * testing
-* intra module communication
+* inter module communication
 * platform specific common actions
+* Saftey with various units of measure
 
 ## Concepts
 As an author of an exo project, there are two primary components that you will author. Modules, and messages. Modules can be thought of as self contained programs or code that perform only a few tightly related actions. Messages on the other hand are the means by which modules communicate with each-other. 
