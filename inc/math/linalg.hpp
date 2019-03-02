@@ -236,6 +236,30 @@ namespace exo
 				return diff.dot(diff) <= threshold;
 			}
 
+			Vec<S,D>& take_min(Vec<S,D>& v) { return this->take_min(std::move(v)); }
+			Vec<S,D>& take_min(Vec<S,D>&& v)
+			{
+				for (int i = 0; i < D; ++i)
+				{
+					auto& cur = this->v[i];
+					cur = v[i] < cur ? v[i] : cur;
+				}
+
+				return *this;
+			}
+
+			Vec<S,D>& take_max(Vec<S,D>& v) { return this->take_max(std::move(v)); }
+			Vec<S,D>& take_max(Vec<S,D>&& v)
+			{
+				for (int i = 0; i < D; ++i)
+				{
+					auto& cur = this->v[i];
+					cur = v[i] > cur ? v[i] : cur;
+				}
+
+				return *this;
+			}
+
 			static S cross(Vec<S,2>& a, Vec<S,2>& b)
 			{
 				return a[0]*b[1] - a[1]*b[0];
@@ -355,6 +379,16 @@ namespace exo
 					{     0, 2/tmb,      0, -tpb/tmb },
 					{     0,     0, -2/fmn, -fpn/fmn },
 					{     0,     0,      0,        1 }
+				};
+			}
+
+			static Mat<S, 4, 4> translate(Vec<S, 3> v)
+			{
+				return {
+					{ 1, 0, 0, 0 },
+					{ 0, 1, 0, 0 },
+					{ 0, 0, 1, 0 },
+					{ v[0], v[1], v[2],    1 }
 				};
 			}
 
