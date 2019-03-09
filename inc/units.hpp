@@ -11,6 +11,7 @@ struct Unit
 {
 	TYPE value;
 
+	Unit() { value = 0; }
 	Unit(TYPE v) { value = v; }
 	inline operator TYPE() const  { return value; }
 	
@@ -18,6 +19,13 @@ struct Unit
 	inline Unit operator/(Unit u) { return Unit(value / u.value); }
 	inline Unit operator+(Unit u) { return Unit(value + u.value); }
 	inline Unit operator-(Unit u) { return Unit(value - u.value); }
+
+	inline Unit& operator*=(Unit u) { value *= u.value; return *this; }
+	inline Unit& operator/=(Unit u) { value /= u.value; return *this; }
+	inline Unit& operator+=(Unit u) { value += u.value; return *this; }
+	inline Unit& operator-=(Unit u) { value -= u.value; return *this; }
+
+	inline Unit& operator=(Unit u) { value = u.value; return *this; }
 
 	static inline int numerator()   { return NUM; }
 	static inline int denominator() { return DEN; }
@@ -37,7 +45,12 @@ struct Unit
 template <class TYPE, unsigned int NUM=1, unsigned int DEN=1>
 struct Meter : public Unit<TYPE, NUM, DEN>
 {
+	Meter() = default;
 	Meter(TYPE v) : Unit<TYPE, NUM, DEN>(v) { }
+	inline Meter operator*(Meter u) { return { *this * u }; }
+	inline Meter operator/(Meter u) { return { *this / u }; }
+	inline Meter operator+(Meter u) { return { *this + u }; }
+	inline Meter operator-(Meter u) { return { *this - u }; }
 };
 
 template <class TYPE>
@@ -63,6 +76,14 @@ using Mm = Millimeter<float>;
 using Cm = Centimeter<float>;
 using Dm = Decimeter<float>;
 using Km = Kilometer<float>;
+
+
+template <class TYPE, unsigned int NUM=1, unsigned int DEN=1>
+struct Degree : public Unit<TYPE, NUM, DEN>
+{
+	Degree() = default;
+	Degree(TYPE v) : Unit<TYPE, NUM, DEN>(v) { }
+};
 
 }
 
