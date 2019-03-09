@@ -47,10 +47,10 @@ struct Meter : public Unit<TYPE, NUM, DEN>
 {
 	Meter() = default;
 	Meter(TYPE v) : Unit<TYPE, NUM, DEN>(v) { }
-	inline Meter operator*(Meter u) { return { *this * u }; }
-	inline Meter operator/(Meter u) { return { *this / u }; }
-	inline Meter operator+(Meter u) { return { *this + u }; }
-	inline Meter operator-(Meter u) { return { *this - u }; }
+	inline Meter operator*(Meter u) { return Meter(this->value * u.value); }
+	inline Meter operator/(Meter u) { return Meter(this->value / u.value); }
+	inline Meter operator+(Meter u) { return Meter(this->value + u.value); }
+	inline Meter operator-(Meter u) { return Meter(this->value - u.value); }
 };
 
 template <class TYPE>

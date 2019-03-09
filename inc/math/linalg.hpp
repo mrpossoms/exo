@@ -45,8 +45,8 @@ namespace exo
 			}
 
 
-			inline Vec<S,D> operator+(Vec<S,D>& v) { return *this + std::move(v); }
-			inline Vec<S,D> operator+(Vec<S,D>&& v)
+			inline Vec<S,D> operator+(const Vec<S,D>& v) { return *this + std::move(v); }
+			inline Vec<S,D> operator+(const Vec<S,D>&& v)
 			{
 				Vec<S,D> out;
 				for (auto i = D; i--;)
@@ -56,8 +56,8 @@ namespace exo
 				return out;
 			}
 
-			inline Vec<S,D> operator-(Vec<S,D>& v) { return *this - std::move(v); }
-			inline Vec<S,D> operator-(Vec<S,D>&& v)
+			inline Vec<S,D> operator-(const Vec<S,D>& v) { return *this - std::move(v); }
+			inline Vec<S,D> operator-(const Vec<S,D>&& v)
 			{
 				Vec<S,D> out;
 				for (auto i = D; i--;)
@@ -67,8 +67,8 @@ namespace exo
 				return out;
 			}
 
-			inline Vec<S,D> operator*(Vec<S,D>& v) { return *this * std::move(v); }
-			inline Vec<S,D> operator*(Vec<S,D>&& v)
+			inline Vec<S,D> operator*(const Vec<S,D>& v) { return *this * std::move(v); }
+			inline Vec<S,D> operator*(const Vec<S,D>&& v)
 			{
 				Vec<S,D> out;
 				for (auto i = D; i--;)
@@ -78,7 +78,7 @@ namespace exo
 				return out;
 			}
 
-			inline Vec<S,D> operator*(S s)
+			inline Vec<S,D> operator*(const S s)
 			{
 				Vec<S,D> out;
 				for (auto i = D; i--;)
@@ -88,8 +88,8 @@ namespace exo
 				return out;
 			}
 
-			inline Vec<S,D> operator/(Vec<S,D>& v) { return *this / std::move(v); }
-			inline Vec<S,D>  operator/(Vec<S,D>&& v)
+			inline Vec<S,D> operator/(const Vec<S,D>& v) { return *this / std::move(v); }
+			inline Vec<S,D>  operator/(const Vec<S,D>&& v)
 			{
 				Vec<S,D> out;
 				for (auto i = D; i--;)
@@ -99,7 +99,7 @@ namespace exo
 				return out;
 			}
 
-			inline Vec<S,D> operator/(S s)
+			inline Vec<S,D> operator/(const S s)
 			{
 				Vec<S,D> out;
 				for (auto i = D; i--;)
@@ -109,8 +109,8 @@ namespace exo
 				return out;
 			}
 
-			inline Vec<S,D> operator+=(Vec<S,D>& v) { return *this += std::move(v); }
-			inline Vec<S,D>& operator+=(Vec<S,D>&& v)
+			inline Vec<S,D> operator+=(const Vec<S,D>& v) { return *this += std::move(v); }
+			inline Vec<S,D>& operator+=(const Vec<S,D>&& v)
 			{
 				for (auto i = D; i--;)
 				{
@@ -119,8 +119,8 @@ namespace exo
 				return *this;
 			}
 
-			inline Vec<S,D> operator-=(Vec<S,D>& v) { return *this -= std::move(v); }
-			inline Vec<S,D>& operator-=(Vec<S,D>&& v)
+			inline Vec<S,D> operator-=(const Vec<S,D>& v) { return *this -= std::move(v); }
+			inline Vec<S,D>& operator-=(const Vec<S,D>&& v)
 			{
 				for (auto i = D; i--;)
 				{
@@ -129,8 +129,8 @@ namespace exo
 				return *this;
 			}
 
-			inline Vec<S,D> operator*=(Vec<S,D>& v) { return *this *= std::move(v); }
-			inline Vec<S,D>& operator*=(Vec<S,D>&& v)
+			inline Vec<S,D> operator*=(const Vec<S,D>& v) { return *this *= std::move(v); }
+			inline Vec<S,D>& operator*=(const Vec<S,D>&& v)
 			{
 				for (auto i = D; i--;)
 				{
@@ -140,7 +140,7 @@ namespace exo
 			}
 
 
-			inline Vec<S,D>& operator*=(S s)
+			inline Vec<S,D>& operator*=(const S s)
 			{
 				for (auto i = D; i--;)
 				{
@@ -150,8 +150,8 @@ namespace exo
 			}
 
 
-			inline Vec<S,D> operator/=(Vec<S,D>& v) { return *this /= std::move(v); }
-			inline Vec<S,D>& operator/=(Vec<S,D>&& v)
+			inline Vec<S,D> operator/=(const Vec<S,D>& v) { return *this /= std::move(v); }
+			inline Vec<S,D>& operator/=(const Vec<S,D>&& v)
 			{
 				for (auto i = D; i--;)
 				{
@@ -160,7 +160,7 @@ namespace exo
 				return *this;
 			}
 
-			inline Vec<S,D>& operator/=(S s)
+			inline Vec<S,D>& operator/=(const S s)
 			{
 				for (auto i = D; i--;)
 				{
@@ -169,11 +169,11 @@ namespace exo
 				return *this;
 			}
 
-			inline bool operator!=(Vec<S,D>& v) { return !(*this == std::move(v)); }
-			inline bool operator!=(Vec<S,D>&& v) { return !(*this == v); }
+			inline bool operator!=(const Vec<S,D>& v) { return !(*this == std::move(v)); }
+			inline bool operator!=(const Vec<S,D>&& v) { return !(*this == v); }
 
-			inline bool operator==(Vec<S,D>& v) { return *this == std::move(v); }
-			inline bool operator==(Vec<S,D>&& v)
+			inline bool operator==(const Vec<S,D>& v) { return *this == std::move(v); }
+			inline bool operator==(const Vec<S,D>&& v)
 			{
 				for (auto i = D; i--;)
 				{
@@ -228,16 +228,16 @@ namespace exo
 				return sum;
 			}
 
-			bool is_near(Vec<S,D>& v, S threshold) { return this->is_near(std::move(v)); }
-			bool is_near(Vec<S,D>&& v, S threshold)
+			bool is_near(const Vec<S,D>& v, S threshold) { return this->is_near(std::move(v)); }
+			bool is_near(const Vec<S,D>&& v, S threshold)
 			{
 				auto diff = *this - v;
 
 				return diff.dot(diff) <= threshold;
 			}
 
-			Vec<S,D>& take_min(Vec<S,D>& v) { return this->take_min(std::move(v)); }
-			Vec<S,D>& take_min(Vec<S,D>&& v)
+			Vec<S,D>& take_min(const Vec<S,D>& v) { return this->take_min(std::move(v)); }
+			Vec<S,D>& take_min(const Vec<S,D>&& v)
 			{
 				for (int i = 0; i < D; ++i)
 				{
@@ -248,8 +248,8 @@ namespace exo
 				return *this;
 			}
 
-			Vec<S,D>& take_max(Vec<S,D>& v) { return this->take_max(std::move(v)); }
-			Vec<S,D>& take_max(Vec<S,D>&& v)
+			Vec<S,D>& take_max(const Vec<S,D>& v) { return this->take_max(std::move(v)); }
+			Vec<S,D>& take_max(const Vec<S,D>&& v)
 			{
 				for (int i = 0; i < D; ++i)
 				{
