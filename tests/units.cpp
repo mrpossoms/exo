@@ -7,8 +7,8 @@ using namespace exo::units;
 
 #include "test.h"
 {
-	M one_meter  = {1};
-	M two_meters = {2};
+	M one_meter  = 1.0_m;
+	M two_meters = 2.0_m;
 
 	assert(NEAR(one_meter.in<Km>(), 0.001));
 	assert(NEAR(one_meter.in<M>(), 1));
