@@ -44,6 +44,11 @@ namespace exo
 				return v[i];
 			}
 
+			inline S at(int i) const
+			{
+				return v[i];
+			}
+
 
 			inline Vec<S,D> operator+(const Vec<S,D>& v) const { return *this + std::move(v); }
 			inline Vec<S,D> operator+(const Vec<S,D>&& v) const
@@ -169,15 +174,15 @@ namespace exo
 				return *this;
 			}
 
-			inline bool operator!=(const Vec<S,D>& v) { return !(*this == std::move(v)); }
-			inline bool operator!=(const Vec<S,D>&& v) { return !(*this == v); }
+			inline bool operator!=(const Vec<S,D>& v) const { return !(*this == std::move(v)); }
+			inline bool operator!=(const Vec<S,D>&& v) const { return !(*this == v); }
 
-			inline bool operator==(const Vec<S,D>& v) { return *this == std::move(v); }
-			inline bool operator==(const Vec<S,D>&& v)
+			inline bool operator==(const Vec<S,D>& v) const { return *this == std::move(v); }
+			inline bool operator==(const Vec<S,D>&& v) const
 			{
 				for (auto i = D; i--;)
 				{
-					if (v[i] != this->v[i]) { return false; }
+					if (v.at(i) != this->at(i)) { return false; }
 				}
 
 				return true;
