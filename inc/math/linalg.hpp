@@ -233,8 +233,8 @@ namespace exo
 				return sum;
 			}
 
-			bool is_near(const Vec<S,D>& v, S threshold) { return this->is_near(std::move(v)); }
-			bool is_near(const Vec<S,D>&& v, S threshold)
+			bool is_near(const Vec<S,D>& v, S threshold=0.0001) { return this->is_near(std::move(v)); }
+			bool is_near(const Vec<S,D>&& v, S threshold=0.0001)
 			{
 				auto diff = *this - v;
 
@@ -345,6 +345,20 @@ namespace exo
 				return r;
 			}
 
+			template <ssize_t MC>
+			Vec<S, R> operator* (Vec<S, MC>& v)
+			{
+				Vec<S, R> r;
+
+				for (int row = R; row--;)
+				for (int col = MC; col--;)
+				{
+					r[row] += this->m[row][col] * v[col];
+				}
+
+				return r;
+			}
+
 			S* operator[] (ssize_t row)
 			{
 				if (row < R) { return m[row]; }
@@ -354,6 +368,22 @@ namespace exo
 			bool operator== (Mat<S, R, C> M)
 			{
 				return memcmp(this->m, M.m, sizeof(M.m)) == 0;
+			}
+
+			std::string to_string()
+			{
+				std::string str = "";
+				for (int j = 0; j < R; ++j)
+				{
+					str += "|";
+					for (int i = 0; i < C; ++i)
+					{
+						str += std::to_string(m[j][i]);
+						if (i < C - 1) { str += ", "; }
+					} str += "|\n";
+				}
+
+				return str;
 			}
 
 			// template <typename STORAGE, ssize_t ROWS, ssize_t COLS>
@@ -368,6 +398,17 @@ namespace exo
 				}
 
 				return res;
+			}
+
+			static Mat<S, 2, 2> rotation(S angle)
+			{
+				S s = static_cast<S>(sin(angle));
+				S c = static_cast<S>(cos(angle));
+
+				return {
+					{  c,  s },
+					{ -s,  c },
+				};
 			}
 
 			static Mat<S, 4, 4> ortho(S left, S right, S top, S bottom, S near, S far)
@@ -400,6 +441,7 @@ namespace exo
 			S m[R][C];
 		};
 		using Mat4f = Mat<float, 4, 4>;
+		using Mat2f = Mat<float, 2, 2>;
 
 		struct Quat : public Vec<float, 4>
 		{

@@ -1,6 +1,8 @@
 #include "exo.hpp"
 #include "math.hpp"
 
+#include <iostream>
+
 #define DESCRIPTION "Tests exo math functions"
 
 using namespace exo::math;
@@ -10,22 +12,42 @@ using namespace exo::math;
 	auto v0 = Vec<float, 3>{ 1, 2, 3 };
 	auto v1 = Vec<float, 3>{ 1 };
 
-	// test addition
-	auto v2 = v0 + v1;
-	assert(v2[0] == 2);
-	assert(v2[1] == 3);
-	assert(v2[2] == 4);
+
+	{ // test addition
+		Vec<float, 3> expected = { 2, 3, 4 };
+		assert((v0 + v1) == expected);
+	}
+
+	{ // test subtraction
+		Vec<float, 3> expected = { 0, 1, 2 };
+		assert((v0 - v1) == expected);
+	}
+
+	{ // test addition
+		Vec<float, 3> expected = { 1, 2, 3 };
+		assert((v0 * v1) == expected);
+	}
+
+	{ // test addition
+		Vec<float, 3> expected = { 1, 2, 3 };
+		assert((v0 / v1) == expected);
+	}
 
 	// test dot
-	assert(NEAR(v2.dot(v2), 29));
+	assert(NEAR(v0.dot(v0), 14));
+
+	{ // test length and norm
+		Vec<float, 3> v = { 1, 2, 3 };
+		assert(NEAR(v.norm().len(), 1));
+	}
 
 	// test indexing and assignment
-	v2[0] = 1000;
-	assert(v2[0] == 1000);
+	v0[0] = 1000;
+	assert(v0[0] == 1000);
 
 	// check scaling
-	v2 *= 0.001f;
-	assert(v2[0] == 1);
+	v0 *= 0.001f;
+	assert(v0[0] == 1);
 
 	auto ortho = Vec<float,3>::cross({1, 0, 0}, {0, 1, 0});
 
@@ -55,7 +77,34 @@ using namespace exo::math;
 		auto I  = Mat<float, 3, 3>::I();
 		auto res = R * I;
 
-		assert(res == R);	
+		assert(res == R);
+	}
+
+	{ // Check 2d rotation #1
+		auto v = Vec<float, 2>{ 0, 1 };
+		auto rotated = Mat2f::rotation(0) * v;
+		assert(v.is_near(rotated));
+	}
+
+	{ // Check 2d rotation #2
+		auto v = Vec<float, 2>{ 0, 1 };
+		auto rotated = Mat2f::rotation(M_PI / 2) * v;
+		auto expected = Vec<float, 2>{ 1, 0 };
+		assert(expected.is_near(rotated));
+	}
+
+	{ // Check 2d rotation #3
+		auto v = Vec<float, 2>{ 0, 1 };
+		auto rotated = Mat2f::rotation(M_PI) * v;
+		auto expected = Vec<float, 2>{ 0, -1 };
+		assert(expected.is_near(rotated));
+	}
+
+	{ // Check 2d rotation #4
+		auto v = Vec<float, 2>{ 0, 1 };
+		auto rotated = Mat2f::rotation(3 * (M_PI / 2)) * v;
+		auto expected = Vec<float, 2>{ -1, 0 };
+		assert(expected.is_near(rotated));
 	}
 
 	return 0;
