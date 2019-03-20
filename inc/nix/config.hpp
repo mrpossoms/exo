@@ -29,7 +29,7 @@ static exo::Result r_mkdir(const char *dir)
             if (mkdir(tmp, mode) && errno != EEXIST)
             {
                 exo::Log::error(0, "Config: Failed to create " + std::string(tmp) + " errno (" + std::to_string(errno) + ")");
-		goto escape;
+                goto escape;
             }
 
             *p = '/';
@@ -39,7 +39,7 @@ static exo::Result r_mkdir(const char *dir)
     if (mkdir(tmp, mode) && errno != EEXIST)
     {
         exo::Log::error(0, "Config: Failed to create " + std::string(tmp) + " errno (" + std::to_string(errno) + ")");
-	goto escape;
+        goto escape;
     }
 
     return exo::Result::OK;
@@ -102,6 +102,11 @@ struct Config
         std::string path;
 
         /**
+         * @brief string representation of the default value
+         */
+        std::string default_value;
+
+        /**
          * @brief C string default value
          */
         char* def_val;
@@ -122,6 +127,8 @@ struct Config
          */
         Value& preset(std::string value)
         {
+            default_value = value;
+
             if (is_new())
             {
                 (*this) = value;
@@ -171,10 +178,14 @@ struct Config
         {
             std::ifstream fs(path.c_str());
 
-            if (fs.bad()) return "";
+            std::cerr << "default_value:" << default_value << std::endl;
+
+            if (fs.fail()) return default_value;
 
             std::string str((std::istreambuf_iterator<char>(fs)),
                              std::istreambuf_iterator<char>());
+
+            std::cerr << str << std::endl;
 
             return str;
         }
