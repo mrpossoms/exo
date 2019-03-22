@@ -11,15 +11,6 @@ namespace bus
 
 struct I2C
 {
-    template <MSG_PAYLOAD>
-    struct WriteAction
-    {
-
-        MSG_PAYLOAD pay;
-
-
-    };
-
     struct DeviceAction : public I2C
     {
         DeviceAction(I2C& i2c, uint16_t dev_addr) : I2C(i2c)
@@ -59,8 +50,8 @@ protected:
     virtual Result read(void* buf, size_t size) = 0;
 };
 
-}
+} // class
 
-}
+} // device
 
-}
+} // exo
