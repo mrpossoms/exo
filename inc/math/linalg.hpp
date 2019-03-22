@@ -400,7 +400,8 @@ namespace exo
 				return res;
 			}
 
-			static Mat<S, 2, 2> rotation(S angle)
+			template <class RADIAL_TYPE>
+			static Mat<S, 2, 2> rotation(RADIAL_TYPE angle)
 			{
 				S s = static_cast<S>(sin(angle));
 				S c = static_cast<S>(cos(angle));
@@ -408,6 +409,48 @@ namespace exo
 				return {
 					{  c,  s },
 					{ -s,  c },
+				};
+			}
+
+			template <class RADIAL_TYPE>
+			static Mat<S, 4, 4> rotate_x(RADIAL_TYPE t)
+			{
+				auto c = static_cast<S>(cos(t));
+				auto s = static_cast<S>(sin(t));
+
+				return {
+					{ 1, 0, 0, 0 },
+					{ 0, c, s, 0 },
+					{ 0,-s, c, 0 },
+					{ 0, 0, 0, 1 }
+				};
+			}
+
+			template <class RADIAL_TYPE>
+			static Mat<S, 4, 4> rotate_y(RADIAL_TYPE t)
+			{
+				auto c = static_cast<S>(cos(t));
+				auto s = static_cast<S>(sin(t));
+
+				return {
+					{ c, 0,-s, 0 },
+					{ 0, 1, 0, 0 },
+					{ s, 0, c, 0 },
+					{ 0, 0, 0, 1 }
+				};
+			}
+
+			template <class RADIAL_TYPE>
+			static Mat<S, 4, 4> rotate_z(RADIAL_TYPE t)
+			{
+				auto c = static_cast<S>(cos(t));
+				auto s = static_cast<S>(sin(t));
+
+				return {
+					{ c,-s, 0, 0 },
+					{ s, c, 0, 0 },
+					{ 0, 0, 1, 0 },
+					{ 0, 0, 0, 1 }
 				};
 			}
 
@@ -431,10 +474,10 @@ namespace exo
 			static Mat<S, 4, 4> translate(Vec<S, 3> v)
 			{
 				return {
-					{ 1, 0, 0, 0 },
-					{ 0, 1, 0, 0 },
-					{ 0, 0, 1, 0 },
-					{ v[0], v[1], v[2],    1 }
+					{ 1, 0, 0, v[0] },
+					{ 0, 1, 0, v[1] },
+					{ 0, 0, 1, v[2] },
+					{ 0, 0, 0, 1 }
 				};
 			}
 
@@ -519,6 +562,21 @@ namespace exo
 				t *= this->v[3];
 
 				return v + t + u;
+			}
+
+			template <class S>
+			inline Mat<S, 4, 4> to_matrix()
+			{
+				auto v = static_cast<Vec<float, 4>>(*this);
+				auto a = v[3], b = v[0], c = v[1], d = v[2];
+				auto a2 = a * a, b2 = b * b, c2 = c * c, d2 = d * d;
+
+				return {
+					{a2 + b2 - c2 - d2, 2 * (b*c - a*d)  , 2 * (b*d + a*c)  ,  0},
+					{2 * (b*c + a*d)  , a2 - b2 + c2 - d2, 2 * (c*d - a*b)  ,  0},
+					{2 *(b*d - a*c)   , 2 * (c*d - a*b)  , a2 - b2 - c2 + d2,  0},
+					{0                , 0                , 0                ,  1},
+				};
 			}
 
 			static Quat from_axis_angle(Vec<float, 3> axis, float angle)

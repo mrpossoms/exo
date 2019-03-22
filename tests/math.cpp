@@ -56,10 +56,25 @@ using namespace exo::math;
 	assert(ortho[2] == 1);
 
 	// Test quaternions
-	auto q = Quat::from_axis_angle({0, 0, 1}, M_PI / 2);
+	{
+		auto q = Quat::from_axis_angle({0, 0, 1}, M_PI / 2);
 
-	bool expect_true = q.rotate({ 1, 0, 0 }).is_near(Vec<float, 3>{ 0, 1, 0 }, 0.1);
-	assert(expect_true);
+		bool expect_true = q.rotate({ 1, 0, 0 }).is_near(Vec<float, 3>{ 0, 1, 0 }, 0.1);
+		assert(expect_true);
+	}
+
+	// Test quaternion to matrix conversion
+	{
+		auto q = Quat::from_axis_angle({0, 0, 1}, M_PI / 2);
+		auto m = q.to_matrix<float>();
+
+		auto v = Vec<float, 4>{ 1, 0, 0, 1 };
+
+		auto vq = q.rotate(v.as_dimension<3>());
+		auto vm = (m * v).as_dimension<3>();
+
+		assert(vq.is_near(vm));
+	}
 
 	{ // check matrix equality testing
 		auto I0 = Mat<float, 3, 3>::I();
@@ -105,6 +120,16 @@ using namespace exo::math;
 		auto rotated = Mat2f::rotation(3 * (M_PI / 2)) * v;
 		auto expected = Vec<float, 2>{ -1, 0 };
 		assert(expected.is_near(rotated));
+	}
+
+	{ // Check matrix rotation then translation
+		auto tm = Mat4f::translate({1, 0, 0});
+		auto rm = Mat4f::rotate_z(-M_PI / 2);
+		auto v = Vec<float, 4>{ 0, 1, 0, 1 };
+		auto trans = tm * rm;
+		auto r = trans * v;
+		std::cerr << r.to_string() << std::endl;
+		assert(r.is_near({ 2, 0, 0, 1 }));
 	}
 
 	return 0;
