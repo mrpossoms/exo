@@ -132,5 +132,14 @@ using namespace exo::math;
 		assert(r.is_near({ 2, 0, 0, 1 }));
 	}
 
+	{ // Check matrix inversion
+		auto tm = Mat4f::translate({1, 0, 0});
+		auto v = Vec<float, 4>{ 0, 0, 0, 1 };
+		auto tv = tm * v;
+		assert(tv.is_near({1, 0, 0, 1}));
+		auto inv = Mat4f::inverse(tm) * tv;
+		assert(inv.is_near(v));
+	}
+
 	return 0;
 }
