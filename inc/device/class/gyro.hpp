@@ -7,7 +7,7 @@ namespace exo
 {
 namespace device
 {
-namespace class
+namespace cls
 {
 
 /**
@@ -17,9 +17,10 @@ namespace class
  * @tparam     RATE_TYPE  Numerical storage type to be used for representing
  *                        rotation rate values.
  * @tparam     DOF        Number of 'degrees-of-freedom'
+ * @tparam     SPATIAL_UNIT Unit of measure used to represent the sensor's location within the robot's reference frame
  */
-template <class RATE_TYPE, size_t DOF>
-struct Gyro : public exo::device::base
+template <class RATE_TYPE, size_t DOF, SPATIAL_UNIT=exo::units::M>
+struct Gyro : public exo::device::base<SPATIAL_UNIT>
 {
     /**
      * @brief      Used to retrieve an rotation-rate vector.

@@ -7,16 +7,17 @@ namespace exo
 {
 namespace device
 {
-namespace class
+namespace cls
 {
 
 /**
  * @brief      Orientation is to be used as a generic interface to be used
  *             as the base for implementations of devices, that through some
  *             means, directly produce orientations.
+* @tparam      SPATIAL_UNIT Unit of measure used to represent the sensor's location within the robot's reference frame
  */
-
-struct Orientation : public exo::device::base
+template <SPATIAL_UNIT=exo::units::M>
+struct Orientation : public exo::device::base<SPATIAL_UNIT>
 {
     /**
      * @brief      Raw orientation of the sensor.

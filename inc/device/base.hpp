@@ -1,6 +1,7 @@
 #pragma once
 
 #include "exo.hpp"
+#include "units.hpp"
 
 namespace exo
 {
