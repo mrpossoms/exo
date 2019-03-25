@@ -1,6 +1,5 @@
 #pragma once
 
-#include "math/linalg.hpp"
 #include "device/base.hpp"
 
 namespace exo
@@ -15,17 +14,20 @@ namespace cls
  *             of specific vision sensor devices.
  *
  * @tparam     COLOR_TYPE   Data type used to store actual pixel color values
- * @tparam     COLUMNS      Resolution of the columnar dimensionality of the sensor (usually width)
+ * @tparam     COLS         Resolution of the columnar dimensionality of the sensor (usually width)
  * @tparam     ROWS         Resolution of the row dimensionality of the sensor (usually height)
  * @tparam     SPATIAL_UNIT Unit of measure used to represent the sensor's location within the robot's reference frame
  */
-template <class COLOR_TYPE, size_t COLUMNS, size_t ROWS = 1, SPATIAL_UNIT=exo::units::MetersSPATIAL_UNIT=exo::units::M>
-struct Vision : public exo::device::base<SPATIAL_UNIT>
+template <class COLOR_TYPE, size_t COLS, size_t ROWS = 1, class SPATIAL_UNIT=exo::units::M>
+struct Vision : public exo::device::Base<SPATIAL_UNIT>
 {
     /**
      * Returns a reference to an underlying array storing the current frame.
      */
-    virtual COLOR_TYPE[COLUMNS][ROWS]& visual_frame() = 0;
+    virtual math::Mat<COLOR_TYPE, ROWS, COLS>& visual_frame() = 0;
+
+protected:
+    math::Mat<COLOR_TYPE, ROWS, COLS> frame;
 };
 
 } // class

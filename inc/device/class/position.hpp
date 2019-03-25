@@ -1,6 +1,5 @@
 #pragma once
 
-#include "math/linalg.hpp"
 #include "device/base.hpp"
 
 namespace exo
@@ -18,8 +17,8 @@ namespace cls
  * @tparam     POSITION_TYPE  Data type representing the position in space
  * @tparam     SPATIAL_UNIT Unit of measure used to represent the sensor's location within the robot's reference frame
  */
-template <class POSITION_TYPE, SPATIAL_UNIT=exo::units::M>
-struct position : public exo::device::base<SPATIAL_UNIT>
+template <class POSITION_TYPE, class SPATIAL_UNIT=exo::units::M>
+struct Position : public exo::device::Base<SPATIAL_UNIT>
 {
     /**
      * @brief      Raw position in space of the sensor.

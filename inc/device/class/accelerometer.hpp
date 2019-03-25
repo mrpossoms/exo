@@ -1,6 +1,5 @@
 #pragma once
 
-#include "math/linalg.hpp"
 #include "device/base.hpp"
 
 namespace exo

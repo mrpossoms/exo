@@ -1,6 +1,7 @@
 #pragma once
 
 #include "exo.hpp"
+#include "math/linalg.hpp"
 #include "units.hpp"
 
 namespace exo

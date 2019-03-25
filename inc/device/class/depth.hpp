@@ -1,6 +1,5 @@
 #pragma once
 
-#include "math/linalg.hpp"
 #include "device/base.hpp"
 
 namespace exo
@@ -15,17 +14,20 @@ namespace cls
  *             of specific depth sensor devices.
  *
  * @tparam     DEPTH_TYPE  Data type used to store actual depth measurements
- * @tparam     COLUMNS     Resolution of the columnar dimensionality of the sensor (usually width)
+ * @tparam     COLS        Resolution of the columnar dimensionality of the sensor (usually width)
  * @tparam     ROWS        Resolution of the row dimensionality of the sensor (usually height)
  * @tparam     SPATIAL_UNIT Unit of measure used to represent the sensor's location within the robot's reference frame
  */
-template <class DEPTH_TYPE, size_t COLUMNS, size_t ROWS = 1, SPATIAL_UNIT=exo::units::M>
-struct Depth : public exo::device::base<SPATIAL_UNIT>
+template <class DEPTH_TYPE, size_t COLS, size_t ROWS = 1, class SPATIAL_UNIT=exo::units::M>
+struct Depth : public exo::device::Base<SPATIAL_UNIT>
 {
     /**
-     * Returns a reference to an underlying array storing the current depth frame.
+     * Returns a reference to an underlying matrix storing the current depth frame.
      */
-    virtual DEPTH_TYPE[COLUMNS][ROWS]& depth_frame() = 0;
+    virtual exo::math::Mat<DEPTH_TYPE, ROWS, COLS>& depth_frame() = 0;
+
+protected:
+    math::Mat<DEPTH_TYPE, ROWS, COLS> frame;
 };
 
 } // class

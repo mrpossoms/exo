@@ -1,6 +1,5 @@
 #pragma once
 
-#include "math/linalg.hpp"
 #include "device/base.hpp"
 
 namespace exo
@@ -16,8 +15,8 @@ namespace cls
  *             means, directly produce orientations.
 * @tparam      SPATIAL_UNIT Unit of measure used to represent the sensor's location within the robot's reference frame
  */
-template <SPATIAL_UNIT=exo::units::M>
-struct Orientation : public exo::device::base<SPATIAL_UNIT>
+template <class SPATIAL_UNIT=exo::units::M>
+struct Orientation : public exo::device::Base<SPATIAL_UNIT>
 {
     /**
      * @brief      Raw orientation of the sensor.

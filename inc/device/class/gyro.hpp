@@ -1,6 +1,5 @@
 #pragma once
 
-#include "math/linalg.hpp"
 #include "device/base.hpp"
 
 namespace exo
@@ -19,8 +18,8 @@ namespace cls
  * @tparam     DOF        Number of 'degrees-of-freedom'
  * @tparam     SPATIAL_UNIT Unit of measure used to represent the sensor's location within the robot's reference frame
  */
-template <class RATE_TYPE, size_t DOF, SPATIAL_UNIT=exo::units::M>
-struct Gyro : public exo::device::base<SPATIAL_UNIT>
+template <class RATE_TYPE, size_t DOF, class SPATIAL_UNIT=exo::units::M>
+struct Gyro : public exo::device::Base<SPATIAL_UNIT>
 {
     /**
      * @brief      Used to retrieve an rotation-rate vector.
