@@ -14,7 +14,7 @@ struct Unit
 	Unit() { value = 0; }
 	Unit(TYPE v) { value = v; }
 	inline operator TYPE() const  { return value; }
-	
+
 	inline Unit operator*(Unit u) { return Unit(value * u.value); }
 	inline Unit operator/(Unit u) { return Unit(value / u.value); }
 	inline Unit operator+(Unit u) { return Unit(value + u.value); }
@@ -38,10 +38,16 @@ struct Unit
 	{
 		auto base_units = value * numerator() / (TYPE)denominator();
 		auto v = base_units * OU::denominator() / (TYPE)OU::numerator();
-		return { v };	
+		return { v };
 	}
 };
 
+//------------------------------------------------------------------------------
+//    _                  _   _
+//   | |   ___ _ _  __ _| |_| |_
+//   | |__/ -_) ' \/ _` |  _| ' \
+//   |____\___|_||_\__, |\__|_||_|
+//                 |___/
 template <class TYPE, unsigned int NUM=1, unsigned int DEN=1>
 struct Meter : public Unit<TYPE, NUM, DEN>
 {
@@ -77,12 +83,75 @@ using Cm = Centimeter<float>;
 using Dm = Decimeter<float>;
 using Km = Kilometer<float>;
 
-
+//------------------------------------------------------------------------------
+//      _             _
+//     /_\  _ _  __ _| |___
+//    / _ \| ' \/ _` | / -_)
+//   /_/ \_\_||_\__, |_\___|
+//              |___/
 template <class TYPE, unsigned int NUM=1, unsigned int DEN=1>
 struct Degree : public Unit<TYPE, NUM, DEN>
 {
 	Degree() = default;
 	Degree(TYPE v) : Unit<TYPE, NUM, DEN>(v) { }
+};
+
+template <class TYPE, unsigned int NUM=1, unsigned int DEN=1>
+struct Radians : public Unit<TYPE, NUM, DEN>
+{
+	Radians() = default;
+	Radians(TYPE v) : Unit<TYPE, NUM, DEN>(v) { }
+};
+
+//------------------------------------------------------------------------------
+//    _____ _
+//   |_   _(_)_ __  ___
+//     | | | | '  \/ -_)
+//     |_| |_|_|_|_\___|
+//
+template <class TYPE, unsigned int NUM=1, unsigned int DEN=1>
+struct Second : public Unit<TYPE, NUM, DEN>
+{
+	Second() = default;
+	Second(TYPE v) : Unit<TYPE, NUM, DEN>(v) { }
+	inline Second operator*(Second u) { return Second(this->value * u.value); }
+	inline Second operator/(Second u) { return Second(this->value / u.value); }
+	inline Second operator+(Second u) { return Second(this->value + u.value); }
+	inline Second operator-(Second u) { return Second(this->value - u.value); }
+};
+
+//------------------------------------------------------------------------------
+//    __  __
+//   |  \/  |__ _ ______
+//   | |\/| / _` (_-<_-<
+//   |_|  |_\__,_/__/__/
+//
+template <class TYPE, unsigned int NUM=1, unsigned int DEN=1>
+struct Gram : public Unit<TYPE, NUM, DEN>
+{
+	Gram() = default;
+	Gram(TYPE v) : Unit<TYPE, NUM, DEN>(v) { }
+	inline Gram operator*(Gram u) { return Gram(this->value * u.value); }
+	inline Gram operator/(Gram u) { return Gram(this->value / u.value); }
+	inline Gram operator+(Gram u) { return Gram(this->value + u.value); }
+	inline Gram operator-(Gram u) { return Gram(this->value - u.value); }
+};
+
+//------------------------------------------------------------------------------
+//    __  __                    _   _
+//   |  \/  |__ _ __ _ _ _  ___| |_(_)____ __
+//   | |\/| / _` / _` | ' \/ -_)  _| (_-< '  \
+//   |_|  |_\__,_\__, |_||_\___|\__|_/__/_|_|_|
+//               |___/
+template <class TYPE, unsigned int NUM=1, unsigned int DEN=1>
+struct Tesla : public Unit<TYPE, NUM, DEN>
+{
+	Tesla() = default;
+	Tesla(TYPE v) : Unit<TYPE, NUM, DEN>(v) { }
+	inline Tesla operator*(Tesla u) { return Tesla(this->value * u.value); }
+	inline Tesla operator/(Tesla u) { return Tesla(this->value / u.value); }
+	inline Tesla operator+(Tesla u) { return Tesla(this->value + u.value); }
+	inline Tesla operator-(Tesla u) { return Tesla(this->value - u.value); }
 };
 
 }

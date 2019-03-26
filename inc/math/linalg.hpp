@@ -6,6 +6,12 @@ namespace exo
 {
 	namespace math
 	{
+		//----------------------------------------------------------------------
+		//   __   __
+		//   \ \ / /__ __
+		//    \ V / -_) _|
+		//     \_/\___\__|
+		//
 		template<typename S, ssize_t D>
 		struct Vec
 		{
@@ -290,6 +296,12 @@ namespace exo
 		using Vec2f = Vec<float, 2>;
 		using Vec3f = Vec<float, 3>;
 
+		//----------------------------------------------------------------------
+		//    ___
+		//   | _ \__ _ _  _
+		//   |   / _` | || |
+		//   |_|_\__,_|\_, |
+		//             |__/
 		template<typename S, ssize_t D>
 		struct Ray
 		{
@@ -304,6 +316,12 @@ namespace exo
 		};
 		using Ray3f = Ray<float, 3>;
 
+		//----------------------------------------------------------------------
+		//    __  __      _
+		//   |  \/  |__ _| |_
+		//   | |\/| / _` |  _|
+		//   |_|  |_\__,_|\__|
+		//
 		template<typename S, ssize_t R, ssize_t C>
 		struct Mat
 		{
@@ -359,13 +377,13 @@ namespace exo
 				return r;
 			}
 
-			S* operator[] (ssize_t row)
+			inline S* operator[] (ssize_t row)
 			{
 				if (row < R) { return m[row]; }
 				return nullptr;
 			}
 
-			bool operator== (Mat<S, R, C> M)
+			inline bool operator== (Mat<S, R, C> M)
 			{
 				return memcmp(this->m, M.m, sizeof(M.m)) == 0;
 			}
@@ -400,7 +418,55 @@ namespace exo
 				return res;
 			}
 
-			static Mat<S, 2, 2> rotation(S angle)
+			static Mat<S, 4, 4> inverse(Mat<S, 4, 4> m)
+			{
+				S s[6];
+				S c[6];
+
+				s[0] = m[0][0]*m[1][1] - m[1][0]*m[0][1];
+				s[1] = m[0][0]*m[1][2] - m[1][0]*m[0][2];
+				s[2] = m[0][0]*m[1][3] - m[1][0]*m[0][3];
+				s[3] = m[0][1]*m[1][2] - m[1][1]*m[0][2];
+				s[4] = m[0][1]*m[1][3] - m[1][1]*m[0][3];
+				s[5] = m[0][2]*m[1][3] - m[1][2]*m[0][3];
+
+				c[0] = m[2][0]*m[3][1] - m[3][0]*m[2][1];
+				c[1] = m[2][0]*m[3][2] - m[3][0]*m[2][2];
+				c[2] = m[2][0]*m[3][3] - m[3][0]*m[2][3];
+				c[3] = m[2][1]*m[3][2] - m[3][1]*m[2][2];
+				c[4] = m[2][1]*m[3][3] - m[3][1]*m[2][3];
+				c[5] = m[2][2]*m[3][3] - m[3][2]*m[2][3];
+
+				/* Assumes it is invertible */
+				S idet = 1.0f/( s[0]*c[5]-s[1]*c[4]+s[2]*c[3]+s[3]*c[2]-s[4]*c[1]+s[5]*c[0] );
+
+				Mat<S, R, C> inv;
+
+				inv[0][0] = ( m[1][1] * c[5] - m[1][2] * c[4] + m[1][3] * c[3]) * idet;
+				inv[0][1] = (-m[0][1] * c[5] + m[0][2] * c[4] - m[0][3] * c[3]) * idet;
+				inv[0][2] = ( m[3][1] * s[5] - m[3][2] * s[4] + m[3][3] * s[3]) * idet;
+				inv[0][3] = (-m[2][1] * s[5] + m[2][2] * s[4] - m[2][3] * s[3]) * idet;
+
+				inv[1][0] = (-m[1][0] * c[5] + m[1][2] * c[2] - m[1][3] * c[1]) * idet;
+				inv[1][1] = ( m[0][0] * c[5] - m[0][2] * c[2] + m[0][3] * c[1]) * idet;
+				inv[1][2] = (-m[3][0] * s[5] + m[3][2] * s[2] - m[3][3] * s[1]) * idet;
+				inv[1][3] = ( m[2][0] * s[5] - m[2][2] * s[2] + m[2][3] * s[1]) * idet;
+
+				inv[2][0] = ( m[1][0] * c[4] - m[1][1] * c[2] + m[1][3] * c[0]) * idet;
+				inv[2][1] = (-m[0][0] * c[4] + m[0][1] * c[2] - m[0][3] * c[0]) * idet;
+				inv[2][2] = ( m[3][0] * s[4] - m[3][1] * s[2] + m[3][3] * s[0]) * idet;
+				inv[2][3] = (-m[2][0] * s[4] + m[2][1] * s[2] - m[2][3] * s[0]) * idet;
+
+				inv[3][0] = (-m[1][0] * c[3] + m[1][1] * c[1] - m[1][2] * c[0]) * idet;
+				inv[3][1] = ( m[0][0] * c[3] - m[0][1] * c[1] + m[0][2] * c[0]) * idet;
+				inv[3][2] = (-m[3][0] * s[3] + m[3][1] * s[1] - m[3][2] * s[0]) * idet;
+				inv[3][3] = ( m[2][0] * s[3] - m[2][1] * s[1] + m[2][2] * s[0]) * idet;
+
+				return inv;
+			}
+
+			template <class RADIAL_TYPE>
+			static Mat<S, 2, 2> rotation(RADIAL_TYPE angle)
 			{
 				S s = static_cast<S>(sin(angle));
 				S c = static_cast<S>(cos(angle));
@@ -408,6 +474,48 @@ namespace exo
 				return {
 					{  c,  s },
 					{ -s,  c },
+				};
+			}
+
+			template <class RADIAL_TYPE>
+			static Mat<S, 4, 4> rotate_x(RADIAL_TYPE t)
+			{
+				auto c = static_cast<S>(cos(t));
+				auto s = static_cast<S>(sin(t));
+
+				return {
+					{ 1, 0, 0, 0 },
+					{ 0, c, s, 0 },
+					{ 0,-s, c, 0 },
+					{ 0, 0, 0, 1 }
+				};
+			}
+
+			template <class RADIAL_TYPE>
+			static Mat<S, 4, 4> rotate_y(RADIAL_TYPE t)
+			{
+				auto c = static_cast<S>(cos(t));
+				auto s = static_cast<S>(sin(t));
+
+				return {
+					{ c, 0,-s, 0 },
+					{ 0, 1, 0, 0 },
+					{ s, 0, c, 0 },
+					{ 0, 0, 0, 1 }
+				};
+			}
+
+			template <class RADIAL_TYPE>
+			static Mat<S, 4, 4> rotate_z(RADIAL_TYPE t)
+			{
+				auto c = static_cast<S>(cos(t));
+				auto s = static_cast<S>(sin(t));
+
+				return {
+					{ c,-s, 0, 0 },
+					{ s, c, 0, 0 },
+					{ 0, 0, 1, 0 },
+					{ 0, 0, 0, 1 }
 				};
 			}
 
@@ -431,10 +539,10 @@ namespace exo
 			static Mat<S, 4, 4> translate(Vec<S, 3> v)
 			{
 				return {
-					{ 1, 0, 0, 0 },
-					{ 0, 1, 0, 0 },
-					{ 0, 0, 1, 0 },
-					{ v[0], v[1], v[2],    1 }
+					{ 1, 0, 0, v[0] },
+					{ 0, 1, 0, v[1] },
+					{ 0, 0, 1, v[2] },
+					{ 0, 0, 0, 1 }
 				};
 			}
 
@@ -443,6 +551,11 @@ namespace exo
 		using Mat4f = Mat<float, 4, 4>;
 		using Mat2f = Mat<float, 2, 2>;
 
+		//     ___            _
+		//    / _ \ _  _ __ _| |_
+		//   | (_) | || / _` |  _|
+		//    \__\_\\_,_\__,_|\__|
+		//
 		struct Quat : public Vec<float, 4>
 		{
 			Quat() : Vec({ 0, 0, 0, 1 })
@@ -521,6 +634,21 @@ namespace exo
 				return v + t + u;
 			}
 
+			template <class S>
+			inline Mat<S, 4, 4> to_matrix()
+			{
+				auto v = static_cast<Vec<float, 4>>(*this);
+				auto a = v[3], b = v[0], c = v[1], d = v[2];
+				auto a2 = a * a, b2 = b * b, c2 = c * c, d2 = d * d;
+
+				return {
+					{a2 + b2 - c2 - d2, 2 * (b*c - a*d)  , 2 * (b*d + a*c)  ,  0},
+					{2 * (b*c + a*d)  , a2 - b2 + c2 - d2, 2 * (c*d - a*b)  ,  0},
+					{2 *(b*d - a*c)   , 2 * (c*d - a*b)  , a2 - b2 - c2 + d2,  0},
+					{0                , 0                , 0                ,  1},
+				};
+			}
+
 			static Quat from_axis_angle(Vec<float, 3> axis, float angle)
 			{
 				auto a_2 = angle / 2;
@@ -532,6 +660,12 @@ namespace exo
 			}
 		};
 
+		//----------------------------------------------------------------------
+		//    ___          _
+		//   | _ ) __ _ __(_)___
+		//   | _ \/ _` (_-< (_-<
+		//   |___/\__,_/__/_/__/
+		//
 		template<typename S, ssize_t D>
 		struct Basis
 		{
