@@ -1,6 +1,6 @@
 #pragma once
 
-#include "device/base.hpp"
+#include "../base.hpp"
 
 namespace exo
 {
