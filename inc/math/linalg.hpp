@@ -44,6 +44,10 @@ namespace exo
 				}
 			}
 
+			inline S operator[](int i) const
+			{
+				return v[i];
+			}
 
 			inline S& operator[](int i)
 			{
