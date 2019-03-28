@@ -552,8 +552,107 @@ namespace exo
 
 			S m[R][C];
 		};
+
 		using Mat4f = Mat<float, 4, 4>;
 		using Mat2f = Mat<float, 2, 2>;
+
+		template<typename S, ssize_t R, ssize_t C>
+		struct LU : public Mat<S, R, C>
+		{
+			LU(Mat<S, R, C>& mat) : Mat<S, R, C>(mat)
+			{
+				Vec<S, R> piv;
+
+				// Use a "left-looking", dot-product, Crout/Doolittle algorithm.
+				for (int i = 0; i < R; i++)
+				{
+					piv[i] = i;
+				}
+
+				piv_sign = 1;
+				S *LUrowi = 0;
+				Vec<S, R> LUcolj;
+
+				// Outer loop.
+				for (int j = 0; j < C; j++)
+				{
+
+					// Make a copy of the j-th column to localize references.
+					for (int i = 0; i < R; i++)
+					{
+						LUcolj[i] = Mat<S, R, C>::m[i][j];
+					}
+
+					// Apply previous transformations.
+					for (int i = 0; i < R; i++)
+					{
+						LUrowi = Mat<S, R, C>::m[i];
+
+						// Most of the time is spent in the following dot product.
+
+						int kmax = std::min(i,j);
+						double s = 0.0;
+						for (int k = 0; k < kmax; k++)
+						{
+							s += LUrowi[k]*LUcolj[k];
+						}
+
+						LUrowi[j] = LUcolj[i] -= s;
+					}
+
+					// Find pivot and exchange if necessary.
+					int p = j;
+					for (int i = j+1; i < R; i++)
+					{
+						if (abs(LUcolj[i]) > abs(LUcolj[p]))
+						{
+							p = i;
+						}
+					}
+
+					if (p != j)
+					{
+						int k=0;
+						for (k = 0; k < C; k++)
+						{
+							double t = Mat<S, R, C>::m[p][k]; 
+							Mat<S, R, C>::m[p][k] = Mat<S, R, C>::m[j][k]; 
+							Mat<S, R, C>::m[j][k] = t;
+						}
+
+						k = piv[p]; 
+						piv[p] = piv[j]; 
+						piv[j] = k;
+						piv_sign = -piv_sign;
+					}
+
+					// Compute multipliers.
+					if ((j < R) && (Mat<S, R, C>::m[j][j] != 0.0))
+					{
+						for (int i = j+1; i < R; i++)
+						{
+							Mat<S, R, C>::m[i][j] /= Mat<S, R, C>::m[j][j];
+						}
+					}
+				}
+			}
+
+			S determinant()
+			{
+				if (R != C) { return 0; }
+
+				S d = static_cast<S>(piv_sign);
+
+				for (int j = 0; j < C; j++)
+				{
+					d *= Mat<S, R, C>::m[j][j];
+				}
+
+				return d;
+			}
+
+			int piv_sign;
+		};
 
 		//     ___            _
 		//    / _ \ _  _ __ _| |_
