@@ -95,6 +95,52 @@ using namespace exo::math;
 		assert(res == R);
 	}
 
+	{ // check matrix transpose
+		Mat<int, 2, 3> M = {
+			{ 1, 2, 3 },
+			{ 4, 5, 6 },
+		};
+
+		Mat<int, 3, 2> Mt = {
+			{ 1, 4 },
+			{ 2, 5 },
+			{ 3, 6 },
+		};
+
+		assert(M.transpose() == Mt);
+	}
+
+	{ // check matrix row swap
+		Mat<int, 2, 2> M = {
+			{ 1, 3 },
+			{ 2, 7 },
+		};
+
+		M.swap_rows(0, 1);
+
+		Mat<int, 2, 2> E = {
+			{ 2, 7 },
+			{ 1, 3 },
+		};
+
+		assert(M == E);
+	}
+
+	{ // check matrix inverse
+		Mat<float, 2, 2> M = {
+			{ 1, 3 },
+			{ 2, 7 },
+		};
+
+		auto aug = M.augment();
+		std::cout << aug.to_string() << std::endl;
+
+		aug.gaussian_elimanation();
+		std::cout << aug.to_string() << std::endl;
+
+
+	}
+
 	{ // Check 2d rotation #1
 		auto v = Vec<float, 2>{ 0, 1 };
 		auto rotated = Mat2f::rotation(0) * v;

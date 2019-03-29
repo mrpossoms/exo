@@ -334,6 +334,11 @@ namespace exo
 				bzero(m, sizeof(m));
 			}
 
+			// Mat(Mat<S, R, C>& mat)
+			// {
+			// 	memcpy(m, mat.m, sizeof(m));
+			// }
+
 			Mat(std::initializer_list<std::initializer_list<S>> init)
 			{
 				int ri = 0;
@@ -406,6 +411,176 @@ namespace exo
 				}
 
 				return str;
+			}
+
+			void swap_rows(ssize_t row_i, ssize_t row_j)
+			{
+				S temp_row[C];
+
+				memcpy(temp_row, m[row_i], sizeof(S) * C);
+				memcpy(m[row_i], m[row_j], sizeof(S) * C);
+				memcpy(m[row_j], temp_row, sizeof(S) * C);
+			}
+
+			Mat<S, R, C>& gaussian_elimanation()
+			{
+				int piv_row = 0; // h
+				int piv_col = 0; // k
+
+				while (piv_row <= R && piv_col <= C)
+				{
+					int piv_row_i = 0;
+
+					{ // find the k-th pivot
+						// find the max row
+						S row_max = abs(m[0][piv_col]);
+						for (int i = piv_row; i < R; ++i)
+						{
+							auto e = abs(m[i][piv_col]);
+							if (e > row_max) { piv_row_i = i; row_max = e; }
+						}
+					}
+
+					if (m[piv_row_i][piv_col] == 0)
+					{
+						++piv_col; // no pivot in this column, pass to next col
+					}
+					else
+					{
+						swap_rows(piv_row, piv_row_i);
+
+						for (int i = piv_row + 1; i < R; ++i)
+						{
+							S f = m[i][piv_col] / m[piv_row][piv_col];
+
+							m[i][piv_col] = 0; // fill the lower part of piv col with zeros
+
+							for (int j = piv_col + 1; j < C; ++j)
+							{
+								m[i][j] = m[i][j] - m[piv_row][j] * f;
+							}
+						}
+
+						++piv_row;
+						++piv_col;
+					}
+				}
+
+				return *this;
+			}
+
+			Mat<S, R, C * 2> augment()
+			{
+				const auto Mc = C * 2;
+				Mat<S, R, Mc> M;
+				S d = 0;
+
+				for (int r = 0; r < R; ++r)
+				{
+					// form the identity on the right hand side
+					M[r][r + C] = 1.0;
+
+					for (int c = 0; c < C; ++c)
+					{
+						M[r][c] = m[r][c];
+					}
+				}
+
+				return M;
+			}
+
+			Mat<S, R, C> inverse()
+			{
+				const auto Mc = C * 2;
+				Mat<S, Mc, Mc> M;
+				S d = 0;
+
+				for (int r = 0; r < R; ++r)
+				{
+					// form the identity on the right hand side
+					M[r][r + C] = 1.0;
+
+					for (int c = 0; c < C; ++c)
+					{
+						M[r][c] = m[r][c];
+					}
+				}
+
+				// partial pivoting
+				for (int i = C - 1; i > 1; --i)
+				if (M[i-1][1] < M[i][1])
+				{
+					for (int j = 0; j < Mc; ++j)
+					{
+						d = M[i][j];
+						M[i][j] = M[i-1][j];
+						M[i-1][j] = d;
+					}
+				}
+
+				// reduce to diagonal matrix
+				for (int i = 0; i < C; ++i)
+				for (int j = 0; j < Mc; ++j)
+				{
+					if (j != i)
+					{
+						d = M[j][i] / M[i][i];
+						for (int k = 0; k < Mc; ++k)
+						{
+							M[j][k] -= M[i][k] * d;
+						}
+					}
+				}
+
+				// Reducing to unit matrix
+				for(int i = 0; i < C; ++i)
+				{
+					d = M[i][i];
+					for(int j = 0; j < Mc; ++j)
+					{
+						M[i][j] = M[i][j] / d;
+					}
+				}
+
+				Mat<S, R, C> inv;
+
+				for (int r = 0; r < R; ++r)
+				{
+					memcpy(inv[r], M[r], sizeof(S) * C);
+				}
+
+				return inv;
+			}
+
+			Mat<S, C, R> transpose()
+			{
+				Mat<S, C, R> res;
+
+				for (int r = 0; r < C; ++r)
+				for (int c = 0; c < R; ++c)
+				{
+					res[r][c] = m[c][r];
+				}
+
+				return res;
+			}
+
+			Mat<S, R, C> cofactor()
+			{
+				Mat<S, R, C> res = { *this };
+
+				for (int r = 0; r < R; ++r)
+				for (int c = 0; c < C; ++c)
+				{
+					res[r][c] *= pow(-1.0, r + c + 2);
+				}
+
+				return res;
+			}
+
+			Mat<S, R, C> adjoint()
+			{
+				return cofactor().transpose();
 			}
 
 			// template <typename STORAGE, ssize_t ROWS, ssize_t COLS>
@@ -615,13 +790,13 @@ namespace exo
 						int k=0;
 						for (k = 0; k < C; k++)
 						{
-							double t = Mat<S, R, C>::m[p][k]; 
-							Mat<S, R, C>::m[p][k] = Mat<S, R, C>::m[j][k]; 
+							double t = Mat<S, R, C>::m[p][k];
+							Mat<S, R, C>::m[p][k] = Mat<S, R, C>::m[j][k];
 							Mat<S, R, C>::m[j][k] = t;
 						}
 
-						k = piv[p]; 
-						piv[p] = piv[j]; 
+						k = piv[p];
+						piv[p] = piv[j];
 						piv[j] = k;
 						piv_sign = -piv_sign;
 					}
