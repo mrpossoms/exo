@@ -1,6 +1,7 @@
 #pragma once
 #include "../exo.hpp"
 #include <math.h>
+#include <functional>
 
 namespace exo
 {
