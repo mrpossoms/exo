@@ -127,18 +127,21 @@ using namespace exo::math;
 	}
 
 	{ // check matrix inverse
-		Mat<float, 2, 2> M = {
-			{ 1, 3 },
-			{ 2, 7 },
-		};
+		Mat<float, 4, 4> M;
 
-		auto aug = M.augment();
-		std::cout << aug.to_string() << std::endl;
+		M.initalize([](float r, float c) {
+			return static_cast<float>((rand() % 32) - 16);
+		});
 
-		aug.gaussian_elimanation();
-		std::cout << aug.to_string() << std::endl;
+		auto inv = M.inverse();
+		std::cout << inv.to_string() << std::endl;
 
+		inv = inv * M;
+		std::cout << inv.to_string() << std::endl;
 
+		auto I = Mat<float, 4, 4>::I();
+
+		assert(I.distance(inv) < 0.0001);
 	}
 
 	{ // Check 2d rotation #1

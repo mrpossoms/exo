@@ -1,6 +1,7 @@
 #pragma once
 #include "../exo.hpp"
 #include <math.h>
+#include <iostream>
 
 namespace exo
 {
@@ -355,6 +356,17 @@ namespace exo
 
 			}
 
+			Mat<S, R, C>& initalize(std::function<S (S r, S c)> init)
+			{
+				for (int row = R; row--;)
+				for (int col = C; col--;)
+				{
+					m[row][col] = init(static_cast<S>(row), static_cast<S>(col));
+				}
+
+				return *this;
+			}
+
 			template <ssize_t MC>
 			Mat<S, R, MC> operator* (Mat<S, C, MC>& m)
 			{
@@ -413,6 +425,20 @@ namespace exo
 				return str;
 			}
 
+			S distance(Mat<S, R, C> M)
+			{
+				S sum = 0;
+
+				for (int r = R; r--;)
+				for (int c = C; c--;)
+				{
+					auto d = M[r][c] - m[r][c];
+					sum += d * d;
+				}
+
+				return sqrt(sum);
+			}
+
 			void swap_rows(ssize_t row_i, ssize_t row_j)
 			{
 				S temp_row[C];
@@ -422,48 +448,55 @@ namespace exo
 				memcpy(m[row_j], temp_row, sizeof(S) * C);
 			}
 
-			Mat<S, R, C>& gaussian_elimanation()
+			Mat<S, R, C>& rref()
 			{
-				int piv_row = 0; // h
-				int piv_col = 0; // k
+				int piv_c = 0;
 
-				while (piv_row <= R && piv_col <= C)
+				// compute upper diagonal
+				for (int r = 0; r < R; r++)
 				{
-					int piv_row_i = 0;
-
-					{ // find the k-th pivot
-						// find the max row
-						S row_max = abs(m[0][piv_col]);
-						for (int i = piv_row; i < R; ++i)
-						{
-							auto e = abs(m[i][piv_col]);
-							if (e > row_max) { piv_row_i = i; row_max = e; }
-						}
-					}
-
-					if (m[piv_row_i][piv_col] == 0)
+					// Check if the piv column of row r is zero. If it is, lets
+					// try to find a row below that has a non-zero column
+					if (m[r][piv_c] == 0)
 					{
-						++piv_col; // no pivot in this column, pass to next col
-					}
-					else
-					{
-						swap_rows(piv_row, piv_row_i);
-
-						for (int i = piv_row + 1; i < R; ++i)
+						int swap_ri = -1;
+						for (int ri = r + 1; ri < R; ri++)
 						{
-							S f = m[i][piv_col] / m[piv_row][piv_col];
-
-							m[i][piv_col] = 0; // fill the lower part of piv col with zeros
-
-							for (int j = piv_col + 1; j < C; ++j)
+							if (m[ri][piv_c] != 0)
 							{
-								m[i][j] = m[i][j] - m[piv_row][j] * f;
+								swap_ri = ri;
+								break;
 							}
 						}
 
-						++piv_row;
-						++piv_col;
+						if (swap_ri > -1) { swap_rows(swap_ri, r); }
 					}
+
+					{ // next row, scale so leading coefficient is 1
+						// TODO: handle A[r][piv_c] == 0
+						float d = 1 / m[r][piv_c];
+
+						// scale row
+						for (int c = piv_c; c < C; c++) { m[r][c] *= d; }
+					}
+
+
+					for (int ri = 0; ri < R; ri++)
+					{
+						// skip zero elements and skip row r
+						if (m[ri][piv_c] == 0 || ri == r) { continue; }
+
+						float d = m[ri][piv_c];
+
+						// scale row then subtract the row above to zero out
+						// other elements in this column
+						for (int c = piv_c; c < C; c++)
+						{
+							m[ri][c] -= d * m[r][c];
+						}
+					}
+
+					++piv_c;
 				}
 
 				return *this;
@@ -491,62 +524,12 @@ namespace exo
 
 			Mat<S, R, C> inverse()
 			{
-				const auto Mc = C * 2;
-				Mat<S, Mc, Mc> M;
-				S d = 0;
-
-				for (int r = 0; r < R; ++r)
-				{
-					// form the identity on the right hand side
-					M[r][r + C] = 1.0;
-
-					for (int c = 0; c < C; ++c)
-					{
-						M[r][c] = m[r][c];
-					}
-				}
-
-				// partial pivoting
-				for (int i = C - 1; i > 1; --i)
-				if (M[i-1][1] < M[i][1])
-				{
-					for (int j = 0; j < Mc; ++j)
-					{
-						d = M[i][j];
-						M[i][j] = M[i-1][j];
-						M[i-1][j] = d;
-					}
-				}
-
-				// reduce to diagonal matrix
-				for (int i = 0; i < C; ++i)
-				for (int j = 0; j < Mc; ++j)
-				{
-					if (j != i)
-					{
-						d = M[j][i] / M[i][i];
-						for (int k = 0; k < Mc; ++k)
-						{
-							M[j][k] -= M[i][k] * d;
-						}
-					}
-				}
-
-				// Reducing to unit matrix
-				for(int i = 0; i < C; ++i)
-				{
-					d = M[i][i];
-					for(int j = 0; j < Mc; ++j)
-					{
-						M[i][j] = M[i][j] / d;
-					}
-				}
-
 				Mat<S, R, C> inv;
+				auto _rref = augment().rref();
 
-				for (int r = 0; r < R; ++r)
+				for (int r = 0; r < R; r++)
 				{
-					memcpy(inv[r], M[r], sizeof(S) * C);
+					memcpy(inv[r], _rref[r] + C, sizeof(S) * C);
 				}
 
 				return inv;
@@ -563,24 +546,6 @@ namespace exo
 				}
 
 				return res;
-			}
-
-			Mat<S, R, C> cofactor()
-			{
-				Mat<S, R, C> res = { *this };
-
-				for (int r = 0; r < R; ++r)
-				for (int c = 0; c < C; ++c)
-				{
-					res[r][c] *= pow(-1.0, r + c + 2);
-				}
-
-				return res;
-			}
-
-			Mat<S, R, C> adjoint()
-			{
-				return cofactor().transpose();
 			}
 
 			// template <typename STORAGE, ssize_t ROWS, ssize_t COLS>
@@ -730,104 +695,6 @@ namespace exo
 
 		using Mat4f = Mat<float, 4, 4>;
 		using Mat2f = Mat<float, 2, 2>;
-
-		template<typename S, ssize_t R, ssize_t C>
-		struct LU : public Mat<S, R, C>
-		{
-			LU(Mat<S, R, C>& mat) : Mat<S, R, C>(mat)
-			{
-				Vec<S, R> piv;
-
-				// Use a "left-looking", dot-product, Crout/Doolittle algorithm.
-				for (int i = 0; i < R; i++)
-				{
-					piv[i] = i;
-				}
-
-				piv_sign = 1;
-				S *LUrowi = 0;
-				Vec<S, R> LUcolj;
-
-				// Outer loop.
-				for (int j = 0; j < C; j++)
-				{
-
-					// Make a copy of the j-th column to localize references.
-					for (int i = 0; i < R; i++)
-					{
-						LUcolj[i] = Mat<S, R, C>::m[i][j];
-					}
-
-					// Apply previous transformations.
-					for (int i = 0; i < R; i++)
-					{
-						LUrowi = Mat<S, R, C>::m[i];
-
-						// Most of the time is spent in the following dot product.
-
-						int kmax = std::min(i,j);
-						double s = 0.0;
-						for (int k = 0; k < kmax; k++)
-						{
-							s += LUrowi[k]*LUcolj[k];
-						}
-
-						LUrowi[j] = LUcolj[i] -= s;
-					}
-
-					// Find pivot and exchange if necessary.
-					int p = j;
-					for (int i = j+1; i < R; i++)
-					{
-						if (abs(LUcolj[i]) > abs(LUcolj[p]))
-						{
-							p = i;
-						}
-					}
-
-					if (p != j)
-					{
-						int k=0;
-						for (k = 0; k < C; k++)
-						{
-							double t = Mat<S, R, C>::m[p][k];
-							Mat<S, R, C>::m[p][k] = Mat<S, R, C>::m[j][k];
-							Mat<S, R, C>::m[j][k] = t;
-						}
-
-						k = piv[p];
-						piv[p] = piv[j];
-						piv[j] = k;
-						piv_sign = -piv_sign;
-					}
-
-					// Compute multipliers.
-					if ((j < R) && (Mat<S, R, C>::m[j][j] != 0.0))
-					{
-						for (int i = j+1; i < R; i++)
-						{
-							Mat<S, R, C>::m[i][j] /= Mat<S, R, C>::m[j][j];
-						}
-					}
-				}
-			}
-
-			S determinant()
-			{
-				if (R != C) { return 0; }
-
-				S d = static_cast<S>(piv_sign);
-
-				for (int j = 0; j < C; j++)
-				{
-					d *= Mat<S, R, C>::m[j][j];
-				}
-
-				return d;
-			}
-
-			int piv_sign;
-		};
 
 		//     ___            _
 		//    / _ \ _  _ __ _| |_
