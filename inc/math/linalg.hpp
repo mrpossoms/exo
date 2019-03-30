@@ -351,7 +351,7 @@ namespace exo
 
 			}
 
-			Mat<S, R, C>& initalize(std::function<S (S r, S c)> init)
+			Mat<S, R, C>& initialize(std::function<S (S r, S c)> init)
 			{
 				for (int row = R; row--;)
 				for (int col = C; col--;)

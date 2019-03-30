@@ -131,7 +131,7 @@ using namespace exo::math;
 
 		// initialize totally random matrix. Which will
 		// be invertible with very high likelihood.
-		M.initalize([](float r, float c) {
+		M.initialize([](float r, float c) {
 			return static_cast<float>((rand() % 32) - 16);
 		});
 
