@@ -1,7 +1,6 @@
 #pragma once
 #include "../exo.hpp"
 #include <math.h>
-#include <iostream>
 
 namespace exo
 {
@@ -335,11 +334,6 @@ namespace exo
 				bzero(m, sizeof(m));
 			}
 
-			// Mat(Mat<S, R, C>& mat)
-			// {
-			// 	memcpy(m, mat.m, sizeof(m));
-			// }
-
 			Mat(std::initializer_list<std::initializer_list<S>> init)
 			{
 				int ri = 0;
@@ -473,7 +467,6 @@ namespace exo
 					}
 
 					{ // next row, scale so leading coefficient is 1
-						// TODO: handle A[r][piv_c] == 0
 						float d = 1 / m[r][piv_c];
 
 						// scale row
