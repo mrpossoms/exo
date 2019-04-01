@@ -34,7 +34,7 @@ tests: $(TEST_EXES)
 	@echo "$(COLOR_GREEN) Built all tests $(COLOR_OFF)"
 
 test: tests
-	./test_runner.py
+	python3 ./test_runner.py
 
 test-%: tests/bin/%
 	./$<

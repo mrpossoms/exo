@@ -28,7 +28,6 @@ if [ -f $dot_file_path ]; then
 		printenv
 	else
 		source $dot_file_path
-		make install
 	fi
 fi
 
