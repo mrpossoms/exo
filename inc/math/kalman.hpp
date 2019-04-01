@@ -9,39 +9,97 @@ namespace exo
 namespace math
 {
 
-template <class S, ssize_t F_SIZE, ssize_t U_SIZE, ssize_t Z_SIZE>
+/**
+ * @brief      Container for a Kalman filter's matrices and values.
+ *
+ * @tparam     S       Numerical storage type to be used for elements in
+ *                     matrices and vectors.
+ * @tparam     X_SIZE  Number of elements in state vector.
+ * @tparam     U_SIZE  Number of elements in the control vector.
+ * @tparam     Z_SIZE  Number of elements in the sensor reading vector.
+ */
+template <class S, ssize_t X_SIZE, ssize_t U_SIZE, ssize_t Z_SIZE>
 struct KalmanFilter
 {
 	KalmanFilter(
-		Mat<S, F_SIZE, F_SIZE> f,
-		Mat<S, F_SIZE, U_SIZE> b,
-		Mat<S, F_SIZE, Z_SIZE> h) : F(f), B(b), H(h)
+		Mat<S, X_SIZE, X_SIZE> f,
+		Mat<S, X_SIZE, U_SIZE> b) : F(f), B(b)
 	{
 
 	}
 
-	virtual Mat<S, 
-
-	void update()
+	virtual Mat<S, X_SIZE, Z_SIZE> gain()
 	{
+		auto Ht = H.transpose();
+		auto right = H * P * Ht + R;
+		right.inverse();
 
+		return P * Ht * right;
 	}
+
+	void update(Vec<S, Z_SIZE>& sensor_readings)
+	{ update(std::move(sensor_readings)); }
+	void update(Vec<S, Z_SIZE>&& sensor_readings)
+	{
+		auto K = gain();
+
+		x_hat = x_hat + K * (sensor_readings - H * x_hat);
+		P = P - K * H * P;
+
+		dirty = true;
+	}
+
+	Vec<S, X_SIZE> predict(Vec<S, U_SIZE>& control_vector)
+	{ return predict(std::move(control_vector)); }
+	Vec<S, X_SIZE> predict(Vec<S, U_SIZE>&& control_vector)
+	{
+		if (dirty)
+		{
+			x_hat = F * x_hat + B * control_vector;
+			P = F * P * F.transpose() + Q;
+			dirty = false;
+		}
+
+		return x_hat;
+	}
+
+	/**
+	 * Current system state estimate
+	 */
+	Vec<S, X_SIZE> x_hat;
+
+	/**
+	 * Prediction matrix
+	 */
+	Mat<S, X_SIZE, X_SIZE> F;
+
+	/**
+	 * Prediction covariance matrix
+	 */
+	Mat<S, X_SIZE, X_SIZE> P = Mat<S, X_SIZE, X_SIZE>::I();
+
+	/**
+	 * Control matrix
+	 */
+	Mat<S, X_SIZE, U_SIZE> B = Mat<S, X_SIZE, U_SIZE>::I();
+
+	/**
+	 * Unexpected noise covariance matrix
+	 */
+	Mat<S, X_SIZE, X_SIZE> Q = Mat<S, X_SIZE, X_SIZE>::I();
+
+	/**
+	 * Sensor mapping matrix
+	 */
+	Mat<S, Z_SIZE, X_SIZE> H = Mat<S, Z_SIZE, X_SIZE>::I();
+
+	/**
+	 * Sensor noise matrix
+	 */
+	Mat<S, Z_SIZE, Z_SIZE> R;
 
 private:
-	// current estimate
-	Mat<S, F_SIZE> x_hat;
-	// prediction matrix
-	Mat<S, F_SIZE, F_SIZE> F;
-	// prediction co-variance matrix
-	Mat<S, F_SIZE, F_SIZE> P = Mat<S, F_SIZE, F_SIZE>::I();
-	// control matrix
-	Mat<S, F_SIZE, U_SIZE> B;
-	// unexpected noise co-variance
-	Mat<S, F_SIZE, F_SIZE> Q = Mat<S, F_SIZE, F_SIZE>::I();
-	// sensor mapping matrix
-	Mat<S, Z_SIZE, F_SIZE> H;
-	// sensor noise matrix
-	Mat<S, 
+	bool dirty = true;
 };
 
 } // math

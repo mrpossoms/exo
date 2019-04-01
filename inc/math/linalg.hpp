@@ -363,7 +363,9 @@ namespace exo
 			}
 
 			template <ssize_t MC>
-			Mat<S, R, MC> operator* (Mat<S, C, MC>& m)
+			Mat<S, R, MC> operator* (Mat<S, C, MC>& m) { return *this * std::move(m); }
+			template <ssize_t MC>
+			Mat<S, R, MC> operator* (Mat<S, C, MC>&& m)
 			{
 				Mat<S, R, MC> r;
 
@@ -379,13 +381,41 @@ namespace exo
 				return r;
 			}
 
-			template <ssize_t MC>
-			Vec<S, R> operator* (Vec<S, MC>& v)
+			Mat<S, R, C> operator+ (Mat<S, R, C>& m) { return *this + std::move(m); }
+			Mat<S, R, C> operator+ (Mat<S, R, C>&& m)
+			{
+				Mat<S, R, C> r;
+
+				for (int row = R; row--;)
+				for (int col = C; col--;)
+				{
+					r[row][col] = this->m[row][col] + m[row][col];
+				}
+
+				return r;
+			}
+
+			Mat<S, R, C> operator- (Mat<S, R, C>& m) { return *this - std::move(m); }
+			Mat<S, R, C> operator- (Mat<S, R, C>&& m)
+			{
+				Mat<S, R, C> r;
+
+				for (int row = R; row--;)
+				for (int col = C; col--;)
+				{
+					r[row][col] = this->m[row][col] - m[row][col];
+				}
+
+				return r;
+			}
+
+			Vec<S, R> operator* (Vec<S, C>& v) { return *this * std::move(v); }
+			Vec<S, R> operator* (Vec<S, C>&& v)
 			{
 				Vec<S, R> r;
 
 				for (int row = R; row--;)
-				for (int col = MC; col--;)
+				for (int col = C; col--;)
 				{
 					r[row] += this->m[row][col] * v[col];
 				}

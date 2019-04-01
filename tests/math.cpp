@@ -7,6 +7,11 @@
 
 using namespace exo::math;
 
+float uniform_random(float max=1)
+{
+	return max * ((rand() % 128 - 64) / 64.f);
+}
+
 #include "test.h"
 {
 	auto v0 = Vec<float, 3>{ 1, 2, 3 };
@@ -190,6 +195,41 @@ using namespace exo::math;
 		assert(tv.is_near({1, 0, 0, 1}));
 		auto inv = Mat4f::inverse(tm) * tv;
 		assert(inv.is_near(v));
+	}
+
+	{ // Check kalman filter
+		const float dt = 0.1f;
+
+		Mat<float, 2, 2> F = {
+			{ 1,  dt },
+			{ 0,   1 },
+		};
+
+		Mat<float, 2, 1> B = {
+			{ powf(dt, 2) / 2 },
+			{ dt },
+		};
+
+		auto kf = KalmanFilter<float, 2, 1, 2>(F, B);
+
+		float position = uniform_random(100);
+		float velocity;
+
+		for (float t = 0; t < 10; t += dt)
+		{
+			auto acceleration = sin(t);
+			velocity = cos(t);
+			position += velocity * dt;
+
+			Vec<float, 2> truth = { position, velocity };
+			Vec<float, 2> noise = { uniform_random(0.1f), uniform_random(0.1f) };
+
+			kf.update(truth + noise);
+			auto x_hat = kf.predict({ acceleration });
+
+			auto error = (x_hat - truth).len();
+			std::cout << "Error: " << std::to_string(error) << ", actual: " << truth.to_string() << ", expected: " << x_hat.to_string() << "\n";
+		}
 	}
 
 	return 0;
