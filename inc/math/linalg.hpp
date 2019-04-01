@@ -1,6 +1,7 @@
 #pragma once
 #include "../exo.hpp"
 #include <math.h>
+#include <functional>
 
 namespace exo
 {
@@ -350,6 +351,17 @@ namespace exo
 
 			}
 
+			Mat<S, R, C>& initialize(std::function<S (S r, S c)> init)
+			{
+				for (int row = R; row--;)
+				for (int col = C; col--;)
+				{
+					m[row][col] = init(static_cast<S>(row), static_cast<S>(col));
+				}
+
+				return *this;
+			}
+
 			template <ssize_t MC>
 			Mat<S, R, MC> operator* (Mat<S, C, MC>& m)
 			{
@@ -406,6 +418,128 @@ namespace exo
 				}
 
 				return str;
+			}
+
+			S distance(Mat<S, R, C> M)
+			{
+				S sum = 0;
+
+				for (int r = R; r--;)
+				for (int c = C; c--;)
+				{
+					auto d = M[r][c] - m[r][c];
+					sum += d * d;
+				}
+
+				return sqrt(sum);
+			}
+
+			void swap_rows(ssize_t row_i, ssize_t row_j)
+			{
+				S temp_row[C];
+
+				memcpy(temp_row, m[row_i], sizeof(S) * C);
+				memcpy(m[row_i], m[row_j], sizeof(S) * C);
+				memcpy(m[row_j], temp_row, sizeof(S) * C);
+			}
+
+			Mat<S, R, C>& rref()
+			{
+				int piv_c = 0;
+
+				// compute upper diagonal
+				for (int r = 0; r < R; r++)
+				{
+					// Check if the piv column of row r is zero. If it is, lets
+					// try to find a row below that has a non-zero column
+					if (m[r][piv_c] == 0)
+					{
+						int swap_ri = -1;
+						for (int ri = r + 1; ri < R; ri++)
+						{
+							if (m[ri][piv_c] != 0)
+							{
+								swap_ri = ri;
+								break;
+							}
+						}
+
+						if (swap_ri > -1) { swap_rows(swap_ri, r); }
+					}
+
+					{ // next row, scale so leading coefficient is 1
+						float d = 1 / m[r][piv_c];
+
+						// scale row
+						for (int c = piv_c; c < C; c++) { m[r][c] *= d; }
+					}
+
+
+					for (int ri = 0; ri < R; ri++)
+					{
+						// skip zero elements and skip row r
+						if (m[ri][piv_c] == 0 || ri == r) { continue; }
+
+						float d = m[ri][piv_c];
+
+						// scale row then subtract the row above to zero out
+						// other elements in this column
+						for (int c = piv_c; c < C; c++)
+						{
+							m[ri][c] -= d * m[r][c];
+						}
+					}
+
+					++piv_c;
+				}
+
+				return *this;
+			}
+
+			Mat<S, R, C * 2> augment()
+			{
+				const auto Mc = C * 2;
+				Mat<S, R, Mc> M;
+				S d = 0;
+
+				for (int r = 0; r < R; ++r)
+				{
+					// form the identity on the right hand side
+					M[r][r + C] = 1.0;
+
+					for (int c = 0; c < C; ++c)
+					{
+						M[r][c] = m[r][c];
+					}
+				}
+
+				return M;
+			}
+
+			Mat<S, R, C> inverse()
+			{
+				Mat<S, R, C> inv;
+				auto _rref = augment().rref();
+
+				for (int r = 0; r < R; r++)
+				{
+					memcpy(inv[r], _rref[r] + C, sizeof(S) * C);
+				}
+
+				return inv;
+			}
+
+			Mat<S, C, R> transpose()
+			{
+				Mat<S, C, R> res;
+
+				for (int r = 0; r < C; ++r)
+				for (int c = 0; c < R; ++c)
+				{
+					res[r][c] = m[c][r];
+				}
+
+				return res;
 			}
 
 			// template <typename STORAGE, ssize_t ROWS, ssize_t COLS>
@@ -552,6 +686,7 @@ namespace exo
 
 			S m[R][C];
 		};
+
 		using Mat4f = Mat<float, 4, 4>;
 		using Mat2f = Mat<float, 2, 2>;
 

@@ -95,6 +95,57 @@ using namespace exo::math;
 		assert(res == R);
 	}
 
+	{ // check matrix transpose
+		Mat<int, 2, 3> M = {
+			{ 1, 2, 3 },
+			{ 4, 5, 6 },
+		};
+
+		Mat<int, 3, 2> Mt = {
+			{ 1, 4 },
+			{ 2, 5 },
+			{ 3, 6 },
+		};
+
+		assert(M.transpose() == Mt);
+	}
+
+	{ // check matrix row swap
+		Mat<int, 2, 2> M = {
+			{ 1, 3 },
+			{ 2, 7 },
+		};
+
+		M.swap_rows(0, 1);
+
+		Mat<int, 2, 2> E = {
+			{ 2, 7 },
+			{ 1, 3 },
+		};
+
+		assert(M == E);
+	}
+
+	{ // check matrix inverse
+		Mat<float, 4, 4> M;
+
+		// initialize totally random matrix. Which will
+		// be invertible with very high likelihood.
+		M.initialize([](float r, float c) {
+			return static_cast<float>((rand() % 32) - 16);
+		});
+
+		auto inv = M.inverse();
+		std::cout << inv.to_string() << std::endl;
+
+		inv = inv * M;
+		std::cout << inv.to_string() << std::endl;
+
+		auto I = Mat<float, 4, 4>::I();
+
+		assert(I.distance(inv) < 0.0001);
+	}
+
 	{ // Check 2d rotation #1
 		auto v = Vec<float, 2>{ 0, 1 };
 		auto rotated = Mat2f::rotation(0) * v;
