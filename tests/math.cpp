@@ -215,6 +215,16 @@ float uniform_random(float max=1)
 		float position = uniform_random(100);
 		float velocity;
 
+		kf.R = {
+			{ 0.1,   0 },
+			{ 0,   0.1 },
+		};
+
+		kf.Q = {
+			{ 0.1,   0 },
+			{ 0,   0.1 },
+		};
+
 		for (float t = 0; t < 10; t += dt)
 		{
 			auto acceleration = sin(t);
@@ -229,7 +239,10 @@ float uniform_random(float max=1)
 
 			auto error = (x_hat - truth).len();
 			std::cout << "Error: " << std::to_string(error) << ", actual: " << truth.to_string() << ", expected: " << x_hat.to_string() << "\n";
+			std::cout << "vv P vv\n" << kf.P.to_string() << "\n";
 		}
+
+		// std::cout << "vv P vv\n" << kf.P << "\n";
 	}
 
 	return 0;

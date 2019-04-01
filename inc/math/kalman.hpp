@@ -86,7 +86,7 @@ struct KalmanFilter
 	/**
 	 * Unexpected noise covariance matrix
 	 */
-	Mat<S, X_SIZE, X_SIZE> Q = Mat<S, X_SIZE, X_SIZE>::I();
+	Mat<S, X_SIZE, X_SIZE> Q;// = Mat<S, X_SIZE, X_SIZE>::I();
 
 	/**
 	 * Sensor mapping matrix
@@ -96,7 +96,7 @@ struct KalmanFilter
 	/**
 	 * Sensor noise matrix
 	 */
-	Mat<S, Z_SIZE, Z_SIZE> R;
+	Mat<S, Z_SIZE, Z_SIZE> R;// = Mat<S, Z_SIZE, Z_SIZE>::I();
 
 private:
 	bool dirty = true;
