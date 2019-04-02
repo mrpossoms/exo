@@ -381,6 +381,71 @@ namespace exo
 				return r;
 			}
 
+
+			Vec<S, R> operator* (Vec<S, C>& v) { return *this * std::move(v); }
+			Vec<S, R> operator* (Vec<S, C>&& v)
+			{
+				Vec<S, R> r;
+
+				for (int row = R; row--;)
+				for (int col = C; col--;)
+				{
+					r[row] += this->m[row][col] * v[col];
+				}
+
+				return r;
+			}
+
+			Mat<S, R, C> operator* (S s)
+			{
+				Mat<S, R, C> r;
+
+				for (int row = R; row--;)
+				for (int col = C; col--;)
+				{
+					r[row][col] = this->m[row][col] * s;
+				}
+
+				return r;
+			}
+
+			Mat<S, R, C>& operator*= (S s)
+			{
+				for (int row = R; row--;)
+				for (int col = C; col--;)
+				{
+					m[row][col] *= s;
+				}
+
+				return *this;
+			}
+
+			Mat<S, R, C> operator/ (S s)
+			{
+				Mat<S, R, C> r;
+
+				for (int row = R; row--;)
+				for (int col = C; col--;)
+				{
+					r[row][col] = this->m[row][col] / s;
+				}
+
+				return r;
+			}
+
+			Mat<S, R, C>& operator/= (S s)
+			{
+				Mat<S, R, C> r;
+
+				for (int row = R; row--;)
+				for (int col = C; col--;)
+				{
+					m[row][col] /= s;
+				}
+
+				return *this;
+			}
+
 			Mat<S, R, C> operator+ (Mat<S, R, C>& m) { return *this + std::move(m); }
 			Mat<S, R, C> operator+ (Mat<S, R, C>&& m)
 			{
@@ -409,19 +474,6 @@ namespace exo
 				return r;
 			}
 
-			Vec<S, R> operator* (Vec<S, C>& v) { return *this * std::move(v); }
-			Vec<S, R> operator* (Vec<S, C>&& v)
-			{
-				Vec<S, R> r;
-
-				for (int row = R; row--;)
-				for (int col = C; col--;)
-				{
-					r[row] += this->m[row][col] * v[col];
-				}
-
-				return r;
-			}
 
 			inline S* operator[] (ssize_t row)
 			{
@@ -712,6 +764,51 @@ namespace exo
 					{ 0, 0, 1, v[2] },
 					{ 0, 0, 0, 1 }
 				};
+			}
+
+			template <ssize_t D, ssize_t N>
+			static Mat<S, D, D> estimate_covariance(Mat<S, D, N> samples)
+			{
+				// covariance matrix
+				Mat<S, D, D> Q;
+
+				// compute the mean of the samples
+				Vec<S, D> mu = {};
+				for (int r = 0; r < D; r++)
+				for (int c = 0; c < C; c++)
+				{
+					mu[r] += samples[r][c];
+				}
+				mu /= static_cast<S>(N);
+
+				// subtract the mean from the set of samples
+				for (int r = 0; r < D; r++)
+				for (int c = 0; c < C; c++)
+				{
+					samples[r][c] -= mu[r];
+				}
+
+				// for (int n = 0; n < N; n++)
+				// {
+				// 	for (int r = 0; r < D; r++)
+				// 	for (int c = 0; c < D; c++)
+				// 	{
+				// 		Q[r][c] += samples[r][n] * samples[c][n];
+				// 	}
+				// }
+
+				// compute the matrix
+				Q = samples * samples.transpose();
+
+				// for (int r = 0; r < D; ++r)
+				// for (int c = 0; c < D; ++c)
+				// {
+				// 	Q[r][c] = sqrt(Q[r][c]);
+				// }
+
+				Q /= (static_cast<S>(N) - 1);
+
+				return Q;
 			}
 
 			S m[R][C];
