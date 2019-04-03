@@ -788,24 +788,8 @@ namespace exo
 					samples[r][c] -= mu[r];
 				}
 
-				// for (int n = 0; n < N; n++)
-				// {
-				// 	for (int r = 0; r < D; r++)
-				// 	for (int c = 0; c < D; c++)
-				// 	{
-				// 		Q[r][c] += samples[r][n] * samples[c][n];
-				// 	}
-				// }
-
 				// compute the matrix
 				Q = samples * samples.transpose();
-
-				// for (int r = 0; r < D; ++r)
-				// for (int c = 0; c < D; ++c)
-				// {
-				// 	Q[r][c] = sqrt(Q[r][c]);
-				// }
-
 				Q /= (static_cast<S>(N) - 1);
 
 				return Q;
