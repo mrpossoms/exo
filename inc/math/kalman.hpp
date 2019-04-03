@@ -21,6 +21,14 @@ namespace math
 template <class S, ssize_t X_SIZE, ssize_t U_SIZE, ssize_t Z_SIZE>
 struct KalmanFilter
 {
+	KalmanFilter() {}
+
+	KalmanFilter(
+		Mat<S, X_SIZE, X_SIZE> f) : F(f)
+	{
+
+	}
+
 	KalmanFilter(
 		Mat<S, X_SIZE, X_SIZE> f,
 		Mat<S, X_SIZE, U_SIZE> b) : F(f), B(b)
