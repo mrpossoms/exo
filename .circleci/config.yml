@@ -4,7 +4,7 @@ jobs:
   build:
 
     docker:
-      - image: mrpossoms/ubuntu-artful-dev 
+      - image: mrpossoms/ubuntu-artful-dev:latest 
         environment:
 
     steps:
