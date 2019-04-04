@@ -4,7 +4,7 @@ jobs:
   build:
 
     docker:
-      - image: mrpossoms/ubuntu-artful-dev:latest 
+      - image: mrpossoms/ubuntu-bionic:latest 
         environment:
 
     steps:
