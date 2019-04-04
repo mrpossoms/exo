@@ -7,6 +7,11 @@
 
 using namespace exo::math;
 
+float uniform_random(float max=1)
+{
+	return max * ((rand() % 2048 - 1024) / 1024.f);
+}
+
 #include "test.h"
 {
 	auto v0 = Vec<float, 3>{ 1, 2, 3 };
@@ -190,6 +195,123 @@ using namespace exo::math;
 		assert(tv.is_near({1, 0, 0, 1}));
 		auto inv = Mat4f::inverse(tm) * tv;
 		assert(inv.is_near(v));
+	}
+
+	{ // test covariance estimation
+		float sig_0 = 0.5f, sig_1 = 0.25f; // standard deviations of pdf
+		float sig_01 = sig_0 * sig_1;
+		float sig_0_2 = sig_0 * sig_0;
+		float sig_1_2 = sig_1 * sig_1;
+		float p = 0.05 / sig_01;           // correlation between variables
+		float p2 = p * p;
+
+		// generate sample dataset of correlated bivariate distribution
+		constexpr ssize_t n = 1000;
+		Mat<float, 2, n> X;
+		int i = 0;
+		float pi2 = M_PI * 2;
+
+		constexpr int size = 8;
+		float counts[size][size] = {};
+		float max = 0;
+
+		while(i < n)
+		{
+			auto x = uniform_random(4), y = uniform_random(4);
+			auto x2 = x * x, y2 = y * y;
+			auto z = (x2 / sig_0_2) + (y2 / sig_1_2) - ((2 * p * x * y) / sig_01);
+			auto sample = 1 / (pi2 * sig_01 * sqrt(1 - p2));
+			sample *= exp(-z / (2 * (1 - p2)));
+
+			if (uniform_random(0.5) + 0.5 < sample)
+			{
+				X[0][i] = x;
+				X[1][i] = y;
+				auto c = counts[(int)x + 4][(int)y + 4]++;
+
+				if (c > max) { max = c; }
+				i++;
+			}
+		}
+
+		std::cout << "Visualized distribution\n";
+
+		// render densities into terminal
+		const char* spectrum = " .,:;+=xX#";
+		int max_i = 0;
+		for (int y = 0; y < size; ++y)
+		{
+			for (int x = 0; x < size; ++x)
+			{
+				int i = 9 * (counts[x][y] / max);
+				std::cout << spectrum[i] << spectrum[i];
+
+				if (i > max_i) { max_i = i; }
+			}
+
+			std::cout << "|\n";
+		}
+
+		Mat<float, 2, 2> expected_sig = {
+			{ sig_0_2, p * sig_01 },
+			{ p * sig_01, sig_1_2 },
+		};
+		auto Q = Mat<float, 2, 2>::estimate_covariance(X);
+		std::cout << "Max count: " << std::to_string(max) << " Max spec i: " << std::to_string(max_i) << "\n";
+		std::cout << "Expected covariance matrix\n";
+		std::cout << expected_sig.to_string() << "\n";
+		std::cout << "Estimated covariance matrix Q\n";
+		std::cout << Q.to_string() << "\n";
+	}
+
+	{ // Check kalman filter
+		const float dt = 0.1f;
+
+		Mat<float, 2, 2> F = {
+			{ 1,  dt },
+			{ 0,   1 },
+		};
+
+		Mat<float, 2, 1> B = {
+			{ powf(dt, 2) / 2 },
+			{ dt },
+		};
+
+		auto kf = KalmanFilter<float, 2, 1, 2>(F, B);
+
+		float position = uniform_random(100);
+		float velocity;
+
+		// sensor noise covariance
+		kf.R = {
+			{ 0.1,   0 },
+			{ 0,   0.1 },
+		};
+
+		// process noise covariance
+		kf.Q = {
+			{ 0.1,   0 },
+			{ 0,   0.1 },
+		};
+
+		for (float t = 0; t < 10; t += dt)
+		{
+			auto acceleration = -sin(t);
+			velocity = cos(t);
+			position += velocity * dt;
+
+			Vec<float, 2> noise = { uniform_random(0.25f), uniform_random(0.25f) };
+			Vec<float, 2> truth = { position, velocity };
+			Vec<float, 2> noisy = truth + noise;
+
+			kf.update(noisy);
+			auto x_hat = kf.predict({ acceleration });
+
+			std::cout << "Filter Error: " << std::to_string((x_hat - truth).len()) <<
+			              ", raw error: " << std::to_string((truth - noisy).len()) << "\n";
+		}
+
+		std::cout << "vv P vv\n" << kf.P.to_string() << "\n";
 	}
 
 	return 0;
