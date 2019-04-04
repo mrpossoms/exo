@@ -61,8 +61,7 @@ namespace exo
 			}
 
 
-			inline Vec<S,D> operator+(const Vec<S,D>& v) const { return *this + std::move(v); }
-			inline Vec<S,D> operator+(const Vec<S,D>&& v) const
+			inline Vec<S,D> operator+(const Vec<S,D>& v) const
 			{
 				Vec<S,D> out;
 				for (auto i = D; i--;)
@@ -72,8 +71,8 @@ namespace exo
 				return out;
 			}
 
-			inline Vec<S,D> operator-(const Vec<S,D>& v) const { return *this - std::move(v); }
-			inline Vec<S,D> operator-(const Vec<S,D>&& v) const
+
+			inline Vec<S,D> operator-(const Vec<S,D>& v) const
 			{
 				Vec<S,D> out;
 				for (auto i = D; i--;)
@@ -83,8 +82,8 @@ namespace exo
 				return out;
 			}
 
-			inline Vec<S,D> operator*(const Vec<S,D>& v) const { return *this * std::move(v); }
-			inline Vec<S,D> operator*(const Vec<S,D>&& v) const
+
+			inline Vec<S,D> operator*(const Vec<S,D>& v) const
 			{
 				Vec<S,D> out;
 				for (auto i = D; i--;)
@@ -93,6 +92,7 @@ namespace exo
 				}
 				return out;
 			}
+
 
 			inline Vec<S,D> operator*(const S s) const
 			{
@@ -104,8 +104,8 @@ namespace exo
 				return out;
 			}
 
-			inline Vec<S,D> operator/(const Vec<S,D>& v) const { return *this / std::move(v); }
-			inline Vec<S,D>  operator/(const Vec<S,D>&& v) const
+
+			inline Vec<S,D>  operator/(const Vec<S,D>& v) const
 			{
 				Vec<S,D> out;
 				for (auto i = D; i--;)
@@ -114,6 +114,7 @@ namespace exo
 				}
 				return out;
 			}
+
 
 			inline Vec<S,D> operator/(const S s) const
 			{
@@ -125,8 +126,8 @@ namespace exo
 				return out;
 			}
 
-			inline Vec<S,D> operator+=(const Vec<S,D>& v) { return *this += std::move(v); }
-			inline Vec<S,D>& operator+=(const Vec<S,D>&& v)
+
+			inline Vec<S,D>& operator+=(const Vec<S,D>& v)
 			{
 				for (auto i = D; i--;)
 				{
@@ -135,8 +136,8 @@ namespace exo
 				return *this;
 			}
 
-			inline Vec<S,D> operator-=(const Vec<S,D>& v) { return *this -= std::move(v); }
-			inline Vec<S,D>& operator-=(const Vec<S,D>&& v)
+
+			inline Vec<S,D>& operator-=(const Vec<S,D>& v)
 			{
 				for (auto i = D; i--;)
 				{
@@ -145,8 +146,8 @@ namespace exo
 				return *this;
 			}
 
-			inline Vec<S,D> operator*=(const Vec<S,D>& v) { return *this *= std::move(v); }
-			inline Vec<S,D>& operator*=(const Vec<S,D>&& v)
+
+			inline Vec<S,D>& operator*=(const Vec<S,D>& v)
 			{
 				for (auto i = D; i--;)
 				{
@@ -166,8 +167,7 @@ namespace exo
 			}
 
 
-			inline Vec<S,D> operator/=(const Vec<S,D>& v) { return *this /= std::move(v); }
-			inline Vec<S,D>& operator/=(const Vec<S,D>&& v)
+			inline Vec<S,D>& operator/=(const Vec<S,D>& v)
 			{
 				for (auto i = D; i--;)
 				{
@@ -175,6 +175,7 @@ namespace exo
 				}
 				return *this;
 			}
+
 
 			inline Vec<S,D>& operator/=(const S s)
 			{
@@ -185,11 +186,11 @@ namespace exo
 				return *this;
 			}
 
-			inline bool operator!=(const Vec<S,D>& v) const { return !(*this == std::move(v)); }
-			inline bool operator!=(const Vec<S,D>&& v) const { return !(*this == v); }
 
-			inline bool operator==(const Vec<S,D>& v) const { return *this == std::move(v); }
-			inline bool operator==(const Vec<S,D>&& v) const
+			inline bool operator!=(const Vec<S,D>& v) const { return !(*this == v); }
+
+
+			inline bool operator==(const Vec<S,D>& v) const
 			{
 				for (auto i = D; i--;)
 				{
@@ -244,16 +245,16 @@ namespace exo
 				return sum;
 			}
 
-			bool is_near(const Vec<S,D>& v, S threshold=0.0001) { return this->is_near(std::move(v)); }
-			bool is_near(const Vec<S,D>&& v, S threshold=0.0001)
+
+			bool is_near(const Vec<S,D>& v, S threshold=0.0001)
 			{
 				auto diff = *this - v;
 
 				return diff.dot(diff) <= threshold;
 			}
 
-			Vec<S,D>& take_min(const Vec<S,D>& v) { return this->take_min(std::move(v)); }
-			Vec<S,D>& take_min(const Vec<S,D>&& v)
+
+			Vec<S,D>& take_min(const Vec<S,D>& v)
 			{
 				for (int i = 0; i < D; ++i)
 				{
@@ -264,8 +265,8 @@ namespace exo
 				return *this;
 			}
 
-			Vec<S,D>& take_max(const Vec<S,D>& v) { return this->take_max(std::move(v)); }
-			Vec<S,D>& take_max(const Vec<S,D>&& v)
+
+			Vec<S,D>& take_max(const Vec<S,D>& v)
 			{
 				for (int i = 0; i < D; ++i)
 				{
@@ -281,12 +282,7 @@ namespace exo
 				return a[0]*b[1] - a[1]*b[0];
 			}
 
-			static Vec<S,3> cross(Vec<S,3>& a, Vec<S,3>& b)
-			{
-				return Vec::cross(std::move(a), std::move(b));
-			}
-
-			static Vec<S,3> cross(Vec<S,3>&& a, Vec<S,3>&& b)
+			static Vec<S,3> cross(Vec<S,3> const& a, Vec<S,3> const& b)
 			{
 				return {
 					a[1]*b[2] - a[2]*b[1],
@@ -362,8 +358,9 @@ namespace exo
 				return *this;
 			}
 
+
 			template <ssize_t MC>
-			Mat<S, R, MC> operator* (Mat<S, C, MC>& m)
+			Mat<S, R, MC> operator* (Mat<S, C, MC> const& m)
 			{
 				Mat<S, R, MC> r;
 
@@ -372,20 +369,20 @@ namespace exo
 				{
 					for (int i = C; i--;)
 					{
-						r[row][col] += this->m[row][i] * m[i][col];
+						r[row][col] += this->m[row][i] * m.m[i][col];
 					}
 				}
 
 				return r;
 			}
 
-			template <ssize_t MC>
-			Vec<S, R> operator* (Vec<S, MC>& v)
+
+			Vec<S, R> operator* (Vec<S, C> const& v)
 			{
 				Vec<S, R> r;
 
 				for (int row = R; row--;)
-				for (int col = MC; col--;)
+				for (int col = C; col--;)
 				{
 					r[row] += this->m[row][col] * v[col];
 				}
@@ -393,18 +390,98 @@ namespace exo
 				return r;
 			}
 
+			Mat<S, R, C> operator* (S s)
+			{
+				Mat<S, R, C> r;
+
+				for (int row = R; row--;)
+				for (int col = C; col--;)
+				{
+					r[row][col] = this->m[row][col] * s;
+				}
+
+				return r;
+			}
+
+			Mat<S, R, C>& operator*= (S s)
+			{
+				for (int row = R; row--;)
+				for (int col = C; col--;)
+				{
+					m[row][col] *= s;
+				}
+
+				return *this;
+			}
+
+			Mat<S, R, C> operator/ (S s)
+			{
+				Mat<S, R, C> r;
+
+				for (int row = R; row--;)
+				for (int col = C; col--;)
+				{
+					r[row][col] = this->m[row][col] / s;
+				}
+
+				return r;
+			}
+
+			Mat<S, R, C>& operator/= (S s)
+			{
+				Mat<S, R, C> r;
+
+				for (int row = R; row--;)
+				for (int col = C; col--;)
+				{
+					m[row][col] /= s;
+				}
+
+				return *this;
+			}
+
+
+			Mat<S, R, C> operator+ (Mat<S, R, C> const& m)
+			{
+				Mat<S, R, C> r;
+
+				for (int row = R; row--;)
+				for (int col = C; col--;)
+				{
+					r[row][col] = this->m[row][col] + m.m[row][col];
+				}
+
+				return r;
+			}
+
+
+			Mat<S, R, C> operator- (Mat<S, R, C> const& m)
+			{
+				Mat<S, R, C> r;
+
+				for (int row = R; row--;)
+				for (int col = C; col--;)
+				{
+					r[row][col] = this->m[row][col] - m.m[row][col];
+				}
+
+				return r;
+			}
+
+
 			inline S* operator[] (ssize_t row)
 			{
 				if (row < R) { return m[row]; }
 				return nullptr;
 			}
 
+
 			inline bool operator== (Mat<S, R, C> M)
 			{
 				return memcmp(this->m, M.m, sizeof(M.m)) == 0;
 			}
 
-			std::string to_string()
+			std::string to_string() const
 			{
 				std::string str = "";
 				for (int j = 0; j < R; ++j)
@@ -420,14 +497,14 @@ namespace exo
 				return str;
 			}
 
-			S distance(Mat<S, R, C> M)
+			S distance(Mat<S, R, C> const& M)
 			{
 				S sum = 0;
 
 				for (int r = R; r--;)
 				for (int c = C; c--;)
 				{
-					auto d = M[r][c] - m[r][c];
+					auto d = M.m[r][c] - m[r][c];
 					sum += d * d;
 				}
 
@@ -684,6 +761,35 @@ namespace exo
 				};
 			}
 
+			template <ssize_t D, ssize_t N>
+			static Mat<S, D, D> estimate_covariance(Mat<S, D, N> samples)
+			{
+				// covariance matrix
+				Mat<S, D, D> Q;
+
+				// compute the mean of the samples
+				Vec<S, D> mu = {};
+				for (int r = 0; r < D; r++)
+				for (int c = 0; c < C; c++)
+				{
+					mu[r] += samples[r][c];
+				}
+				mu /= static_cast<S>(N);
+
+				// subtract the mean from the set of samples
+				for (int r = 0; r < D; r++)
+				for (int c = 0; c < C; c++)
+				{
+					samples[r][c] -= mu[r];
+				}
+
+				// compute the matrix
+				Q = samples * samples.transpose();
+				Q /= (static_cast<S>(N) - 1);
+
+				return Q;
+			}
+
 			S m[R][C];
 		};
 
@@ -707,12 +813,8 @@ namespace exo
 				// NOP
 			}
 
-			Quat operator*(Quat& other)
-			{
-				return *this * std::move(other);
-			}
 
-			Quat operator*(Quat&& other)
+			Quat operator*(Quat const& other)
 			{
 				auto t3 = this->as_dimension<3>();
 				auto o3 = this->as_dimension<3>();
@@ -729,13 +831,8 @@ namespace exo
 				};
 			}
 
-			Quat& operator*=(Quat&& other)
-			{
-				*this = *this * other;
-				return *this;
-			}
 
-			Quat& operator*=(Quat& other)
+			Quat& operator*=(Quat const& other)
 			{
 				*this = *this * std::move(other);
 				return *this;
@@ -755,12 +852,8 @@ namespace exo
 				return inv;
 			}
 
-			Vec<float, 3> rotate(Vec<float, 3>& v)
-			{
-				return this->rotate(std::move(v));
-			}
 
-			Vec<float, 3> rotate(Vec<float, 3>&& v)
+			Vec<float, 3> rotate(Vec<float, 3> const& v)
 			{
 				auto q_xyz = this->as_dimension<3>();
 
@@ -825,8 +918,8 @@ namespace exo
 				}
 			}
 
-			inline Basis<S, 3> rotate(Quat& q) { return rotate(std::move(q)); }
-			inline Basis<S, 3> rotate(Quat&& q)
+
+			inline Basis<S, 3> rotate(Quat const& q)
 			{
 				return {
 					q.rotate(vectors[0]),
