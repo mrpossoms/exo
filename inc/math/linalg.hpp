@@ -21,7 +21,7 @@ namespace exo
 				for (int i = D; i--;) { v[i] = 0; }
 			}
 
-			Vec(S* arr)
+			Vec(const S* arr)
 			{
 				for (int i = D; i--;) { v[i] = arr[i]; }
 			}
@@ -201,7 +201,7 @@ namespace exo
 			}
 
 			template<ssize_t ND>
-			inline Vec<S, ND> as_dimension()
+			inline Vec<S, ND> as_dimension() const
 			{
 				return Vec<S, ND>(this->v);
 			}
@@ -853,7 +853,7 @@ namespace exo
 			}
 
 
-			Vec<float, 3> rotate(Vec<float, 3> const& v)
+			Vec<float, 3> rotate(Vec<float, 3> const& v) const
 			{
 				auto q_xyz = this->as_dimension<3>();
 

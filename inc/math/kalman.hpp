@@ -29,12 +29,14 @@ struct KalmanFilter
 
 	}
 
+
 	KalmanFilter(
 		Mat<S, X_SIZE, X_SIZE> f,
 		Mat<S, X_SIZE, U_SIZE> b) : F(f), B(b)
 	{
 
 	}
+
 
 	virtual Mat<S, X_SIZE, Z_SIZE> gain()
 	{
@@ -45,9 +47,8 @@ struct KalmanFilter
 		return P * Ht * right;
 	}
 
-	void update(Vec<S, Z_SIZE>& sensor_readings)
-	{ update(std::move(sensor_readings)); }
-	void update(Vec<S, Z_SIZE>&& sensor_readings)
+
+	void update(Vec<S, Z_SIZE> const& sensor_readings)
 	{
 		auto K = gain();
 
@@ -57,9 +58,8 @@ struct KalmanFilter
 		dirty = true;
 	}
 
-	Vec<S, X_SIZE> predict(Vec<S, U_SIZE>& control_vector)
-	{ return predict(std::move(control_vector)); }
-	Vec<S, X_SIZE> predict(Vec<S, U_SIZE>&& control_vector)
+
+	Vec<S, X_SIZE> predict(Vec<S, U_SIZE> const& control_vector)
 	{
 		if (dirty)
 		{
@@ -94,7 +94,7 @@ struct KalmanFilter
 	/**
 	 * Unexpected noise covariance matrix
 	 */
-	Mat<S, X_SIZE, X_SIZE> Q;// = Mat<S, X_SIZE, X_SIZE>::I();
+	Mat<S, X_SIZE, X_SIZE> Q = Mat<S, X_SIZE, X_SIZE>::I() * 0.1f;
 
 	/**
 	 * Sensor mapping matrix
