@@ -6,6 +6,12 @@
 
 #define DESCRIPTION "Test configuration for nix implementions"
 
+struct Foo {
+    int a;
+    int b;
+    float c;
+};
+
 #include "test.h"
 {
 
@@ -33,6 +39,20 @@
         const char* homedir = pw->pw_dir;
         assert(exo::nix::fs::exists(std::string(homedir) + "/etc/test/foo") == exo::Result::OK);
 
+    }
+
+    { // try to store and load a blob
+        Foo expected = { 1, 33, 7.0 };
+
+        std::string base_path = "/tmp/test/";
+        exo::nix::data::Config cfg(base_path);
+
+        cfg["bar"].set_blob<Foo>(expected);
+
+        Foo loaded;
+        cfg["bar"].get_blob<Foo>(loaded);
+
+        assert(memcmp(&expected, &loaded, sizeof(Foo)) == 0);
     }
 
     return 0;

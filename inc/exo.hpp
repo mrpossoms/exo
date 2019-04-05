@@ -30,6 +30,7 @@ namespace exo
         INCOMPATIBLE_MESSAGE,
         INCOMPATIBLE_EXO_VERSION,
         NO_PERMISSION,
+        DOES_NOT_EXIST,
     };
 
 
@@ -55,6 +56,7 @@ namespace exo
             case Result::INCOMPATIBLE_MESSAGE: return "INCOMPATIBLE_MESSAGE";
             case Result::INCOMPATIBLE_EXO_VERSION: return "INCOMPATIBLE_EXO_VERSION";
             case Result::NO_PERMISSION: return "NO_PERMISSION";
+            case Result::DOES_NOT_EXIST: return "DOES_NOT_EXIST";
         }
     }
 

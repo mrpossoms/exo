@@ -1,5 +1,7 @@
 #pragma once
 
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <libgen.h>
 #include <limits.h>
 #include <pwd.h>
@@ -72,7 +74,7 @@ struct Config
     {
         base_path = path;
 
-        if (r_mkdir(path.c_str()) == exo::Result::NO_PERMISSION)
+        if (r_mkdir(path.c_str()) != exo::Result::OK)
         {
             struct passwd* pw = getpwuid(getuid());
             const char* homedir = pw->pw_dir;
@@ -85,7 +87,7 @@ struct Config
     {
         base_path = path;
 
-        if (r_mkdir(path.c_str()) == exo::Result::NO_PERMISSION)
+        if (r_mkdir(path.c_str()) != exo::Result::OK)
         {
             struct passwd* pw = getpwuid(getuid());
             const char* homedir = pw->pw_dir;
@@ -137,6 +139,8 @@ struct Config
             return *this;
         }
 
+
+
         template<class T>
         T as()
         {
@@ -148,13 +152,8 @@ struct Config
             return val;
         }
 
-        /**
-         * @param value new value to be stored at 'path'
-         */
-        void operator=(std::string value)
+        bool make_paths()
         {
-            std::fstream fs;
-
             char tmp[PATH_MAX];
             strncpy(tmp, path.c_str(), PATH_MAX);
             auto parents = dirname(tmp);
@@ -162,10 +161,22 @@ struct Config
             if (parents == nullptr)
             {
                 exo::Log::error(0, "Config: failed to get dirname for " + std::string(path));
-                return;
+                return false;
             }
 
             r_mkdir(parents);
+            return true;
+        }
+
+        /**
+         * @param value new value to be stored at 'path'
+         */
+        void operator=(std::string value)
+        {
+            std::fstream fs;
+
+            if (make_paths() == false) { return; }
+
             fs.open(path.c_str(), std::ios::out | std::ios::trunc);
             fs << value;
             fs.close();
@@ -188,6 +199,49 @@ struct Config
             std::cerr << str << std::endl;
 
             return str;
+        }
+
+        template<class T>
+        exo::Result get_blob(T& blob)
+        {
+            int fd = open(path.c_str(), O_RDONLY);
+            if (fd == -1) { return exo::Result::DOES_NOT_EXIST; }
+
+            auto size = sizeof(blob);
+            if (read(fd, &blob, size) != size)
+            {
+                close(fd);
+                return exo::Result::READ_ERR;
+            }
+            close(fd);
+
+            return exo::Result::OK;
+        }
+
+        template<class T>
+        exo::Result set_blob(T& blob)
+        {
+            if (is_new())
+            {
+                if (!make_paths()) { return exo::Result::RESOURCE_CREATE_FAILED; }
+            }
+
+            mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+            int fd = open(path.c_str(), O_WRONLY | O_CREAT, mode);
+
+            if (fd > -1)
+            {
+                auto size = sizeof(blob);
+                if (write(fd, &blob, size) != size)
+                {
+                    close(fd);
+                    return exo::Result::WRITE_ERR;
+                }
+            }
+
+            close(fd);
+
+            return exo::Result::OK;
         }
     };
 
