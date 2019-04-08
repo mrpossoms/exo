@@ -2,11 +2,13 @@
 
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <libgen.h>
 #include <limits.h>
 #include <pwd.h>
 
 #include <string>
+#include <sstream>
 #include <iostream>
 #include <fstream>
 #include "../exo.hpp"
@@ -73,6 +75,9 @@ struct Config
     Config(std::string&& path)
     {
         base_path = path;
+
+        //make sure the base path ends with a slash
+        if (base_path.back() != '/') { base_path += "/"; }
 
         if (r_mkdir(path.c_str()) != exo::Result::OK)
         {

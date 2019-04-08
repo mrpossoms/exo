@@ -481,6 +481,11 @@ namespace exo
 				return memcmp(this->m, M.m, sizeof(M.m)) == 0;
 			}
 
+			std::string to_string(Mat<S, R, C> const&)
+			{
+				return this->to_string();
+			}
+
 			std::string to_string() const
 			{
 				std::string str = "";
