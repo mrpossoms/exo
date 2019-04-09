@@ -68,7 +68,7 @@ namespace exo
     struct Log
     {
 
-        virtual ~Log();
+        virtual ~Log() { };
 
         enum class Type
         {

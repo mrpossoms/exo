@@ -25,7 +25,7 @@ struct Stderr : public exo::Log
 		_show_time = timestamp;
     }
 
-    ~Stderr() { };
+    virtual ~Stderr() { };
 
 protected:
     virtual void log(Log::Type type, std::string& msg)
