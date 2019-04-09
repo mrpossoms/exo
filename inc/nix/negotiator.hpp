@@ -38,17 +38,17 @@ struct Negotiator
                 if (len > 0)
                 {
                     // replace all the semi-colons with null terminators
-                    for (int i = len; i--; ) if (buf[i] == ';') { buf[i] = '\0'; }
+                    for (size_t i = len; i--; ) if (buf[i] == ';') { buf[i] = '\0'; }
 
                     char* kvp = buf;
 
-                    while ((int)(kvp - static_cast<char*>(buf)) < len)
+                    while ((size_t)(kvp - static_cast<char*>(buf)) < len)
                     {
                         size_t kvp_len = strlen(kvp);
                         char *key = kvp, *value = nullptr;
 
                         // find the equal sign, replace it with a null terminator
-                        int i = 0;
+                        size_t i = 0;
                         for (; kvp[i] != '=' && i < kvp_len; ++i);
                         if (kvp[i] == '=')
                         {
@@ -82,7 +82,7 @@ struct Negotiator
     Negotiator& send_request()
     {
         auto written = write(STDOUT_FILENO, _request_string.c_str(), _request_string.length());
-        assert(written == _request_string.length());
+        assert((unsigned long)written == (unsigned long)_request_string.length());
         return *this;
     }
 

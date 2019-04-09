@@ -94,9 +94,9 @@ struct Out : public exo::msg::Outlet
         auto old_act = disable_sigpipe();
         auto to_write = pay.len;
 
-        for(auto bytes = pay.len; bytes > 0;)
+        for(auto bytes = to_write; bytes > 0;)
         {
-            auto written = write(_socket, pay.buf, pay.len);
+            auto written = write(_socket, pay.buf, to_write);
             if (written >= 0)
             {
                 bytes -= written;
@@ -259,12 +259,11 @@ struct In : public exo::msg::Inlet
         exo::Result flush(size_t bytes)
         {
             uint64_t junk;
-            int junk_read = 0;
 
             while (bytes > 0)
             {
                 auto to_read = bytes > sizeof(junk) ? sizeof(junk) : bytes;
-                auto bytes_read = read(_sock, &junk, sizeof(junk));
+                auto bytes_read = read(_sock, &junk, to_read);
 
                 if (bytes_read <= 0)
                 {
