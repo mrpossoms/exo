@@ -12,7 +12,7 @@ OS_TARGET=$(exo get os_target)
 TARGET_OBJS=$(shell ls $(EXO_ROOT)/obj/$(TARGET)/$(OS_TARGET)_*)
 MOD_OBJS=$(addprefix obj/$(TARGET)/,$(MOD_SRC:.cpp=.o))
 INC+=-I../../ -I../../inc
-FLAGS+=$(shell exo magicdef .)
+CPPC_FLAGS+=$(shell exo magicdef .)
 
 
 #----------------------------------------
@@ -29,7 +29,7 @@ all: $(MOD_OBJS) exo
 
 .PHONY: unix-mod
 unix-mod: bin/$(TARGET) $(MOD_OBJS) exo
-	$(CMP) $(FLAGS) $(EXO_ROOT)/obj/$(TARGET)/*.o $(MOD_OBJS) -o bin/$(TARGET)/$(MOD_NAME)
+	$(EXO_CPPC) $(CPPC_FLAGS) $(EXO_ROOT)/obj/$(TARGET)/*.o $(MOD_OBJS) -o bin/$(TARGET)/$(MOD_NAME)
 
 msg/%.magic: msg/%.h
 	echo $(shell exo magic $<) > $@
@@ -41,7 +41,7 @@ obj/$(TARGET):
 	mkdir -p $@
 
 obj/$(TARGET)/%.o: %.cpp obj/$(TARGET) $(MAGIC_FILES)
-	$(CMP) $(FLAGS) $(INC) -c $< -o $@
+	$(EXO_CPPC) $(CPPC_FLAGS) $(INC) -c $< -o $@
 
 .PHONY: target_objs
 target_objs:

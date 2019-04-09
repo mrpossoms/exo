@@ -6,7 +6,7 @@
 #
 include $(EXO_ROOT)/vars.mk
 
-FLAGS+=
+CPPC_FLAGS+=
 INC+=-Iinc/
 SRCS=$(shell ls src | grep .cpp)
 TEST_SRCS=$(shell ls tests | grep .cpp)
@@ -28,7 +28,7 @@ tests/bin:
 	mkdir tests/bin
 
 tests/bin/%: tests/%.cpp tests/bin
-	$(CMP) $(INC) $(FLAGS) -Itests/ $< -o $@
+	$(EXO_CPPC) $(INC) $(CPPC_FLAGS) -Itests/ $< -o $@
 
 tests: $(TEST_EXES)
 	@echo "$(COLOR_GREEN) Built all tests $(COLOR_OFF)"
