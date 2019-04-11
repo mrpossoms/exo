@@ -33,8 +33,7 @@ namespace exo
         DOES_NOT_EXIST,
     };
 
-
-    static std::string result_to_string(Result& res)
+    std::string result_to_string(Result& res)
     {
         switch(res)
         {
@@ -60,7 +59,6 @@ namespace exo
         }
     }
 
-
     struct Context;
     struct Mod;
 
@@ -69,6 +67,9 @@ namespace exo
      */
     struct Log
     {
+
+        virtual ~Log() { };
+
         enum class Type
         {
             info,

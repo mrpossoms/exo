@@ -117,7 +117,7 @@ namespace exo
              */
             bool remove(T e)
             {
-                for (int i = 0; i < _size; i++)
+                for (size_t i = 0; i < _size; i++)
                 {
                     if (e == _list[i]) { return remove_at(i); }
                 }

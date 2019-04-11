@@ -23,7 +23,7 @@ struct Pipeline
 
         exo::Result operator<<(exo::msg::PayloadBuffer&& pay)
         {
-		    if (write(STDOUT_FILENO, pay.buf, pay.len) == pay.len)
+		    if ((size_t)write(STDOUT_FILENO, pay.buf, pay.len) == pay.len)
 		    {
 		        return Result::OK;
 		    }
@@ -36,7 +36,7 @@ struct Pipeline
     {
         exo::Result operator>>(exo::msg::Hdr& h)
         {
-		    if (read(STDIN_FILENO, &h, sizeof(h)) == sizeof(h))
+		    if ((size_t)read(STDIN_FILENO, &h, sizeof(h)) == sizeof(h))
 		    {
 		        return Result::OK;
 		    }
@@ -46,7 +46,7 @@ struct Pipeline
 
         exo::Result operator>>(exo::msg::PayloadBuffer&& pay)
         {
-		    if (read(STDIN_FILENO, pay.buf, pay.len) == pay.len)
+		    if ((size_t)read(STDIN_FILENO, pay.buf, pay.len) == pay.len)
 		    {
 		        return Result::OK;
 		    }
