@@ -33,7 +33,7 @@ namespace exo
         DOES_NOT_EXIST,
     };
 
-    std::string result_to_string(Result& res)
+    static std::string result_to_string(Result& res)
     {
         switch(res)
         {

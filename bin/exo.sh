@@ -2,6 +2,7 @@
 
 CFG_ROOT=$HOME/.exo
 DEFAULT_ROOT=/usr/share/exo
+DEFAULT_INC=/usr/include/exo
 
 if [ -z $EXO_ROOT ]; then
 	source $EXO_ROOT ./exo-utils.sh
@@ -31,6 +32,7 @@ if [ -z $(printenv | grep EXO_ROOT) ]; then
     else
     # otherwise go through the normal prompts
 	exo_root=$(prompt "Specify your EXO_ROOT [default $DEFAULT_ROOT]: ")
+	exo_inc=$(prompt "Specify the path to link exo's header files [default $DEFAULT_INC]: ")
 	dot_file=$(prompt "Specify the full path to your shell's rc file: ")
     fi
 
@@ -38,8 +40,15 @@ if [ -z $(printenv | grep EXO_ROOT) ]; then
         exo_root=$DEFAULT_ROOT
     fi
 
+    if [ -z $exo_inc ]; then
+        exo_inc=$DEFAULT_INC
+    fi
+
     ln -s $(pwd)/.. $exo_root 
     on_failure "Couldn't create simlink to '$exo_root'"
+
+    ln -s $(pwd)/../inc $exo_inc 
+    on_failure "Couldn't create simlink to '$exo_inc'"
 
     cp $dot_file $dot_file.exo.bk
     echo "export EXO_ROOT=$exo_root" >> $dot_file
