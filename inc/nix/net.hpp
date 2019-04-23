@@ -383,7 +383,7 @@ struct In : public exo::msg::Inlet
         Client* client;
         auto res = get_ready_clients(&client);
 
-        exo::Log::info(7, exo::result_to_string(res));
+        exo::Log::info(7, exo::ResultHelper(res).to_string());
 
         switch (res)
         {

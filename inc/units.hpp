@@ -71,11 +71,11 @@ struct Decimeter : public Meter<TYPE, 1, 10> { Decimeter(TYPE v) : Meter<TYPE, 1
 template <class TYPE>
 struct Kilometer : public Meter<TYPE, 1000, 1> { Kilometer(TYPE v) : Meter<TYPE, 1000, 1>(v) { } };
 
-static Kilometer<float>  operator"" _km(long double v) { return { static_cast<float>(v) }; }
-static Meter<float>      operator"" _m(long double v)  { return { static_cast<float>(v) }; }
-static Decimeter<float>  operator"" _dm(long double v) { return { static_cast<float>(v) }; }
-static Centimeter<float> operator"" _cm(long double v) { return { static_cast<float>(v) }; }
-static Millimeter<float> operator"" _mm(long double v) { return { static_cast<float>(v) }; }
+inline static Kilometer<float>  operator"" _km(long double v) { return { static_cast<float>(v) }; }
+inline static Meter<float>      operator"" _m(long double v)  { return { static_cast<float>(v) }; }
+inline static Decimeter<float>  operator"" _dm(long double v) { return { static_cast<float>(v) }; }
+inline static Centimeter<float> operator"" _cm(long double v) { return { static_cast<float>(v) }; }
+inline static Millimeter<float> operator"" _mm(long double v) { return { static_cast<float>(v) }; }
 
 using M = Meter<float>;
 using Mm = Millimeter<float>;

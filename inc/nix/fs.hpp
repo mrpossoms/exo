@@ -11,22 +11,20 @@ namespace exo
 namespace nix
 {
 
-namespace fs
+struct fs
 {
+    static Result exists(std::string path)
+    {
+    	struct stat statbuf;
 
-static Result exists(std::string path)
-{
-	struct stat statbuf;
-
-	switch (stat(path.c_str(), &statbuf))
-	{
-		case 0:       return Result::OK;
-		case ENOENT:  return Result::BAD;
-		default:      return Result::ERROR;
-	}
-}
-
-}
+    	switch (stat(path.c_str(), &statbuf))
+    	{
+    		case 0:       return Result::OK;
+    		case ENOENT:  return Result::BAD;
+    		default:      return Result::ERROR;
+    	}
+    }
+};
 
 }
 
