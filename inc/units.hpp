@@ -97,10 +97,12 @@ struct Degree : public Unit<TYPE, NUM, DEN>
 };
 
 template <class TYPE, unsigned int NUM=1, unsigned int DEN=1>
-struct Radians : public Unit<TYPE, NUM, DEN>
+struct Radian : public Unit<TYPE, NUM, DEN>
 {
-	Radians() = default;
-	Radians(TYPE v) : Unit<TYPE, NUM, DEN>(v) { }
+	Radian() = default;
+	Radian(TYPE v) : Unit<TYPE, NUM, DEN>(v) { }
+
+	static inline Radian<TYPE> from(Degree<TYPE> d) { return static_cast<TYPE>(d.value * M_PI / 180.0); }
 };
 
 //------------------------------------------------------------------------------
