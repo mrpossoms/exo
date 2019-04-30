@@ -42,13 +42,13 @@ struct DummyCamera : public Vision<Vec<uint8_t, 3>, 64, 32>
     Mat<Vec<uint8_t, 3>, 32, 64>& visual_frame() { return frame; }
 };
 
-struct DummyGyro : public Gyro<units::Radians<float>, 3>
+struct DummyGyro : public Gyro<units::Radian<float>, 3>
 {
     Result initialize() { return Result::OK; }
 
     Result reset() { return Result::OK; }
 
-    Vec<units::Radians<float>, 3> rate() { return {}; }
+    Vec<units::Radian<float>, 3> rate() { return {}; }
 };
 
 struct DummyMag : public Magnetometer<units::Tesla<float>, 3>
