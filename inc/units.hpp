@@ -62,16 +62,16 @@ struct Meter : public Unit<TYPE, NUM, DEN>
 };
 
 template <class TYPE>
-struct Millimeter : public Meter<TYPE, 1, 1000> { Millimeter(TYPE v) : Meter<TYPE, 1, 1000>(v) { } };
+struct Millimeter : public Meter<TYPE, 1, 1000> { Millimeter(TYPE v=0) : Meter<TYPE, 1, 1000>(v) { } };
 
 template <class TYPE>
-struct Centimeter : public Meter<TYPE, 1, 100> { Centimeter(TYPE v) : Meter<TYPE, 1, 100>(v) { } };
+struct Centimeter : public Meter<TYPE, 1, 100> { Centimeter(TYPE v=0) : Meter<TYPE, 1, 100>(v) { } };
 
 template <class TYPE>
-struct Decimeter : public Meter<TYPE, 1, 10> { Decimeter(TYPE v) : Meter<TYPE, 1, 10>(v) { } };
+struct Decimeter : public Meter<TYPE, 1, 10> { Decimeter(TYPE v=0) : Meter<TYPE, 1, 10>(v) { } };
 
 template <class TYPE>
-struct Kilometer : public Meter<TYPE, 1000, 1> { Kilometer(TYPE v) : Meter<TYPE, 1000, 1>(v) { } };
+struct Kilometer : public Meter<TYPE, 1000, 1> { Kilometer(TYPE v=0) : Meter<TYPE, 1000, 1>(v) { } };
 
 inline static Kilometer<float>  operator"" _km(long double v) { return { static_cast<float>(v) }; }
 inline static Meter<float>      operator"" _m(long double v)  { return { static_cast<float>(v) }; }

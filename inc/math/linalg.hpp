@@ -231,7 +231,13 @@ namespace exo
 			}
 
 
-			S len() { return sqrtf(static_cast<float>(dot(*this))); }
+			inline S len()
+			{
+				auto sqr = dot(*this);
+				if (sqr <= 0) { return 0; }
+				return sqrtf(static_cast<float>(sqr));
+			}
+
 
 			Vec<S,D> norm() { return *this / len(); }
 
