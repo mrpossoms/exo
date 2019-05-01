@@ -26,11 +26,24 @@ struct Base
     exo::math::Mat<FRAME_UNIT, 4, 4> spatial_frame;
 
     /**
+     * If the sensor is non-polling, but rather streams data this lambda can be
+     * used handle the event when new data arrives.
+     */
+    std::function<void (void)> on_data;
+
+    /**
      * @brief      Performs generic initialization of the device.
      *
      * @return     exo::Result::OK if initialization was successful.
      */
     virtual Result initialize() = 0;
+
+    /**
+     * @brief      Returns non zero when an error has occurred.
+     *
+     * @return     0 if no errors have occurred. User defined otherwise
+     */
+    virtual int error() { return 0; }
 
     /**
      * @brief      Performs a generic reset of the device to some known values.
