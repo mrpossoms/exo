@@ -124,6 +124,9 @@ struct Second : public Unit<TYPE, NUM, DEN>
 	inline Second operator-(Second u) { return Second(this->value - u.value); }
 };
 
+template <class TYPE>
+struct Millisecond : public Second<TYPE, 1, 1000> { Millisecond(TYPE v=0) : Second<TYPE, 1, 1000>(v) { } };
+
 //------------------------------------------------------------------------------
 //    __  __
 //   |  \/  |__ _ ______
