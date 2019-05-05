@@ -40,7 +40,7 @@ struct Unit
 	{
 		auto base_units = value * numerator() / (TYPE)denominator();
 		auto v = base_units * OU::denominator() / (TYPE)OU::numerator();
-		return { v };
+		return { static_cast<OU>(v) };
 	}
 };
 
