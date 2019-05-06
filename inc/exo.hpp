@@ -265,7 +265,18 @@ namespace exo
             bool operator==(exo::msg::Hdr& h) { return *this == std::move(h); }
             bool operator==(exo::msg::Hdr&& h)
             {
-                return h.type == type;
+                return h.type == type &&
+                       h.msg_magic == msg_magic &&
+                       h.payload_length == payload_length;
+            }
+
+            std::string to_string()
+            {
+                return "type: " + std::to_string(type) +
+                       ", msg_magic: " + std::to_string(msg_magic) +
+                       ", exo_magic: " + std::to_string(exo_magic) +
+                       ", payload_length: " + std::to_string(payload_length) +
+                       ", sanity: " + std::to_string(sanity);
             }
         };
 
@@ -298,17 +309,17 @@ namespace exo
              */
             template<typename S>
             Payload& put(S& structure) { enqueue<S>(structure); return *this; }
-            Payload& operator<<(Hdr&& val)     { enqueue<Hdr>(val); return *this; }
-            Payload& operator<<(int8_t& val)   { enqueue<int8_t>(val); return *this; }
-            Payload& operator<<(uint8_t& val)  { enqueue<uint8_t>(val); return *this; }
-            Payload& operator<<(int16_t& val)  { enqueue<int16_t>(val); return *this; }
-            Payload& operator<<(uint16_t& val) { enqueue<uint16_t>(val); return *this; }
-            Payload& operator<<(int32_t& val)  { enqueue<int32_t>(val); return *this; }
-            Payload& operator<<(uint32_t& val) { enqueue<uint32_t>(val); return *this; }
-            Payload& operator<<(int64_t& val)  { enqueue<int64_t>(val); return *this; }
-            Payload& operator<<(uint64_t& val) { enqueue<uint64_t>(val); return *this; }
-            Payload& operator<<(float& val)    { enqueue<float>(val); return *this; }
-            Payload& operator<<(double& val)   { enqueue<double>(val); return *this; }
+            Payload& operator<<(Hdr const& val) { enqueue<Hdr>(val); return *this; }
+            Payload& operator<<(int8_t& val)    { enqueue<int8_t>(val); return *this; }
+            Payload& operator<<(uint8_t& val)   { enqueue<uint8_t>(val); return *this; }
+            Payload& operator<<(int16_t& val)   { enqueue<int16_t>(val); return *this; }
+            Payload& operator<<(uint16_t& val)  { enqueue<uint16_t>(val); return *this; }
+            Payload& operator<<(int32_t& val)   { enqueue<int32_t>(val); return *this; }
+            Payload& operator<<(uint32_t& val)  { enqueue<uint32_t>(val); return *this; }
+            Payload& operator<<(int64_t& val)   { enqueue<int64_t>(val); return *this; }
+            Payload& operator<<(uint64_t& val)  { enqueue<uint64_t>(val); return *this; }
+            Payload& operator<<(float& val)     { enqueue<float>(val); return *this; }
+            Payload& operator<<(double& val)    { enqueue<double>(val); return *this; }
 
             /**
              * @brief Dequeue a structure from the payload
@@ -365,7 +376,7 @@ namespace exo
             uint8_t _buf[T];
             size_t _pos, _size;
 
-            template<typename P> Result enqueue(P& val)
+            template<typename P> Result enqueue(P const& val)
             {
                 if (_pos + sizeof(P) > T)
                 {

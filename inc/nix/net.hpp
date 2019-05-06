@@ -297,7 +297,8 @@ struct In : public exo::msg::Inlet
 
                 // read each section of the payload by block sized chunks
                 auto pay = block.buffer();
-                auto res = read(_sock, pay.buf, pay.len);
+                auto to_read = bytes > pay.len ? pay.len : bytes;
+                auto res = read(_sock, pay.buf, to_read);
 
                 if (res < 0)
                 {
@@ -514,7 +515,7 @@ private:
             // return the next ready client
             if (_ready_clients.size() > 0)
             {
-                exo::Log::info(3, "Ready clients: " + std::to_string(_ready_clients.size()));
+                exo::Log::info(4, "Ready clients: " + std::to_string(_ready_clients.size()));
                 *ready_client = &_ready_clients.peek_back();
                 return Result::MORE_TO_READ;
             }
