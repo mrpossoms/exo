@@ -258,7 +258,7 @@ struct In : public exo::msg::Inlet
 
         exo::Result flush(size_t bytes)
         {
-            uint64_t junk;
+            char junk[1024];
 
             while (bytes > 0)
             {
@@ -269,6 +269,8 @@ struct In : public exo::msg::Inlet
                 {
                     return Result::READ_ERR;
                 }
+
+                bytes -= bytes_read;
             }
 
             return Result::OK;
