@@ -64,7 +64,7 @@ struct Out : public exo::msg::Outlet
         close(_socket);
     }
 
-    exo::Result operator<<(exo::msg::Hdr&& h)
+    exo::Result operator<<(exo::msg::Hdr& h)
     {
         if (!is_connected())
         {
@@ -82,7 +82,7 @@ struct Out : public exo::msg::Outlet
         return Result::WRITE_ERR;
     }
 
-    exo::Result operator<<(exo::msg::PayloadBuffer&& pay)
+    exo::Result operator<<(exo::msg::PayloadBuffer const& pay)
     {
         if (!is_connected())
         {
@@ -231,7 +231,7 @@ struct In : public exo::msg::Inlet
             return exo::Result::OK;
         }
 
-        exo::Result operator>>(msg::PayloadBuffer&& pay)
+        exo::Result operator>>(msg::PayloadBuffer const& pay)
         {
             auto to_read = pay.len;
             auto end = (uint8_t*)pay.buf;
@@ -298,19 +298,22 @@ struct In : public exo::msg::Inlet
                 // read each section of the payload by block sized chunks
                 auto pay = block.buffer();
                 auto to_read = bytes > pay.len ? pay.len : bytes;
-                auto res = read(_sock, pay.buf, to_read);
+                auto bytes_read = read(_sock, pay.buf, to_read);
 
-                if (res < 0)
+                if (bytes_read < 0)
                 {
                     return Result::READ_ERR;
                 }
                 else
                 {
-                    bytes -= res;
+                    bytes -= bytes_read;
 
                     for (int i = 0; outlets[i] != nullptr; ++i)
                     {
-                        auto res = (*outlets[i]) << block.buffer();
+                        auto pay = block.buffer();
+                        pay.len = bytes_read; // send only the bytes read
+
+                        auto res = (*outlets[i]) << pay;
                         if (res != exo::Result::OK) { return res; }
                     }
                 }
@@ -370,7 +373,7 @@ struct In : public exo::msg::Inlet
         return (*client) >> h;
     }
 
-    exo::Result operator>>(exo::msg::PayloadBuffer&& pay)
+    exo::Result operator>>(exo::msg::PayloadBuffer const& pay)
     {
         if (!is_setup())
         {

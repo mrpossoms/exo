@@ -190,13 +190,13 @@ namespace exo
 
         struct Outlet
         {
-            virtual Result operator<<(PayloadBuffer&& buf) = 0;
+            virtual Result operator<<(PayloadBuffer const& buf) = 0;
         };
 
         struct Inlet
         {
             virtual Result operator>>(Hdr& hdr) = 0;
-            virtual Result operator>>(PayloadBuffer&& buf) = 0;
+            virtual Result operator>>(PayloadBuffer const& buf) = 0;
             virtual Result flush(size_t bytes) = 0;
             virtual Result forward(Hdr& hdr, Outlet* outlets[]) = 0;
         };
@@ -230,7 +230,7 @@ namespace exo
             /**
              * @brief Smoke test value used to check general validity of the header.
              */
-            uint32_t sanity = 0xDEADBEEF;
+            uint32_t sanity = exo::msg::sanity;
 
             Hdr() = default;
             Hdr(uint32_t type, uint32_t magic, uint32_t pay_len)
@@ -255,6 +255,8 @@ namespace exo
                 }
                 else { return Result::OK; }
             }
+
+            bool is_corrupt() { return sanity != 0xDEADBEEF; }
 
             bool operator!=(exo::msg::Hdr& h) { return *this != std::move(h); }
             bool operator!=(exo::msg::Hdr&& h)

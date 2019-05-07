@@ -21,14 +21,27 @@ struct Pipeline
 		    return Result::WRITE_ERR;
         }
 
-        exo::Result operator<<(exo::msg::PayloadBuffer&& pay)
+        exo::Result operator<<(exo::msg::PayloadBuffer const& pay)
         {
-		    if ((size_t)write(STDOUT_FILENO, pay.buf, pay.len) == pay.len)
-		    {
-		        return Result::OK;
-		    }
+            auto to_write = pay.len;
+            auto end = (uint8_t*)pay.buf;
 
-		    return Result::WRITE_ERR;
+            // Allow the payload to be read in chunks at a time
+            while (to_write > 0)
+            {
+                auto bytes_written = write(STDOUT_FILENO, end, to_write);
+
+                switch(bytes_written)
+                {
+                    case -1: return exo::Result::WRITE_ERR;
+                    case  0: return exo::Result::OUT_OF_DATA;
+                    default:
+                        to_write -= bytes_written;
+                        end += bytes_written;
+                }
+            }
+
+		    return Result::OK;
         }
     };
 
@@ -41,17 +54,32 @@ struct Pipeline
 		        return Result::OK;
 		    }
 
+            assert(errno != EAGAIN);
+
 		    return Result::READ_ERR;
         }
 
-        exo::Result operator>>(exo::msg::PayloadBuffer&& pay)
+        exo::Result operator>>(exo::msg::PayloadBuffer const& pay)
         {
-		    if ((size_t)read(STDIN_FILENO, pay.buf, pay.len) == pay.len)
-		    {
-		        return Result::OK;
-		    }
+            auto to_read = pay.len;
+            auto end = (uint8_t*)pay.buf;
 
-		    return Result::READ_ERR;
+            // Allow the payload to be read in chunks at a time
+            while (to_read > 0)
+            {
+                auto bytes_read = read(STDIN_FILENO, end, to_read);
+
+                switch(bytes_read)
+                {
+                    case -1: return exo::Result::ERROR;
+                    case  0: return exo::Result::OUT_OF_DATA;
+                    default:
+                        to_read -= bytes_read;
+                        end += bytes_read;
+                }
+            }
+
+		    return Result::OK;
         }
 
         exo::Result flush(size_t bytes)
@@ -87,19 +115,26 @@ struct Pipeline
 
                 // read each section of the payload by block sized chunks
                 auto pay = block.buffer();
-                auto res = read(STDIN_FILENO, pay.buf, pay.len);
+                memset(pay.buf, 0, pay.len);
+                auto to_read = bytes > pay.len ? pay.len : bytes;
+                auto bytes_read = read(STDIN_FILENO, pay.buf, to_read);
 
-                if (res < 0)
+                if (bytes_read < 0)
                 {
+                    assert(errno != EAGAIN);
+
                     return Result::READ_ERR;
                 }
                 else
                 {
-                    bytes -= res;
+                    bytes -= bytes_read;
 
                     for (int i = 0; outlets[i] != nullptr; ++i)
                     {
-                        auto res = (*outlets[i]) << block.buffer();
+                        auto pay = block.buffer();
+                        pay.len = bytes_read; // send only the bytes read
+
+                        auto res = (*outlets[i]) << pay;
                         if (res != exo::Result::OK) { return res; }
                     }
                 }
