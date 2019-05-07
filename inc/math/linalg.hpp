@@ -241,7 +241,7 @@ namespace exo
 
 			Vec<S,D> norm() { return *this / len(); }
 
-			S dot(Vec<S,D>& v)
+			S dot(Vec<S,D> const& v)
 			{
 				S sum = 0;
 				for (auto i = D; i--;)
