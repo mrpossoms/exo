@@ -84,12 +84,22 @@ struct Pipeline
 
         exo::Result flush(size_t bytes)
         {
-    	    if (lseek(STDIN_FILENO, bytes, SEEK_CUR) > -1)
-		    {
-		        return Result::OK;
-		    }
+            char junk[1024];
 
-		    return Result::BAD;
+            while (bytes > 0)
+            {
+                auto to_read = bytes > sizeof(junk) ? sizeof(junk) : bytes;
+                auto bytes_read = read(STDIN_FILENO, &junk, to_read);
+
+                if (bytes_read <= 0)
+                {
+                    return Result::READ_ERR;
+                }
+
+                bytes -= bytes_read;
+            }
+
+            return Result::OK;
         }
 
         exo::Result forward(msg::Hdr& hdr, exo::msg::Outlet* outlets[])

@@ -33,7 +33,7 @@ struct Unit
 	static inline int denominator() { return DEN; }
 
 	template<class OTHER_TYPE>
-	inline TYPE cast() { return static_cast<OTHER_TYPE>(value); }
+	inline OTHER_TYPE cast() { return static_cast<OTHER_TYPE>(value); }
 
 	template<typename OU>
 	inline OU in()
