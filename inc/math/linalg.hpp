@@ -18,7 +18,7 @@ namespace exo
 		{
 			Vec()
 			{
-				for (int i = D; i--;) { v[i] = 0; }
+				for (int i = D; i--;) { v[i] = {}; }
 			}
 
 			Vec(const S* arr)
@@ -334,7 +334,11 @@ namespace exo
 		{
 			Mat()
 			{
-				bzero(m, sizeof(m));
+				for (int row = R; row--;)
+				for (int col = C; col--;)
+				{
+					m[row][col] = {};
+				}	
 			}
 
 			Mat(std::initializer_list<std::initializer_list<S>> init)
