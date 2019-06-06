@@ -749,6 +749,18 @@ namespace exo
                 };
             }
 
+            static Mat<S, 4, 4> perspective(float y_fov, float aspect, float n=0.1, float f=1000)
+            {
+                auto const a = 1.f / tan(y_fov / 2.f);
+
+                return {
+                    {  a / aspect,     0,                          0,      0 },
+                    {           0,     a,                          0,      0 },
+                    {           0,     0,       -((f + n) / (f - n)),     -1 },
+                    {           0,     0, -((2.f * f * n) / (f - n)),      1 }
+                };
+            }
+
             static Mat<S, 4, 4> ortho(S left, S right, S top, S bottom, S near, S far)
             {
                 auto tmb = top - bottom;
@@ -769,10 +781,10 @@ namespace exo
             static Mat<S, 4, 4> translate(Vec<S, 3> v)
             {
                 return {
-                    { 1, 0, 0, v[0] },
-                    { 0, 1, 0, v[1] },
-                    { 0, 0, 1, v[2] },
-                    { 0, 0, 0, 1 }
+                    { 1,    0,    0,    0 },
+                    { 0,    1,    0,    0 },
+                    { 0,    0,    1,    0 },
+                    { v[0], v[1], v[2], 1 }
                 };
             }
 
@@ -831,11 +843,18 @@ namespace exo
 
             Quat operator*(Quat const& other)
             {
+                auto t3 = this->as_dimension<3>();
+                auto o3 = other.as_dimension<3>();
+
+                auto r = Vec::cross(t3, o3);
+                auto w = t3 * other[3];
+                r += w;
+                w = o3 * this->v[3];
+                r += w;
+
                 return {
-                    other.v[3] * v[0] + other.v[0] * v[3] + other.v[1] * v[2] - other.v[2] * v[1],
-                    other.v[3] * v[1] - other.v[0] * v[2] + other.v[1] * v[3] + other.v[2] * v[0],
-                    other.v[3] * v[2] + other.v[0] * v[1] - other.v[1] * v[0] + other.v[2] * v[3],
-                    -this->dot(other),
+                    r[0], r[1], r[2],
+                    this->v[3] * other.v[3] - t3.dot(o3)
                 };
             }
 
@@ -877,14 +896,14 @@ namespace exo
             template <class S>
             inline Mat<S, 4, 4> to_matrix()
             {
-                auto v = static_cast<Vec<float, 4>>(*this);
+                auto v = static_cast<Vec<S, 4>>(*this);
                 auto a = v[3], b = v[0], c = v[1], d = v[2];
                 auto a2 = a * a, b2 = b * b, c2 = c * c, d2 = d * d;
 
                 return {
-                    {a2 + b2 - c2 - d2, 2 * (b*c - a*d)  , 2 * (b*d + a*c)  ,  0},
-                    {2 * (b*c + a*d)  , a2 - b2 + c2 - d2, 2 * (c*d - a*b)  ,  0},
-                    {2 *(b*d - a*c)   , 2 * (c*d - a*b)  , a2 - b2 - c2 + d2,  0},
+                    {a2 + b2 - c2 - d2, 2 * (b*c + a*d)  , 2 * (b*d - a*c)  ,  0},
+                    {2 * (b*c - a*d)  , a2 - b2 + c2 - d2, 2 * (c*d + a*b)  ,  0},
+                    {2 * (b*d + a*c)  , 2 * (c*d - a*b)  , a2 - b2 - c2 + d2,  0},
                     {0                , 0                , 0                ,  1},
                 };
             }

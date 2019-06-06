@@ -49,10 +49,15 @@ struct Pipeline
     {
         exo::Result operator>>(exo::msg::Hdr& h)
         {
-		    if ((size_t)read(STDIN_FILENO, &h, sizeof(h)) == sizeof(h))
+		    if ((size_t)read(STDIN_FILENO, &h, sizeof(h)) != sizeof(h))
 		    {
-		        return Result::OK;
+		        return Result::OUT_OF_DATA;
 		    }
+
+            if (h.sanity != exo::msg::sanity)
+            {
+                return exo::Result::CORRUPTION;
+            }
 
             assert(errno != EAGAIN);
 

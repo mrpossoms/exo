@@ -467,7 +467,7 @@ namespace exo
          * @param h header reference to check module compatibility with.
          * @return True if this module accepts this type of payload, false otherwise.
          */
-        virtual bool msg_compatible(msg::Hdr& h) = 0;
+        virtual bool msg_compatible(msg::Hdr& h) { return false; }
 
         /**
          * @brief called when a message has been identified as compatible with this module.
@@ -475,7 +475,7 @@ namespace exo
          * @param inlet Inlet refrence to read the payload from.
          * @return OK on success.
          */
-        virtual Result msg_received(msg::Hdr& h, msg::Inlet& inlet) = 0;
+        virtual Result msg_received(msg::Hdr& h, msg::Inlet& inlet) { return Result::INCOMPATIBLE_MESSAGE; }
 
         /**
          * @brief this method is optional, but should be called when a no
@@ -483,11 +483,10 @@ namespace exo
          *        of an inlet, or some other timeout event.
          * @return OK on proper handling
          */
-        virtual Result timedout() = 0;
+        virtual Result timedout() { return Result::OK; }
 
         /**
          * @brief called when this module is first initialized.
-         * @param ctx Platform specific context.
          * @return OK on success.
          */
         virtual Result enter(Context ctx) = 0;
@@ -496,13 +495,13 @@ namespace exo
          * @brief The primary update loop for the module.
          * @return OK on success
          */
-        virtual Result update() = 0;
+        virtual Result update() { return Result::OK; }
 
         /**
          * @brief Called to safely teardown the module
          * @return OK on success
          */
-        virtual Result exit() = 0;
+        virtual Result exit() { return Result::OK; }
 
     private:
         ID _name;

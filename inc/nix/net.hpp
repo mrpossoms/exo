@@ -64,6 +64,18 @@ struct Out : public exo::msg::Outlet
         close(_socket);
     }
 
+    void set_dst_addr(const char* dst_addr)
+    {
+        if (is_connected()) { disconnect(); }
+        _addr = dst_addr;
+    }
+
+    void set_dst_port(uint16_t port)
+    {
+        if (is_connected()) { disconnect(); }
+        _port = port;
+    }
+
     exo::Result operator<<(exo::msg::Hdr& h)
     {
         if (!is_connected())
