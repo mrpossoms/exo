@@ -131,6 +131,14 @@ namespace exo
             size_t size() { return _size; }
 
 
+            /**
+             * @brief      Get underlying storage array for the list
+             *
+             * @return     Return raw pointer to the start of the list
+             */
+            T* list() { return _list; }
+
+
             inline T& operator[](int idx) { return _list[idx]; }
         private:
             T _list[CAP];

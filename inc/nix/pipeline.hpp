@@ -61,7 +61,7 @@ struct Pipeline
 
             assert(errno != EAGAIN);
 
-		    return Result::READ_ERR;
+		    return Result::OK;
         }
 
         exo::Result operator>>(exo::msg::PayloadBuffer const& pay)
