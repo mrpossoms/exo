@@ -47,14 +47,14 @@ struct Out : public exo::msg::Outlet
 
     Out(const Out& i)
     {
-        _addr = i._addr;
+        strcpy(_addr, i._addr);
         _port = i._port;
         _socket = -1;
     }
 
     Out(const char* dst_addr, uint16_t port)
     {
-        _addr = dst_addr;
+        strcpy(_addr, dst_addr);
         _port = port;
         _socket = -1;
     }
@@ -67,7 +67,7 @@ struct Out : public exo::msg::Outlet
     void set_dst_addr(const char* dst_addr)
     {
         if (is_connected()) { disconnect(); }
-        _addr = dst_addr;
+        strcpy(_addr, dst_addr);
     }
 
     void set_dst_port(uint16_t port)
@@ -126,7 +126,7 @@ struct Out : public exo::msg::Outlet
     }
 
 private:
-    const char* _addr;
+    char _addr[64] = {};
     uint16_t _port;
     int _socket;
 
