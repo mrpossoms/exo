@@ -27,7 +27,7 @@ struct Depth : public exo::device::Base<SPATIAL_UNIT>
     virtual exo::math::Mat<DEPTH_TYPE, ROWS, COLS>& depth_frame() = 0;
 
 protected:
-    math::Mat<DEPTH_TYPE, ROWS, COLS> frame;
+    math::Mat<DEPTH_TYPE, ROWS, COLS> frame = {};
 };
 
 } // class
