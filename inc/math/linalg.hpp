@@ -901,9 +901,9 @@ namespace exo
                 auto a2 = a * a, b2 = b * b, c2 = c * c, d2 = d * d;
 
                 return {
-                    {a2 + b2 - c2 - d2, 2 * (b*c - a*d)  , 2 * (b*d + a*c)  ,  0},
-                    {2 * (b*c + a*d)  , a2 - b2 + c2 - d2, 2 * (c*d - a*b)  ,  0},
-                    {2 * (b*d - a*c)  , 2 * (c*d - a*b)  , a2 - b2 - c2 + d2,  0},
+                    {-(a2 + b2 - c2 - d2), -2 * (b*c + a*d)  , -2 * (b*d - a*c)  ,  0},
+                    {-2 * (b*c - a*d)  , -(a2 - b2 + c2 - d2), -2 * (c*d + a*b)  ,  0},
+                    {-2 * (b*d + a*c)  , -2 * (c*d - a*b)  , -(a2 - b2 - c2 + d2),  0},
                     {0                , 0                , 0                ,  1},
                 };
             }

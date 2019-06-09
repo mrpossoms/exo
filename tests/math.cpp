@@ -78,6 +78,8 @@ float uniform_random(float max=1)
 		auto vq = q.rotate(v.as_dimension<3>());
 		auto vm = (m * v).as_dimension<3>();
 
+		std::cerr << vq.to_string() << std::endl;
+		std::cerr << vm.to_string() << std::endl;
 		assert(vq.is_near(vm));
 	}
 
