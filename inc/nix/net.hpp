@@ -298,6 +298,8 @@ struct In : public exo::msg::Inlet
 
                 for (int i = 0; outlets[i] != nullptr; ++i)
                 {
+                    if (outlets[i]->allows_msg(hdr) == false) { continue; }
+
                     auto res = (*outlets[i]) << hdr_payload.buffer();
                     if (res != exo::Result::OK) { return res; }
                 }
@@ -324,6 +326,8 @@ struct In : public exo::msg::Inlet
 
                     for (int i = 0; outlets[i] != nullptr; ++i)
                     {
+                        if (outlets[i]->allows_msg(hdr) == false) { continue; }
+
                         auto pay = block.buffer();
                         pay.len = bytes_read; // send only the bytes read
 

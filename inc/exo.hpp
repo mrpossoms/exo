@@ -191,6 +191,16 @@ namespace exo
         struct Outlet
         {
             virtual Result operator<<(PayloadBuffer const& buf) = 0;
+
+            /**
+             * @brief      Can be used to filter which messages are permitted to pass through
+             *             a specific outlet implementation.
+             *
+             * @param      hdr   The message header
+             *
+             * @return     True if the message may be transmitted, false otherwise.
+             */
+            virtual bool allows_msg(Hdr& hdr) { return true; }
         };
 
         struct Inlet
@@ -467,7 +477,11 @@ namespace exo
          * @param h header reference to check module compatibility with.
          * @return True if this module accepts this type of payload, false otherwise.
          */
-        virtual bool msg_compatible(msg::Hdr& h) { return false; }
+        virtual bool msg_compatible(msg::Hdr& h)
+        {
+            (void)h;
+            return false;
+        }
 
         /**
          * @brief called when a message has been identified as compatible with this module.
@@ -475,7 +489,12 @@ namespace exo
          * @param inlet Inlet refrence to read the payload from.
          * @return OK on success.
          */
-        virtual Result msg_received(msg::Hdr& h, msg::Inlet& inlet) { return Result::INCOMPATIBLE_MESSAGE; }
+        virtual Result msg_received(msg::Hdr& h, msg::Inlet& inlet)
+        {
+            (void)h;
+            (void)inlet;
+            return Result::INCOMPATIBLE_MESSAGE;
+        }
 
         /**
          * @brief this method is optional, but should be called when a no
