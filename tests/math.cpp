@@ -62,15 +62,17 @@ float uniform_random(float max=1)
 
 	// Test quaternions
 	{
-		auto q = Quat::from_axis_angle({0, 0, 1}, M_PI / 2);
+		auto q = Quat::from_axis_angle({0, 0, 1}, M_PI / 4);
 
-		bool expect_true = q.rotate({ 1, 0, 0 }).is_near(Vec<float, 3>{ 0, 1, 0 }, 0.1);
+		bool expect_true = q.rotate({ 1, 0, 0 }).is_near(Vec<float, 3>{ 1, 1, 0 }.norm(), 0.1);
 		assert(expect_true);
 	}
 
 	// Test quaternion to matrix conversion
+	for (int i = 100; i--;)
 	{
-		auto q = Quat::from_axis_angle({0, 0, 1}, M_PI / 2);
+		Vec<float, 3> axis = {uniform_random(), uniform_random(), uniform_random()};
+		auto q = Quat::from_axis_angle(axis.norm(), uniform_random(M_PI));
 		auto m = q.to_matrix<float>();
 
 		auto v = Vec<float, 4>{ 1, 0, 0, 1 };
