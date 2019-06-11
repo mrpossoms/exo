@@ -190,6 +190,7 @@ namespace exo
 
         struct Outlet
         {
+            virtual Result operator<<(exo::msg::Hdr const& h) = 0;
             virtual Result operator<<(PayloadBuffer const& buf) = 0;
 
             /**

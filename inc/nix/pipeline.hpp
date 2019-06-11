@@ -11,7 +11,7 @@ struct Pipeline
 {
     struct Out : public exo::msg::Outlet
     {
-        exo::Result operator<<(exo::msg::Hdr&& h)
+        exo::Result operator<<(exo::msg::Hdr const& h)
         {
 		    if (write(STDOUT_FILENO, &h, sizeof(h)) == sizeof(h))
 		    {

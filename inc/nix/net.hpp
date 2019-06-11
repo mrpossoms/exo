@@ -76,7 +76,7 @@ struct Out : public exo::msg::Outlet
         _port = port;
     }
 
-    exo::Result operator<<(exo::msg::Hdr& h)
+    exo::Result operator<<(exo::msg::Hdr const& h)
     {
         if (!is_connected())
         {
