@@ -19,6 +19,12 @@ namespace nix
 struct Net
 {
 
+enum class Protocol
+{
+    TCP,
+    UDP,
+};
+
 static inline struct sigaction disable_sigpipe()
 {
     struct sigaction new_actn, old_actn;
@@ -50,13 +56,15 @@ struct Out : public exo::msg::Outlet
         strcpy(_addr, i._addr);
         _port = i._port;
         _socket = -1;
+        _protocol = i._protocol;
     }
 
-    Out(const char* dst_addr, uint16_t port)
+    Out(const char* dst_addr, uint16_t port, Protocol p=Protocol::TCP)
     {
         strcpy(_addr, dst_addr);
         _port = port;
         _socket = -1;
+        _protocol = p;
     }
 
     ~Out()
@@ -84,10 +92,34 @@ struct Out : public exo::msg::Outlet
         }
 
         auto old_act = disable_sigpipe();
-        if (write(_socket, &h, sizeof(h)) == sizeof(h))
+
+        fd_set w_fds;
+        FD_ZERO(&w_fds);
+        FD_SET(_socket, &w_fds);
+
+        struct timeval timeout = {
+            _timeout_ms / 1000,
+            (_timeout_ms % 1000) * 1000
+        };
+
+        switch(select(
+            _socket + 1,                     // largest fd no + 1
+            nullptr,                         // read fds
+            &w_fds,                          // write fds including our socket
+            nullptr,                         // error fds
+            _timeout_ms ? &timeout : nullptr // pointer to timeout struct
+            ))
         {
-            enable_sigpipe(old_act);
-            return Result::OK;
+            case -1: // error
+                return Result::WRITE_ERR;
+            case 0: // timeout
+                return Result::TIMEOUT;
+            case 1: // ok to write!
+                if (write(_socket, &h, sizeof(h)) == sizeof(h))
+                {
+                    enable_sigpipe(old_act);
+                    return Result::OK;
+                }
         }
 
         enable_sigpipe(old_act);
@@ -125,10 +157,16 @@ struct Out : public exo::msg::Outlet
         return Result::OK;
     }
 
+    void timeout (unsigned int timeout_ms)
+    {
+        _timeout_ms = timeout_ms;
+    }
 private:
     char _addr[64] = {};
     uint16_t _port;
     int _socket;
+    Protocol _protocol;
+    int _timeout_ms = 0;
 
     bool is_connected()
     {
@@ -352,9 +390,10 @@ struct In : public exo::msg::Inlet
 
     In(In& i) = default;
 
-    In(uint16_t port)
+    In(uint16_t port, Protocol p=Protocol::TCP)
     {
         this->_port = port;
+        this->_protocol = p;
     }
 
     ~In()
@@ -448,6 +487,7 @@ struct In : public exo::msg::Inlet
 private:
     static const int max_clients = 32;
     uint16_t _port;
+    Protocol _protocol;
     exo::ds::BoundedList<Client, max_clients> _clients;
     exo::ds::BoundedList<Client, max_clients> _ready_clients;
     int _listen_sock = -1;
@@ -455,7 +495,17 @@ private:
 
     Result setup()
     {
-        _listen_sock = ::socket(AF_INET, SOCK_STREAM, 0);
+        switch (_protocol)
+        {
+            case Protocol::TCP:
+                _listen_sock = ::socket(AF_INET, SOCK_STREAM, 0);
+                break;
+            case Protocol::UDP:
+                _listen_sock = ::socket(AF_INET, SOCK_DGRAM, 0);
+                break;
+            default: break;
+        }
+
         if (_listen_sock < 0) { return Result::RESOURCE_CREATE_FAILED; }
 
         struct sockaddr_in name = {};
@@ -471,12 +521,18 @@ private:
             return Result::BIND_FAILED;
         }
 
-        if(listen(_listen_sock, 1))
+        switch (_protocol)
         {
-            exo::Log::error(4, "Listening failed");
-            close(_listen_sock);
-            _listen_sock = -1;
-            return Result::LISTEN_FAILED;
+            case Protocol::TCP:
+                if(listen(_listen_sock, 1))
+                {
+                    exo::Log::error(4, "Listening failed");
+                    close(_listen_sock);
+                    _listen_sock = -1;
+                    return Result::LISTEN_FAILED;
+                }
+                break;
+            default: break;
         }
 
         return Result::OK;

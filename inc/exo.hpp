@@ -202,6 +202,13 @@ namespace exo
              * @return     True if the message may be transmitted, false otherwise.
              */
             virtual bool allows_msg(Hdr& hdr) { return true; }
+
+            /**
+             * @brief      Set the timeout period for writing to the outlet
+             *
+             * @param[in]  timeout_ms  The timeout milliseconds
+             */
+            virtual void timeout(unsigned int timeout_ms) { }
         };
 
         struct Inlet
@@ -209,7 +216,27 @@ namespace exo
             virtual Result operator>>(Hdr& hdr) = 0;
             virtual Result operator>>(PayloadBuffer const& buf) = 0;
             virtual Result flush(size_t bytes) = 0;
+
+            /**
+             * @brief      Takes a message header that's been received over this
+             *             outlet, and forwards that header, and the rest of the
+             *             message to the outlets pointed to.
+             *
+             * @param      hdr      The message header
+             * @param      outlets  Pointer to a null terminated array of
+             *                      outlets to forward to.
+             *
+             * @return     Result::OK on success, error results are inherited
+             *             from each specific outlet implementation.
+             */
             virtual Result forward(Hdr& hdr, Outlet* outlets[]) = 0;
+
+            /**
+             * @brief      Set the timeout for reading from the inlet
+             *
+             * @param[in]  timeout_ms  The timeout milliseconds
+             */
+            virtual void timeout(unsigned int timeout_ms) { }
         };
 
         /**
