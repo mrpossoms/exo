@@ -207,7 +207,7 @@ namespace exo
             }
 
             template<typename T>
-            inline Vec<T, D> cast()
+            inline Vec<T, D> cast() const
             {
                 Vec<T, D> v;
                 for (int i = 0; i < D; ++i)
