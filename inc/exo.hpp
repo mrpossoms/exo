@@ -201,14 +201,14 @@ namespace exo
              *
              * @return     True if the message may be transmitted, false otherwise.
              */
-            virtual bool allows_msg(Hdr& hdr) { return true; }
+            virtual bool allows_msg(Hdr& hdr) { (void)hdr; return true; }
 
             /**
              * @brief      Set the timeout period for writing to the outlet
              *
              * @param[in]  timeout_ms  The timeout milliseconds
              */
-            virtual void timeout(unsigned int timeout_ms) { }
+            virtual void timeout(unsigned int timeout_ms) { (void)timeout_ms; }
         };
 
         struct Inlet
@@ -236,7 +236,7 @@ namespace exo
              *
              * @param[in]  timeout_ms  The timeout milliseconds
              */
-            virtual void timeout(unsigned int timeout_ms) { }
+            virtual void timeout(unsigned int timeout_ms) { (void)timeout_ms; }
         };
 
         /**

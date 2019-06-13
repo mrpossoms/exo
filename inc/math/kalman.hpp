@@ -77,27 +77,33 @@ struct KalmanFilter
 	Vec<S, X_SIZE> x_hat;
 
 	/**
-	 * Prediction matrix
+	 * Prediction matrix given the state in one time step, the prediction matrix
+	 * defines how the values in the next time step are expected to change without
+	 * outside influences, control signals or excessive noise.s
 	 */
 	Mat<S, X_SIZE, X_SIZE> F;
 
 	/**
-	 * Prediction covariance matrix
+	 * Prediction covariance matrix. Defines the relationship between each element
+	 * in the state vector, and how they are expected to vary together.
 	 */
 	Mat<S, X_SIZE, X_SIZE> P = Mat<S, X_SIZE, X_SIZE>::I();
 
 	/**
-	 * Control matrix
+	 * Control matrix, maps the control vector into the state vector's space.
 	 */
 	Mat<S, X_SIZE, U_SIZE> B = Mat<S, X_SIZE, U_SIZE>::I();
 
 	/**
-	 * Unexpected noise covariance matrix
+	 * Unexpected noise covariance matrix. Defines the relationship between
+	 * an element in the state vector, and every other element in the state vector
+	 * and how they are related in regards to random noise.
 	 */
 	Mat<S, X_SIZE, X_SIZE> Q = Mat<S, X_SIZE, X_SIZE>::I() * 0.1f;
 
 	/**
-	 * Sensor mapping matrix
+	 * Sensor mapping matrix maps the sensor reading vector into the state
+	 * vector space.
 	 */
 	Mat<S, Z_SIZE, X_SIZE> H = Mat<S, Z_SIZE, X_SIZE>::I();
 
