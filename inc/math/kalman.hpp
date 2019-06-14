@@ -50,10 +50,11 @@ struct KalmanFilter
 
 	void update(Vec<S, Z_SIZE> const& sensor_readings)
 	{
+		const auto I = Mat<S, Z_SIZE, X_SIZE>::I();
 		auto K = gain();
 
 		x_hat = x_hat + K * (sensor_readings - H * x_hat);
-		P = P - K * H * P;
+		P = (I - K * H) * P;
 
 		dirty = true;
 	}
@@ -110,7 +111,7 @@ struct KalmanFilter
 	/**
 	 * Sensor noise matrix
 	 */
-	Mat<S, Z_SIZE, Z_SIZE> R;// = Mat<S, Z_SIZE, Z_SIZE>::I();
+	Mat<S, Z_SIZE, Z_SIZE> R = Mat<S, Z_SIZE, Z_SIZE>::I() * 0.1;
 
 private:
 	bool dirty = true;

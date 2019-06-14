@@ -370,7 +370,7 @@ namespace exo
 
 
             template <ssize_t MC>
-            Mat<S, R, MC> operator* (Mat<S, C, MC> const& m)
+            Mat<S, R, MC> operator* (Mat<S, C, MC> const& m) const
             {
                 Mat<S, R, MC> r;
 
@@ -387,7 +387,7 @@ namespace exo
             }
 
 
-            Vec<S, R> operator* (Vec<S, C> const& v)
+            Vec<S, R> operator* (Vec<S, C> const& v) const
             {
                 Vec<S, R> r;
 
@@ -400,7 +400,7 @@ namespace exo
                 return r;
             }
 
-            Mat<S, R, C> operator* (S s)
+            Mat<S, R, C> operator* (S s) const
             {
                 Mat<S, R, C> r;
 
@@ -424,7 +424,7 @@ namespace exo
                 return *this;
             }
 
-            Mat<S, R, C> operator/ (S s)
+            Mat<S, R, C> operator/ (S s) const
             {
                 Mat<S, R, C> r;
 
@@ -451,7 +451,7 @@ namespace exo
             }
 
 
-            Mat<S, R, C> operator+ (Mat<S, R, C> const& m)
+            Mat<S, R, C> operator+ (Mat<S, R, C> const& m) const
             {
                 Mat<S, R, C> r;
 
@@ -465,7 +465,7 @@ namespace exo
             }
 
 
-            Mat<S, R, C> operator- (Mat<S, R, C> const& m)
+            Mat<S, R, C> operator- (Mat<S, R, C> const& m) const
             {
                 Mat<S, R, C> r;
 
@@ -486,12 +486,12 @@ namespace exo
             }
 
 
-            inline bool operator== (Mat<S, R, C> M)
+            inline bool operator== (Mat<S, R, C> M) const
             {
                 return memcmp(this->m, M.m, sizeof(M.m)) == 0;
             }
 
-            std::string to_string(Mat<S, R, C> const&)
+            std::string to_string(Mat<S, R, C> const&) const
             {
                 return this->to_string();
             }
@@ -512,7 +512,7 @@ namespace exo
                 return str;
             }
 
-            S distance(Mat<S, R, C> const& M)
+            S distance(Mat<S, R, C> const& M) const
             {
                 S sum = 0;
 
