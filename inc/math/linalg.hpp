@@ -368,6 +368,18 @@ namespace exo
                 return *this;
             }
 
+            template<typename T>
+            inline Mat<T, R, C> cast() const
+            {
+                Mat<T, R, C> m;
+                for (int row = R; row--;)
+                for (int col = C; col--;)
+                {
+                    m[row][col] = (T)this->m[row][col];
+                }
+
+                return m;
+            }
 
             template <ssize_t MC>
             Mat<S, R, MC> operator* (Mat<S, C, MC> const& m) const
