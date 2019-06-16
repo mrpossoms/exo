@@ -41,10 +41,10 @@ struct KalmanFilter
 	virtual Mat<S, X_SIZE, Z_SIZE> gain()
 	{
 		auto Ht = H.transpose();
-		auto right = H * P * Ht + R;
-		right.inverse();
+		auto innovation_cov = H * P * Ht + R;
+		auto innovation_cov_1 = innovation_cov.inverse();
 
-		return P * Ht * right;
+		return P * Ht * innovation_cov_1;
 	}
 
 
@@ -53,7 +53,9 @@ struct KalmanFilter
 		const auto I = Mat<S, Z_SIZE, X_SIZE>::I();
 		auto K = gain();
 
-		x_hat = x_hat + K * (sensor_readings - H * x_hat);
+		auto innovation = sensor_readings - H * x_hat;
+
+		x_hat = x_hat + K * innovation;
 		P = (I - K * H) * P;
 
 		dirty = true;
@@ -75,7 +77,7 @@ struct KalmanFilter
 	/**
 	 * Current system state estimate
 	 */
-	Vec<S, X_SIZE> x_hat;
+	Vec<S, X_SIZE> x_hat = {};
 
 	/**
 	 * Prediction matrix given the state in one time step, the prediction matrix

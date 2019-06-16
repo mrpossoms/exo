@@ -2,6 +2,7 @@
 #include "math.hpp"
 
 #include <iostream>
+#include <random>
 
 #define DESCRIPTION "Tests exo math functions"
 
@@ -288,8 +289,8 @@ float uniform_random(float max=1)
 
 		// sensor noise covariance
 		kf.R = {
-			{ 0.1,   0 },
-			{ 0,   0.1 },
+			{ 1,   0 },
+			{ 0,   1 },
 		};
 
 		// process noise covariance
@@ -298,19 +299,23 @@ float uniform_random(float max=1)
 			{ 0,   0.1 },
 		};
 
+		std::default_random_engine gen;
+		std::normal_distribution<float> norm_dist(0,0.1);
+
 		for (float t = 0; t < 10; t += dt)
 		{
 			auto acceleration = -sin(t);
 			velocity = cos(t);
 			position += velocity * dt;
 
-			Vec<float, 2> noise = { uniform_random(0.25f), uniform_random(0.25f) };
+			Vec<float, 2> noise = { norm_dist(gen), norm_dist(gen) };
 			Vec<float, 2> truth = { position, velocity };
 			Vec<float, 2> noisy = truth + noise;
 
-			kf.update(noisy);
 			auto x_hat = kf.predict({ acceleration });
+			kf.update(noisy);
 
+			std::cout << "Noise " << std::to_string(noise[0]) << ", " << std::to_string(noise[1]) << "\n";
 			std::cout << "Filter Error: " << std::to_string((x_hat - truth).len()) <<
 			              ", raw error: " << std::to_string((truth - noisy).len()) << "\n";
 		}

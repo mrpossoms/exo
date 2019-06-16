@@ -30,6 +30,9 @@ tests/bin:
 tests/bin/%: tests/%.cpp tests/bin
 	$(EXO_CPPC) $(INC) $(CPPC_FLAGS) -Itests/ $< -o $@
 
+%_test: tests/bin/%
+	./tests/scripts/$@.sh
+
 tests: $(TEST_EXES)
 	@echo "$(COLOR_GREEN) Built all tests $(COLOR_OFF)"
 
