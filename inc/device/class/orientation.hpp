@@ -27,6 +27,13 @@ struct Orientation : public exo::device::Base<SPATIAL_UNIT>
     virtual exo::math::Quat orientation() = 0;
 
     /**
+     * @brief      Rate of rotation around axes pitch, roll and yaw respectively
+     *
+     * @return     pitch, roll and yaw rates
+     */
+    virtual exo::math::Vec<float, 3> angular_velocity() = 0;
+
+    /**
      * @brief      If applicable, this returns the rotational reference frame
      *             which the measurement is taken in respect of.
      *

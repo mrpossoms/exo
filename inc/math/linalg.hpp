@@ -463,6 +463,20 @@ namespace exo
             }
 
 
+            Mat<S, R, C> operator+= (Mat<S, R, C> const& m) const
+            {
+                Mat<S, R, C> r;
+
+                for (int row = R; row--;)
+                for (int col = C; col--;)
+                {
+                    r[row][col] += m.m[row][col];
+                }
+
+                return r;
+            }
+
+
             Mat<S, R, C> operator+ (Mat<S, R, C> const& m) const
             {
                 Mat<S, R, C> r;
@@ -478,6 +492,20 @@ namespace exo
 
 
             Mat<S, R, C> operator- (Mat<S, R, C> const& m) const
+            {
+                Mat<S, R, C> r;
+
+                for (int row = R; row--;)
+                for (int col = C; col--;)
+                {
+                    r[row][col] = this->m[row][col] - m.m[row][col];
+                }
+
+                return r;
+            }
+
+
+            Mat<S, R, C> operator-= (Mat<S, R, C> const& m) const
             {
                 Mat<S, R, C> r;
 

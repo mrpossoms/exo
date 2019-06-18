@@ -50,6 +50,8 @@ struct KalmanFilter
 
 	void update(Vec<S, Z_SIZE> const& sensor_readings)
 	{
+		// if (dirty) { return; }
+
 		const auto I = Mat<S, Z_SIZE, X_SIZE>::I();
 		auto K = gain();
 
@@ -64,7 +66,7 @@ struct KalmanFilter
 
 	Vec<S, X_SIZE> predict(Vec<S, U_SIZE> const& control_vector)
 	{
-		if (dirty)
+		// if (dirty)
 		{
 			x_hat = F * x_hat + B * control_vector;
 			P = F * P * F.transpose() + Q;
@@ -102,7 +104,7 @@ struct KalmanFilter
 	 * an element in the state vector, and every other element in the state vector
 	 * and how they are related in regards to random noise.
 	 */
-	Mat<S, X_SIZE, X_SIZE> Q = Mat<S, X_SIZE, X_SIZE>::I() * 0.1f;
+	Mat<S, X_SIZE, X_SIZE> Q = Mat<S, X_SIZE, X_SIZE>::I() * 0.01f;
 
 	/**
 	 * Sensor mapping matrix maps the sensor reading vector into the state
@@ -113,7 +115,7 @@ struct KalmanFilter
 	/**
 	 * Sensor noise matrix
 	 */
-	Mat<S, Z_SIZE, Z_SIZE> R = Mat<S, Z_SIZE, Z_SIZE>::I() * 0.1;
+	Mat<S, Z_SIZE, Z_SIZE> R = Mat<S, Z_SIZE, Z_SIZE>::I() * 0.01;
 
 private:
 	bool dirty = true;
