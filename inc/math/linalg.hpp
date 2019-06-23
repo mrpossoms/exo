@@ -60,6 +60,7 @@ namespace exo
                 return v[i];
             }
 
+            inline S* ptr() { return v; }
 
             inline Vec<S,D> operator+(const Vec<S,D>& v) const
             {
@@ -377,6 +378,10 @@ namespace exo
 
                 return *this;
             }
+
+
+            inline S* ptr() { return m[0].ptr(); }
+
 
             template<typename T>
             inline Mat<T, R, C> cast() const
