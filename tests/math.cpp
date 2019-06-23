@@ -136,6 +136,19 @@ float uniform_random(float max=1)
 		assert(M == E);
 	}
 
+	{ // check matrix slicing
+		Mat<float, 8, 8> M = {
+			{ 1, 1, 2, 2 },
+			{ 1, 1, 2, 2 },
+			{ 3, 3, 4, 4 },
+			{ 3, 3, 4, 4 },
+		};
+
+		auto twos = M.slice<2, 2>(0, 2);
+
+		for (int i = 4; i--;) assert(twos[i / 2][i % 2] == 2);
+	}
+
 	{ // check matrix inverse
 		Mat<float, 4, 4> M;
 
@@ -191,15 +204,6 @@ float uniform_random(float max=1)
 		auto r = trans * v;
 		std::cerr << r.to_string() << std::endl;
 		assert(r.is_near({ 2, 0, 0, 1 }));
-	}
-
-	{ // Check matrix inversion
-		auto tm = Mat4f::translate({1, 0, 0});
-		auto v = Vec<float, 4>{ 0, 0, 0, 1 };
-		auto tv = tm * v;
-		assert(tv.is_near({1, 0, 0, 1}));
-		auto inv = Mat4f::inverse(tm) * tv;
-		assert(inv.is_near(v));
 	}
 
 	{ // test covariance estimation
