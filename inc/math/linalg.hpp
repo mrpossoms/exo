@@ -13,7 +13,7 @@ namespace exo
         //    \ V / -_) _|
         //     \_/\___\__|
         //
-        template<typename S, ssize_t D>
+        template<typename S, size_t D>
         struct Vec
         {
             Vec()
@@ -60,6 +60,7 @@ namespace exo
                 return v[i];
             }
 
+            inline S* ptr() { return v; }
 
             inline Vec<S,D> operator+(const Vec<S,D>& v) const
             {
@@ -200,7 +201,7 @@ namespace exo
                 return true;
             }
 
-            template<ssize_t ND>
+            template<size_t ND>
             inline Vec<S, ND> as_dimension() const
             {
                 return Vec<S, ND>(this->v);
@@ -217,6 +218,15 @@ namespace exo
 
                 return v;
             }
+
+            template<size_t ND>
+            Vec<S, ND> slice(size_t start = 0)
+            {
+                Vec<S, ND> r;
+                for (int i = 0; i < ND; ++i) { r[i] = v[i + start]; }
+                return r;
+            }
+
 
             std::string to_string()
             {
@@ -240,6 +250,7 @@ namespace exo
 
 
             Vec<S,D> norm() { return *this / len(); }
+
 
             S dot(Vec<S,D> const& v)
             {
@@ -309,7 +320,7 @@ namespace exo
         //   |   / _` | || |
         //   |_|_\__,_|\_, |
         //             |__/
-        template<typename S, ssize_t D>
+        template<typename S, size_t D>
         struct Ray
         {
             Ray(Vec<S, D> origin, Vec<S, D> direction)
@@ -329,7 +340,7 @@ namespace exo
         //   | |\/| / _` |  _|
         //   |_|  |_\__,_|\__|
         //
-        template<typename S, ssize_t R, ssize_t C>
+        template<typename S, size_t R, size_t C>
         struct Mat
         {
             Mat()
@@ -368,20 +379,37 @@ namespace exo
                 return *this;
             }
 
+
+            inline S* ptr() { return m[0].ptr(); }
+
+
             template<typename T>
             inline Mat<T, R, C> cast() const
             {
-                Mat<T, R, C> m;
+                Mat<T, R, C> r;
                 for (int row = R; row--;)
                 for (int col = C; col--;)
                 {
-                    m[row][col] = (T)this->m[row][col];
+                    r[row][col] = (T)m[row][col];
                 }
 
-                return m;
+                return r;
             }
 
-            template <ssize_t MC>
+            template<size_t NR, size_t NC>
+            Mat<S, NR, NC> slice(size_t start_row, size_t start_col)
+            {
+                Mat<S, NR, NC> r;
+
+                for (int row = NR; row--;)
+                {
+                    r[row] = m[row + start_row].template slice<NC>(start_col);
+                }
+
+                return r;
+            }
+
+            template <size_t MC>
             Mat<S, R, MC> operator* (Mat<S, C, MC> const& m) const
             {
                 Mat<S, R, MC> r;
@@ -519,10 +547,9 @@ namespace exo
             }
 
 
-            inline S* operator[] (ssize_t row)
+            inline Vec<S, C>& operator[] (size_t row)
             {
-                if (row < R) { return m[row]; }
-                return nullptr;
+                return m[row];
             }
 
 
@@ -566,13 +593,13 @@ namespace exo
                 return sqrt(sum);
             }
 
-            void swap_rows(ssize_t row_i, ssize_t row_j)
+            void swap_rows(size_t row_i, size_t row_j)
             {
-                S temp_row[C];
+                Vec<S, C> temp_row;
 
-                memcpy(temp_row, m[row_i], sizeof(S) * C);
-                memcpy(m[row_i], m[row_j], sizeof(S) * C);
-                memcpy(m[row_j], temp_row, sizeof(S) * C);
+                temp_row = m[row_i];
+                m[row_i] = m[row_j];
+                m[row_j] = temp_row;
             }
 
             Mat<S, R, C>& rref()
@@ -655,7 +682,7 @@ namespace exo
 
                 for (int r = 0; r < R; r++)
                 {
-                    memcpy(inv[r], _rref[r] + C, sizeof(S) * C);
+                    inv[r] = _rref[r].template slice<C>(C);
                 }
 
                 return inv;
@@ -674,7 +701,7 @@ namespace exo
                 return res;
             }
 
-            // template <typename STORAGE, ssize_t ROWS, ssize_t COLS>
+
             static Mat<S, R, C> I()
             {
                 Mat<S, R, C> res;
@@ -686,53 +713,6 @@ namespace exo
                 }
 
                 return res;
-            }
-
-            static Mat<S, 4, 4> inverse(Mat<S, 4, 4> m)
-            {
-                S s[6];
-                S c[6];
-
-                s[0] = m[0][0]*m[1][1] - m[1][0]*m[0][1];
-                s[1] = m[0][0]*m[1][2] - m[1][0]*m[0][2];
-                s[2] = m[0][0]*m[1][3] - m[1][0]*m[0][3];
-                s[3] = m[0][1]*m[1][2] - m[1][1]*m[0][2];
-                s[4] = m[0][1]*m[1][3] - m[1][1]*m[0][3];
-                s[5] = m[0][2]*m[1][3] - m[1][2]*m[0][3];
-
-                c[0] = m[2][0]*m[3][1] - m[3][0]*m[2][1];
-                c[1] = m[2][0]*m[3][2] - m[3][0]*m[2][2];
-                c[2] = m[2][0]*m[3][3] - m[3][0]*m[2][3];
-                c[3] = m[2][1]*m[3][2] - m[3][1]*m[2][2];
-                c[4] = m[2][1]*m[3][3] - m[3][1]*m[2][3];
-                c[5] = m[2][2]*m[3][3] - m[3][2]*m[2][3];
-
-                /* Assumes it is invertible */
-                S idet = 1.0f/( s[0]*c[5]-s[1]*c[4]+s[2]*c[3]+s[3]*c[2]-s[4]*c[1]+s[5]*c[0] );
-
-                Mat<S, R, C> inv;
-
-                inv[0][0] = ( m[1][1] * c[5] - m[1][2] * c[4] + m[1][3] * c[3]) * idet;
-                inv[0][1] = (-m[0][1] * c[5] + m[0][2] * c[4] - m[0][3] * c[3]) * idet;
-                inv[0][2] = ( m[3][1] * s[5] - m[3][2] * s[4] + m[3][3] * s[3]) * idet;
-                inv[0][3] = (-m[2][1] * s[5] + m[2][2] * s[4] - m[2][3] * s[3]) * idet;
-
-                inv[1][0] = (-m[1][0] * c[5] + m[1][2] * c[2] - m[1][3] * c[1]) * idet;
-                inv[1][1] = ( m[0][0] * c[5] - m[0][2] * c[2] + m[0][3] * c[1]) * idet;
-                inv[1][2] = (-m[3][0] * s[5] + m[3][2] * s[2] - m[3][3] * s[1]) * idet;
-                inv[1][3] = ( m[2][0] * s[5] - m[2][2] * s[2] + m[2][3] * s[1]) * idet;
-
-                inv[2][0] = ( m[1][0] * c[4] - m[1][1] * c[2] + m[1][3] * c[0]) * idet;
-                inv[2][1] = (-m[0][0] * c[4] + m[0][1] * c[2] - m[0][3] * c[0]) * idet;
-                inv[2][2] = ( m[3][0] * s[4] - m[3][1] * s[2] + m[3][3] * s[0]) * idet;
-                inv[2][3] = (-m[2][0] * s[4] + m[2][1] * s[2] - m[2][3] * s[0]) * idet;
-
-                inv[3][0] = (-m[1][0] * c[3] + m[1][1] * c[1] - m[1][2] * c[0]) * idet;
-                inv[3][1] = ( m[0][0] * c[3] - m[0][1] * c[1] + m[0][2] * c[0]) * idet;
-                inv[3][2] = (-m[3][0] * s[3] + m[3][1] * s[1] - m[3][2] * s[0]) * idet;
-                inv[3][3] = ( m[2][0] * s[3] - m[2][1] * s[1] + m[2][2] * s[0]) * idet;
-
-                return inv;
             }
 
             template <class RADIAL_TYPE>
@@ -828,7 +808,7 @@ namespace exo
                 };
             }
 
-            template <ssize_t D, ssize_t N>
+            template <size_t D, size_t N>
             static Mat<S, D, D> estimate_covariance(Mat<S, D, N> samples)
             {
                 // covariance matrix
@@ -857,7 +837,7 @@ namespace exo
                 return Q;
             }
 
-            S m[R][C];
+            Vec<S, C> m[R];
         };
 
         using Mat4f = Mat<float, 4, 4>;
@@ -965,7 +945,7 @@ namespace exo
         //   | _ \/ _` (_-< (_-<
         //   |___/\__,_/__/_/__/
         //
-        template<typename S, ssize_t D>
+        template<typename S, size_t D>
         struct Basis
         {
             Basis()
