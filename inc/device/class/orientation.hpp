@@ -31,7 +31,7 @@ struct Orientation : public exo::device::Base<SPATIAL_UNIT>
      *
      * @return     pitch, roll and yaw rates
      */
-    virtual exo::math::Vec<float, 3> angular_velocity() = 0;
+    virtual exo::math::Vec<float, 3> angular_velocity() { return {}; }
 
     /**
      * @brief      If applicable, this returns the rotational reference frame
