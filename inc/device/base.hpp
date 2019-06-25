@@ -51,6 +51,11 @@ struct Base
      * @return     exo::Result::OK if reset was successful.
      */
     virtual Result reset() = 0;
+
+    /**
+     * @brief      Used to explicitly cleanup any device specific resources
+     */
+    virtual void shutdown() {}
 };
 
 } // device
