@@ -915,6 +915,7 @@ namespace exo
                 const auto& p0 = *this;
                 auto W = acos(p0.dot(p1));
                 auto sin_W = sin(W);
+		if (sin_W < 0.0001f) { sin_W = 0.0001f; }
                 return p0 * (sin((1 - t) * W) / sin_W) + p1 * (sin(t * W) / sin_W);
             }
 
