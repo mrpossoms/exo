@@ -252,7 +252,7 @@ namespace exo
             Vec<S,D> norm() { return *this / len(); }
 
 
-            S dot(Vec<S,D> const& v)
+            S dot(Vec<S,D> const& v) const
             {
                 S sum = 0;
                 for (auto i = D; i--;)
@@ -860,8 +860,13 @@ namespace exo
                 // NOP
             }
 
+            Quat(Vec<float, 4> v) : Vec(v)
+            {
+                // NOP
+            }
 
-            Quat operator*(Quat const& other)
+
+            Quat operator*(Quat const& other) const
             {
                 auto t3 = this->as_dimension<3>();
                 auto o3 = other.as_dimension<3>();
@@ -879,26 +884,39 @@ namespace exo
             }
 
 
+            Quat operator*(float s) const
+            {
+                return { as_dimension<4>() * s };
+            }
+
+
             Quat& operator*=(Quat const& other)
             {
                 *this = *this * std::move(other);
                 return *this;
             }
 
-            Quat conjugate()
+            Quat conjugate() const
             {
                 auto& q = *this;
                 return { -q[0], -q[1], -q[2], q[3] };
             }
 
-            Quat inverse()
+            Quat inverse() const
             {
-                auto inv = this->conjugate();
-                auto mag2 = this->dot(*this);
+                auto inv = conjugate();
+                auto mag2 = dot(*this);
                 static_cast<Vec<float, 4>>(inv) /= mag2;
                 return inv;
             }
 
+            Quat slerp_to(Quat const& p1, float t) const
+            {
+                const auto& p0 = *this;
+                auto W = acos(p0.dot(p1));
+                auto sin_W = sin(W);
+                return p0 * (sin((1 - t) * W) / sin_W) + p1 * (sin(t * W) / sin_W);
+            }
 
             Vec<float, 3> rotate(Vec<float, 3> const& v) const
             {
@@ -926,6 +944,34 @@ namespace exo
                     { 2 * (b*d - a*c)  , 2 * (c*d + a*b)  , a2 - b2 - c2 + d2, 0},
                     { 0                , 0                , 0                , 1},
                 };
+            }
+
+            template <class S>
+            Vec<S, 3> to_roll_pitch_yaw()
+            {
+                S roll, pitch, yaw;
+                // roll (x-axis rotation)
+                S sinr_cosp = +2.0 * (v[3] * v[0] + v[1] * v[2]);
+                S cosr_cosp = +1.0 - 2.0 * (v[0] * v[0] + v[1] * v[1]);
+                roll = atan2(sinr_cosp, cosr_cosp);
+
+                // pitch (y-axis rotation)
+                S sinp = +2.0 * (v[3] * v[1] - v[2] * v[0]);
+                if (fabs(sinp) >= 1)
+                {
+                    pitch = copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+                }
+                else
+                {
+                    pitch = asin(sinp);
+                }
+
+                // yaw (z-axis rotation)
+                S siny_cosp = +2.0 * (v[3] * v[2] + v[0] * v[1]);
+                S cosy_cosp = +1.0 - 2.0 * (v[1] * v[1] + v[2] * v[2]);
+                yaw = atan2(siny_cosp, cosy_cosp);
+
+                return { roll, pitch, yaw };
             }
 
             static Quat from_axis_angle(Vec<float, 3> axis, float angle)
