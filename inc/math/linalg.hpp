@@ -211,7 +211,7 @@ namespace exo
             inline Vec<T, D> cast() const
             {
                 Vec<T, D> v;
-                for (int i = 0; i < D; ++i)
+                for (size_t i = 0; i < D; ++i)
                 {
                     v[i] = (T)this->v[i];
                 }
@@ -223,7 +223,7 @@ namespace exo
             Vec<S, ND> slice(size_t start = 0)
             {
                 Vec<S, ND> r;
-                for (int i = 0; i < ND; ++i) { r[i] = v[i + start]; }
+                for (size_t i = 0; i < ND; ++i) { r[i] = v[i + start]; }
                 return r;
             }
 
@@ -231,7 +231,7 @@ namespace exo
             std::string to_string()
             {
                 std::string str = "(";
-                for (int i = 0; i < D; ++i)
+                for (size_t i = 0; i < D; ++i)
                 {
                     str += std::to_string(v[i]);
                     if (i < D - 1) { str += ", "; }
@@ -273,7 +273,7 @@ namespace exo
 
             Vec<S,D>& take_min(const Vec<S,D>& v)
             {
-                for (int i = 0; i < D; ++i)
+                for (size_t i = 0; i < D; ++i)
                 {
                     auto& cur = this->v[i];
                     cur = v[i] < cur ? v[i] : cur;
@@ -285,7 +285,7 @@ namespace exo
 
             Vec<S,D>& take_max(const Vec<S,D>& v)
             {
-                for (int i = 0; i < D; ++i)
+                for (size_t i = 0; i < D; ++i)
                 {
                     auto& cur = this->v[i];
                     cur = v[i] > cur ? v[i] : cur;

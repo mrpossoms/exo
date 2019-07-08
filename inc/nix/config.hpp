@@ -194,14 +194,10 @@ struct Config
         {
             std::ifstream fs(path.c_str());
 
-            std::cerr << "default_value:" << default_value << std::endl;
-
             if (fs.fail()) return default_value;
 
             std::string str((std::istreambuf_iterator<char>(fs)),
                              std::istreambuf_iterator<char>());
-
-            std::cerr << str << std::endl;
 
             return str;
         }
