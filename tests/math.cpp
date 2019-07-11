@@ -327,5 +327,21 @@ float uniform_random(float max=1)
 		std::cout << "vv P vv\n" << kf.P.to_string() << "\n";
 	}
 
+	{ // test eigen value computation
+		Mat<int, 2, 2> m = {
+			{ 1, 2 },
+			{ 4, 3 },
+		};
+
+		int l[2] = {};
+		Mat<int, 2, 2>::eigen_values(m, l);
+
+		std::cout << "lambda1: " << std::to_string(l[0]) << std::endl;
+		std::cout << "lambda2: " << std::to_string(l[1]) << std::endl;
+
+		assert(l[0] == -1);
+		assert(l[1] == 5);
+	}
+
 	return 0;
 }

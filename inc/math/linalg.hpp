@@ -491,17 +491,15 @@ namespace exo
             }
 
 
-            Mat<S, R, C> operator+= (Mat<S, R, C> const& m) const
+            Mat<S, R, C>& operator+= (Mat<S, R, C> const& M)
             {
-                Mat<S, R, C> r;
-
                 for (int row = R; row--;)
                 for (int col = C; col--;)
                 {
-                    r[row][col] += m.m[row][col];
+                    m[row][col] += M.m[row][col];
                 }
 
-                return r;
+                return *this;
             }
 
 
@@ -675,6 +673,7 @@ namespace exo
                 return M;
             }
 
+
             Mat<S, R, C> inverse()
             {
                 Mat<S, R, C> inv;
@@ -701,6 +700,20 @@ namespace exo
                 return res;
             }
 
+
+            S trace()
+            {
+            	if (R != C) { return {}; }
+
+            	S t = m[0][0];
+
+            	for (int i = 1; i < C; ++i)
+            	{
+            		t += m[i][i];
+            	}
+
+            	return t;
+            }
 
             static Mat<S, R, C> I()
             {
@@ -835,6 +848,23 @@ namespace exo
                 Q /= (static_cast<S>(N) - 1);
 
                 return Q;
+            }
+
+            static inline S determinant(Mat<S, 2, 2> const& m)
+            {
+            	return m[0][0] * m[1][1] - m[1][0] * m[0][1];
+            }
+
+
+            static void eigen_values(Mat<S, 2, 2>& m, S l[2])
+            {
+            	S a = { 1 };
+            	S b = -m[1][1] - m[0][0];
+            	S c = m[0][0] * m[1][1] - (-m[0][1] * -m[1][0]);
+
+            	auto num = sqrt(b * b - 4 * a * c);
+            	l[0] = (-b - num) / 2 * a;
+            	l[1] = (-b + num) / 2 * a;
             }
 
             Vec<S, C> m[R];
