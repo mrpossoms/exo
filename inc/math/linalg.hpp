@@ -62,6 +62,16 @@ namespace exo
 
             inline S* ptr() { return v; }
 
+            inline bool is_finite() const
+            {
+            	for (auto i = D; i--;)
+            	{
+            		if (!isfinite(v[i])) { return false; }
+            	}
+
+            	return true;
+            }
+
             inline Vec<S,D> operator+(const Vec<S,D>& v) const
             {
                 Vec<S,D> out;
@@ -546,6 +556,15 @@ namespace exo
                 return r;
             }
 
+            inline bool is_finite() const
+            {
+            	for (auto r = R; r--;)
+            	{
+            		if (!m[r].is_finite()) { return false; }
+            	}
+
+            	return true;
+            }
 
             inline Vec<S, C>& operator[] (size_t row)
             {
