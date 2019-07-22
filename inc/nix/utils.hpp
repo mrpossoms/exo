@@ -7,7 +7,7 @@ namespace nix
 namespace chunker
 {
 
-exo::Result writer(int fd, uint8_t* buf, size_t to_write)
+static inline exo::Result writer(int fd, uint8_t* buf, size_t to_write)
 {
     auto end = buf;
 
@@ -29,7 +29,7 @@ exo::Result writer(int fd, uint8_t* buf, size_t to_write)
     return exo::Result::OK;
 }
 
-exo::Result reader(int fd, uint8_t* buf, size_t to_read)
+static inline exo::Result reader(int fd, uint8_t* buf, size_t to_read)
 {
     auto end = (uint8_t*)buf;
 
