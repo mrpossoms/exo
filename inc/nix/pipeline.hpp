@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../exo.hpp"
+#include "utils.hpp"
 
 namespace exo
 {
@@ -23,25 +24,7 @@ struct Pipeline
 
         exo::Result operator<<(exo::msg::PayloadBuffer const& pay)
         {
-            auto to_write = pay.len;
-            auto end = (uint8_t*)pay.buf;
-
-            // Allow the payload to be read in chunks at a time
-            while (to_write > 0)
-            {
-                auto bytes_written = write(STDOUT_FILENO, end, to_write);
-
-                switch(bytes_written)
-                {
-                    case -1: return exo::Result::WRITE_ERR;
-                    case  0: return exo::Result::OUT_OF_DATA;
-                    default:
-                        to_write -= bytes_written;
-                        end += bytes_written;
-                }
-            }
-
-		    return Result::OK;
+            return exo::nix::chunker::writer(STDOUT_FILENO, (uint8_t*)pay.buf, pay.len);
         }
     };
 
@@ -66,25 +49,7 @@ struct Pipeline
 
         exo::Result operator>>(exo::msg::PayloadBuffer const& pay)
         {
-            auto to_read = pay.len;
-            auto end = (uint8_t*)pay.buf;
-
-            // Allow the payload to be read in chunks at a time
-            while (to_read > 0)
-            {
-                auto bytes_read = read(STDIN_FILENO, end, to_read);
-
-                switch(bytes_read)
-                {
-                    case -1: return exo::Result::ERROR;
-                    case  0: return exo::Result::OUT_OF_DATA;
-                    default:
-                        to_read -= bytes_read;
-                        end += bytes_read;
-                }
-            }
-
-		    return Result::OK;
+            return exo::nix::chunker::reader(STDIN_FILENO, (uint8_t*)pay.buf, pay.len);
         }
 
         exo::Result flush(size_t bytes)

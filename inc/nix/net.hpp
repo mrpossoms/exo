@@ -138,23 +138,16 @@ struct Out : public exo::msg::Outlet
         auto old_act = disable_sigpipe();
         auto to_write = pay.len;
 
-        for(auto bytes = to_write; bytes > 0;)
+        auto res = chunker::writer(_socket, (uint8_t*)pay.buf, to_write);
+        if (res != exo::Result::OK)
         {
-            auto written = write(_socket, pay.buf, to_write);
-            if (written >= 0)
-            {
-                bytes -= written;
-            }
-            else
-            {
-                enable_sigpipe(old_act);
-                disconnect();
-                return Result::WRITE_ERR;
-            }
+            enable_sigpipe(old_act);
+            disconnect();
+            return res;
         }
 
         enable_sigpipe(old_act);
-        return Result::OK;
+        return res;
     }
 
     void timeout (unsigned int timeout_ms)
@@ -286,24 +279,15 @@ struct In : public exo::msg::Inlet
             auto to_read = pay.len;
             auto end = (uint8_t*)pay.buf;
 
-            // Allow the payload to be read in chunks at a time
-            while (to_read > 0)
+            auto res = chunker::reader(_sock, end, to_read);
+            if (res != exo::Result::OK)
             {
-                auto bytes_read = read(_sock, end, to_read);
-
-                switch(bytes_read)
-                {
-                    case -1: return exo::Result::ERROR;
-                    case  0: return exo::Result::OUT_OF_DATA;
-                    default:
-                        to_read -= bytes_read;
-                        end += bytes_read;
-                }
+                return res;
             }
 
             _got_payload = true;
 
-            return exo::Result::OK;
+            return res;
         }
 
         exo::Result flush(size_t bytes)
