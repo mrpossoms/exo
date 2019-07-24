@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <dirent.h>
 
 namespace exo
 {
@@ -23,6 +24,42 @@ struct fs
     		case ENOENT:  return Result::BAD;
     		default:      return Result::ERROR;
     	}
+    }
+
+    static Result remove(std::string path)
+    {
+        auto res = exo::Result::OK;
+        DIR* dir = opendir(path.c_str());
+
+        if (nullptr == dir)
+        {
+            closedir(dir);
+            return exo::Result::ERROR;
+        }
+
+        for(dirent* ent = readdir(dir); nullptr != (ent = readdir(dir));)
+        {
+            if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
+            { continue; }
+
+            auto ent_path = path + "/" + std::string(ent->d_name);
+            if (ent->d_type & DT_DIR)
+            {
+                res = remove(ent_path);
+                if (res != exo::Result::OK)
+                {
+                    closedir(dir);
+                    return exo::Result::ERROR;
+                }
+            }
+            else if (ent->d_type & DT_REG)
+            {
+                unlink(ent_path.c_str());
+            }
+        }
+
+        closedir(dir);
+        return res;
     }
 };
 
