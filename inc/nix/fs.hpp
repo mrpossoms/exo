@@ -37,7 +37,7 @@ struct fs
             return exo::Result::ERROR;
         }
 
-        for(dirent* ent = readdir(dir); nullptr != (ent = readdir(dir));)
+        for(dirent* ent = readdir(dir); nullptr != ent; ent = readdir(dir))
         {
             if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
             { continue; }
@@ -58,6 +58,7 @@ struct fs
             }
         }
 
+        rmdir(path.c_str());
         closedir(dir);
         return res;
     }
