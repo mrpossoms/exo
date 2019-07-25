@@ -10,6 +10,7 @@
 #include "test.h"
 {
     system("rm -rf /tmp/junk");
+    system("rm -rf /tmp/junker");
 
     mkdir("/tmp/junk", 0777);
     assert(exo::nix::fs::exists("/tmp/junk") == exo::Result::OK);
@@ -20,6 +21,9 @@
 
     assert(exo::nix::fs::remove("/tmp/junk") == exo::Result::OK);
     assert(exo::nix::fs::exists("/tmp/junk") != exo::Result::OK);
+
+    assert(exo::nix::fs::make_dirs("/tmp/junker/junkiest") == exo::Result::OK);
+    assert(exo::nix::fs::exists("/tmp/junker/junkiest") == exo::Result::OK);
     
     return 0;
 }
