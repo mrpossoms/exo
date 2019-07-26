@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <dirent.h>
 
+#include <functional>
+
 namespace exo
 {
 namespace nix
@@ -26,9 +28,10 @@ struct fs
     	}
     }
 
-    static Result remove(std::string const& path)
+    static exo::Result foreach_in_path(
+            std::string const& path,
+            std::function<exo::Result (std::string const& ent_name, char d_type)> cb)
     {
-        auto res = exo::Result::OK;
         DIR* dir = opendir(path.c_str());
 
         if (nullptr == dir)
@@ -39,27 +42,40 @@ struct fs
 
         for(dirent* ent = readdir(dir); nullptr != ent; ent = readdir(dir))
         {
-            if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
-            { continue; }
+            auto res = cb(std::string(ent->d_name), ent->d_type);
 
-            auto ent_path = path + "/" + std::string(ent->d_name);
-            if (ent->d_type & DT_DIR)
+            if (exo::Result::DONE == res) { break; }
+            if (exo::Result::OK != res) { return res; }
+        }
+
+        return exo::Result::OK;
+    }
+
+
+    static Result remove(std::string const& path)
+    {
+        auto res = foreach_in_path(path, [&](std::string const& ent_name, char d_type) -> exo::Result
+        {
+            if (ent_name == "." || ent_name == "..")
+            { return exo::Result::OK; }
+
+            auto ent_path = path + "/" + ent_name;
+            if (d_type & DT_DIR)
             {
-                res = remove(ent_path);
-                if (res != exo::Result::OK)
+                if (remove(ent_path) != exo::Result::OK)
                 {
-                    closedir(dir);
                     return exo::Result::ERROR;
                 }
             }
-            else if (ent->d_type & DT_REG)
+            else if (d_type & DT_REG)
             {
                 unlink(ent_path.c_str());
             }
-        }
+
+            return exo::Result::OK;
+        });
 
         rmdir(path.c_str());
-        closedir(dir);
         return res;
     }
 

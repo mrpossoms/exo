@@ -13,6 +13,7 @@ namespace exo
     enum class Result
     {
         OK,
+        DONE,
         BAD,
         ERROR,
         OMIT,
@@ -42,6 +43,7 @@ namespace exo
             switch(_res)
             {
                 case Result::OK: return "OK";
+                case Result::DONE: return "DONE";
                 case Result::BAD: return "BAD";
                 case Result::ERROR: return "ERROR";
                 case Result::OMIT: return "OMIT";
