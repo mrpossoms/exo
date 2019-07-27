@@ -79,6 +79,14 @@ struct fs
         return res;
     }
 
+    static std::string basename(std::string const& path)
+    {
+        auto idx = path.find_last_of('/');
+        if (std::string::npos == idx) { return ""; }
+        idx += 1;
+        return path.substr(idx, path.length() - idx); 
+    }
+
     static Result make_dirs(std::string const& path, mode_t mode=0777)
     {
         if (path.length() == 0) { return Result::OK; }
