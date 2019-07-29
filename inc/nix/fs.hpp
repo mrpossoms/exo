@@ -79,7 +79,7 @@ struct fs
         return res;
     }
 
-    static std::string basename(std::string const& path)
+    static std::string base_name(std::string const& path)
     {
         auto idx = path.find_last_of('/');
         if (std::string::npos == idx) { return ""; }

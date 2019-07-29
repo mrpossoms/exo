@@ -25,7 +25,7 @@
     assert(exo::nix::fs::make_dirs("/tmp/junker/junkiest") == exo::Result::OK);
     assert(exo::nix::fs::exists("/tmp/junker/junkiest") == exo::Result::OK);
     
-    assert(exo::nix::fs::basename("/tmp/junker") == "junker");
+    assert(exo::nix::fs::base_name("/tmp/junker") == "junker");
 
     return 0;
 }
