@@ -238,7 +238,7 @@ namespace exo
             }
 
 
-            std::string to_string()
+            std::string to_string() const
             {
                 std::string str = "(";
                 for (size_t i = 0; i < D; ++i)
@@ -251,7 +251,7 @@ namespace exo
             }
 
 
-            inline S len()
+            inline S len() const
             {
                 auto sqr = dot(*this);
                 if (sqr <= 0) { return 0; }
