@@ -17,7 +17,7 @@ struct pid
 		// no-op
 	}
 
-	inline T p(T e) { return e * k_p; }
+	inline T p(T e) { return k_p * e; }
 
 	inline T i(T e, T dt)
 	{
@@ -25,7 +25,12 @@ struct pid
 		return k_i * int_i;
 	}
 
-	inline T d(T e, T dt) { return k_d * (e - e_t_1) / dt; }
+	inline T d(T e, T dt)
+	{
+		auto _d = (e - e_t_1) / dt;
+		d_filtered = _d * (1 - filter_power) + d_filtered * filter_power;
+		return k_d * d_filtered;
+	}
 
 	inline T step(T e, T dt)
 	{
@@ -36,9 +41,11 @@ struct pid
 
 	T k_p = {}, k_i = {}, k_d = {}; // tuning parameters
 
+	T filter_power = {0.1};
 private:
 	T int_i = {};
 	T e_t_1 = {};
+	T d_filtered = {};
 };
 
 } // math
