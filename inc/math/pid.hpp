@@ -41,7 +41,7 @@ struct pid
 
 	T k_p = {}, k_i = {}, k_d = {}; // tuning parameters
 
-	T filter_power = {0.1};
+	T filter_power = {};
 private:
 	T int_i = {};
 	T e_t_1 = {};
