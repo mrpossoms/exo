@@ -78,9 +78,6 @@ namespace exo
      */
     struct Log
     {
-
-        virtual ~Log() { };
-
         enum class Type
         {
             info,
@@ -89,7 +86,35 @@ namespace exo
             good,
         };
 
+        struct Statement : public std::string
+        {
+            Log* logger = nullptr;
+            Type log_type = Type::info;
+            std::string topic;
+
+            Statement(Log* log, std::string const& topic) : logger(log), topic(topic) {}
+            ~Statement() { if (length() > 0) logger->log(log_type, *this, topic); }
+
+            Statement& info() { log_type = Type::info; return *this; }
+            Statement& error() { log_type = Type::error; return *this; }
+            Statement& warning() { log_type = Type::warning; return *this; }
+            Statement& good() { log_type = Type::good; return *this; }
+
+            Statement& operator<<(std::string const& str)
+            {
+                *this += str;
+                return *this;
+            }
+        };
+
+        virtual ~Log() { };
+
         int verbosity_level = 0;
+
+        static Log* instance(Log* logger=nullptr, int log_level=-1)
+        {
+            return exo::Log::inst(logger, log_level);
+        }
 
         /**
          * @brief Before calling any logging functions, a platform specific
@@ -99,7 +124,7 @@ namespace exo
          * @param log_level Verbosity level for this instance.
          * @return Pointer to current Log instance.
          */
-        static Log* instance(Log* logger=nullptr, int log_level=-1)
+        static Log* inst(Log* logger=nullptr, int log_level=-1)
         {
             static Log* inst;
 
@@ -112,18 +137,28 @@ namespace exo
             return inst;
         }
 
+        static Log::Statement good(std::string const& topic)
+        {
+            return Log::Statement{ Log::inst(), topic }.good();
+        }
+
         /**
          * @brief Logs a message as a 'good' type.
          * @param level Verbosity level that must be surpassed or equal to for this log to occur.
          * @param msg String to log.
          */
-        static void good(int level, std::string&& msg)
+        static void good(int level, std::string const& msg)
         {
-            auto logger = Log::instance();
+            auto logger = Log::inst();
             if (logger != nullptr && level <= logger->verbosity_level)
             {
                 logger->log(Log::Type::good, msg);
             }
+        }
+
+        static Log::Statement info(std::string const& topic)
+        {
+            return Log::Statement{ Log::inst(), topic }.info();
         }
 
         /**
@@ -131,13 +166,18 @@ namespace exo
          * @param level Verbosity level that must be surpassed or equal to for this log to occur.
          * @param msg String to log.
          */
-        static void info(int level, std::string&& msg)
+        static void info(int level, std::string const& msg)
         {
-            auto logger = Log::instance();
+            auto logger = Log::inst();
             if (logger != nullptr && level <= logger->verbosity_level)
             {
                 logger->log(Log::Type::info, msg);
             }
+        }
+
+        static Log::Statement warning(std::string const& topic)
+        {
+            return Log::Statement{ Log::inst(), topic }.warning();
         }
 
         /**
@@ -145,13 +185,18 @@ namespace exo
          * @param level Verbosity level that must be surpassed or equal to for this log to occur.
          * @param msg String to log.
          */
-        static void warning(int level, std::string&& msg)
+        static void warning(int level, std::string const& msg)
         {
-            auto logger = Log::instance();
+            auto logger = Log::inst();
             if (logger != nullptr && level <= logger->verbosity_level)
             {
                 logger->log(Log::Type::warning, msg);
             }
+        }
+
+        static Log::Statement error(std::string const& topic)
+        {
+            return Log::Statement{ Log::inst(), topic }.error();
         }
 
         /**
@@ -159,9 +204,9 @@ namespace exo
          * @param level Verbosity level that must be surpassed or equal to for this log to occur.
          * @param msg String to log.
          */
-        static void error(int level, std::string&& msg)
+        static void error(int level, std::string const& msg)
         {
-            auto logger = Log::instance();
+            auto logger = Log::inst();
             if (logger != nullptr && level <= logger->verbosity_level)
             {
                 logger->log(Log::Type::error, msg);
@@ -174,7 +219,10 @@ namespace exo
          * @param type Indicates the severity.
          * @param msg String to log.
          */
-        virtual void log(Log::Type type, std::string& msg) = 0;
+        virtual void log(Log::Type type, std::string const& msg, std::string const& topic="") = 0;
+
+        virtual Log::Statement operator[](const char* topic) { return (*this)[std::string(topic)]; }
+        virtual Log::Statement operator[](std::string const& topic) = 0;
     };
 
 

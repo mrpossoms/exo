@@ -28,7 +28,7 @@ struct Stderr : public exo::Log
     virtual ~Stderr() { };
 
 protected:
-    virtual void log(Log::Type type, std::string& msg)
+    virtual void log(Log::Type type, std::string const& msg, std::string const& topic)
     {
 		static char* proc_name;
 		char buf[512] = {};
@@ -55,6 +55,10 @@ protected:
 
 		// write prefix
 		str += sprintf(str, "[%s] ", proc_name);
+		if (topic.length() > 0)
+		{
+			str += sprintf(str, "%s: ", topic.c_str());		
+		}
 
 		if (_show_time)
 		str += sprintf(str, "@%ld: ", time(nullptr));
@@ -65,6 +69,11 @@ protected:
 		// turn off coloring
 		str += sprintf(str, "%s\n", NIX_TERM_COLOR_OFF);
 		write(STDERR_FILENO, buf, strlen(buf));
+    }
+
+    virtual Log::Statement operator[](std::string const& topic)
+    {
+    	return { exo::Log::inst(), topic };
     }
 
 private:

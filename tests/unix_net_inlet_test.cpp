@@ -11,7 +11,7 @@
 
 #include "test.h"
 {
-    exo::Log::instance(new exo::nix::Log::Stderr(5, true), 5);
+    exo::Log::inst(new exo::nix::Log::Stderr(5, true), 5);
 
     bool continuous = false;
     uint16_t inlet_port = 31337;
