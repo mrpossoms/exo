@@ -143,7 +143,7 @@ protected:
 		{
 			auto fd_path = _files_path + "/" + topic_name;
 			
-			fd = open(fd_path.c_str(), O_WRONLY | O_CREAT, 0666);
+			fd = open(fd_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
 			if (fd < 0)
 			{
 				fprintf(stderr, "FATAL: Couldn't open named fd '%s' for logging (%s)\n", fd_path.c_str(), strerror(errno));
