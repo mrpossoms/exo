@@ -42,7 +42,7 @@ protected:
 
 		if (proc_name == nullptr)
 		{
-			proc_name = getenv("_");
+			proc_name = basename(getenv("_"));
 		}
 
 		switch(type)
@@ -86,9 +86,9 @@ private:
     bool _show_time;
 };
 
-struct NamedPipes : public exo::Log
+struct TopicFiles : public exo::Log
 {
-    NamedPipes(std::string const& path, bool timestamp=false)
+    TopicFiles(std::string const& path, bool timestamp=false)
     {
     	_files_path = path;
 		_show_time = timestamp;
@@ -96,7 +96,7 @@ struct NamedPipes : public exo::Log
 		exo::nix::fs::make_dirs(_files_path);
     }
 
-    virtual ~NamedPipes()
+    virtual ~TopicFiles()
     {
     	// clean-up pipe fd's and files
     	for (auto name_pipe : _files)
@@ -115,7 +115,7 @@ protected:
 
 		if (topic_name.length() == 0)
 		{
-			topic_name = std::string(getenv("_"));
+			topic_name = std::string(basename(getenv("_")));
 		}
 
 		switch(type)
@@ -150,7 +150,7 @@ protected:
 				exit(-2);	
 			}
 
-			_files[topic] = fd;
+			_files[topic_name] = fd;
 		}
 
 		if (_show_time)
