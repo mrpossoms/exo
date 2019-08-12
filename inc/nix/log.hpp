@@ -1,10 +1,15 @@
 #pragma once
 
 #include "../exo.hpp"
+#include "fs.hpp"
 
-#include <unordered_map>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <time.h>
+
+#include <unordered_map>
 
 namespace exo
 {
@@ -81,26 +86,36 @@ private:
     bool _show_time;
 };
 
-struct NamedPipe : public exo::Log
+struct NamedPipes : public exo::Log
 {
-    NamedPipe(std::string const& path, bool timestamp=false)
+    NamedPipes(std::string const& path, bool timestamp=false)
     {
-    	_pipe_path = path;
+    	_files_path = path;
 		_show_time = timestamp;
+
+		exo::nix::fs::make_dirs(_files_path);
     }
 
-    virtual ~NamedPipe() { };
+    virtual ~NamedPipes()
+    {
+    	// clean-up pipe fd's and files
+    	for (auto name_pipe : _files)
+    	{
+    		close(name_pipe.second);
+    		unlink((_files_path + "/" + name_pipe.first).c_str());
+    	}
+    };
 
 protected:
     virtual void log(Log::Type type, std::string const& msg, std::string const& topic)
     {
-		static char* proc_name;
+    	std::string topic_name = topic;
 		char buf[512] = {};
 		char* str = buf;
 
-		if (proc_name == nullptr)
+		if (topic_name.length() == 0)
 		{
-			proc_name = getenv("_");
+			topic_name = std::string(getenv("_"));
 		}
 
 		switch(type)
@@ -117,6 +132,27 @@ protected:
 				break;
 		}
 
+		auto fd_itr = _files.find(topic_name);
+		int fd = -1;
+
+		if (fd_itr != _files.end())
+		{
+			fd = (*fd_itr).second;
+		}
+		else
+		{
+			auto fd_path = _files_path + "/" + topic_name;
+			
+			fd = open(fd_path.c_str(), O_WRONLY | O_CREAT, 0666);
+			if (fd < 0)
+			{
+				fprintf(stderr, "FATAL: Couldn't open named fd '%s' for logging (%s)\n", fd_path.c_str(), strerror(errno));
+				exit(-2);	
+			}
+
+			_files[topic] = fd;
+		}
+
 		if (_show_time)
 		str += sprintf(str, "@%ld: ", time(nullptr));
 
@@ -125,7 +161,7 @@ protected:
 
 		// turn off coloring
 		str += sprintf(str, "%s\n", NIX_TERM_COLOR_OFF);
-		write(STDERR_FILENO, buf, strlen(buf));
+		write(fd, buf, strlen(buf));
     }
 
     virtual Log::Statement operator[](std::string const& topic)
@@ -134,8 +170,8 @@ protected:
     }
 
 private:
-	std::unordered_map<std::string, int> _pipes;
-	std::string _pipe_path;
+	std::unordered_map<std::string, int> _files;
+	std::string _files_path;
     bool _show_time;
 };
 

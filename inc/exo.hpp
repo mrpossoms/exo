@@ -128,8 +128,9 @@ namespace exo
         {
             static Log* inst;
 
-            if (inst == nullptr && logger != nullptr)
+            if (logger != nullptr)
             {
+                if (inst != nullptr) { delete inst; }
                 inst = logger;
                 inst->verbosity_level = log_level;
             }

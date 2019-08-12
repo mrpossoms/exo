@@ -6,7 +6,7 @@
 
 #define DESCRIPTION "Test logging for nix implementions"
 
-#include "test.h"
+void standard_logging()
 {
     exo::Log::inst(new exo::nix::Log::Stderr(1), 1);
 
@@ -18,8 +18,33 @@
 
     exo::Log::info("Greeting") << "Hello info! " << "yo " << "yo " << "yo!";
     exo::Log::error("Greeting") << "Hello error!";
-	exo::Log::good("Greeting") << "Hello good!";
-	exo::Log::warning("Greeting") << "Hello warning!";
+    exo::Log::good("Greeting") << "Hello good!";
+    exo::Log::warning("Greeting") << "Hello warning!";
+}
+
+
+void topic_file_logging()
+{
+    exo::Log::inst(new exo::nix::Log::NamedPipes("/tmp/exo-test-pipes"));
+
+    exo::Log::info("info") << "Hello info! " << "yo " << "yo " << "yo!";
+    exo::Log::error("error") << "Hello error!";
+    exo::Log::good("good") << "Hello good!";
+    exo::Log::warning("warning") << "Hello warning!";
+
+    assert(exo::nix::fs::exists("/tmp/exo-test-pipes/info") == exo::Result::OK);
+    assert(exo::nix::fs::exists("/tmp/exo-test-pipes/error") == exo::Result::OK);
+    assert(exo::nix::fs::exists("/tmp/exo-test-pipes/good") == exo::Result::OK);
+    assert(exo::nix::fs::exists("/tmp/exo-test-pipes/warning") == exo::Result::OK);
+}
+
+
+#include "test.h"
+{
+    umask(0000);
+
+    standard_logging();
+    topic_file_logging();
 
     return 0;
 }
