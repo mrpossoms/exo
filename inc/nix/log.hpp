@@ -80,6 +80,64 @@ private:
     bool _show_time;
 };
 
+struct NamedPipe : public exo::Log
+{
+    NamedPipe(std::string const& path, bool timestamp=false)
+    {
+    	_pipe_path = path;
+		_show_time = timestamp;
+    }
+
+    virtual ~NamedPipe() { };
+
+protected:
+    virtual void log(Log::Type type, std::string const& msg, std::string const& topic)
+    {
+		static char* proc_name;
+		char buf[512] = {};
+		char* str = buf;
+
+		if (proc_name == nullptr)
+		{
+			proc_name = getenv("_");
+		}
+
+		switch(type)
+		{
+			case Log::Type::info: break;
+			case Log::Type::warning:
+				str += sprintf(str, "%s", NIX_TERM_YELLOW);
+				break;
+			case Log::Type::error:
+				str += sprintf(str, "%s", NIX_TERM_RED);
+				break;
+			case Log::Type::good:
+				str += sprintf(str, "%s", NIX_TERM_GREEN);
+				break;
+		}
+
+		if (_show_time)
+		str += sprintf(str, "@%ld: ", time(nullptr));
+
+		// write main message
+		str += sprintf(str, "%s", msg.c_str());
+
+		// turn off coloring
+		str += sprintf(str, "%s\n", NIX_TERM_COLOR_OFF);
+		write(STDERR_FILENO, buf, strlen(buf));
+    }
+
+    virtual Log::Statement operator[](std::string const& topic)
+    {
+    	return { exo::Log::inst(), topic };
+    }
+
+private:
+	std::unordered_map<std::string, int> _pipes;
+	std::string _pipe_path;
+    bool _show_time;
+};
+
 }
 
 }

@@ -220,9 +220,6 @@ namespace exo
          * @param msg String to log.
          */
         virtual void log(Log::Type type, std::string const& msg, std::string const& topic="") = 0;
-
-        virtual Log::Statement operator[](const char* topic) { return (*this)[std::string(topic)]; }
-        virtual Log::Statement operator[](std::string const& topic) = 0;
     };
 
 
