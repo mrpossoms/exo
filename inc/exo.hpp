@@ -78,6 +78,38 @@ namespace exo
      */
     struct Log
     {
+
+        static std::string plot(float min, float max, std::initializer_list<float> values, int width=80)
+        {
+            char buf[width + 1] = {};
+            char* p = buf;
+            memset(buf, ' ', sizeof(buf) - 1);
+
+            auto len = sprintf(p, "[%0.2f, %0.2f] ", min, max);
+            p[len] = ' '; 
+            p += 20;
+            p[0] = '|';
+            ++p;
+            
+            int plot_space = width - (20 + 2);
+            p[plot_space >> 1] = ':';
+
+            int vi = 0;
+            char mark[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+            for (auto x : values)
+            {
+                x -= min;
+                p[static_cast<int>(plot_space * (x / (max - min)))] = mark[vi];
+                vi++;
+                vi %= sizeof(mark);
+            }
+
+            buf[width - 1] = '|';
+            buf[width] = '\0';
+
+            return { buf };
+        }
+
         enum class Type
         {
             info,
