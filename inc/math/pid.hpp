@@ -22,6 +22,10 @@ struct pid
 	inline T i(T e, T dt)
 	{
 		int_i += e * dt;
+
+        // keep the integral bounded if bounds are set.
+        int_i = std::max(std::min(int_i, int_max), int_min);
+
 		return k_i * int_i;
 	}
 
@@ -43,6 +47,8 @@ struct pid
 
 	T filter_power = {};
 	T int_i = {};
+    T int_max = {  INFINITY };
+    T int_min = { -INFINITY };
 private:
 	T e_t_1 = {};
 	T d_filtered = {};
