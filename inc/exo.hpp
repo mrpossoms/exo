@@ -79,7 +79,7 @@ namespace exo
     struct Log
     {
 
-        static std::string plot(float min, float max, std::initializer_list<float> values, int width=80)
+        static std::string plot(float min, float max, std::initializer_list<float> values, const int width=80)
         {
             char buf[width + 1] = {};
             char* p = buf;
@@ -99,7 +99,12 @@ namespace exo
             for (auto x : values)
             {
                 x -= min;
-                p[static_cast<int>(plot_space * (x / (max - min)))] = mark[vi];
+                auto mi = static_cast<int>(plot_space * (x / (max - min)));
+                if (mi >= 0 && mi < plot_space)
+                {
+                    p[mi] = mark[vi];
+                }
+
                 vi++;
                 vi %= sizeof(mark);
             }

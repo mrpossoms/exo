@@ -43,6 +43,13 @@ struct pid
 		return u; 
 	}
 
+    inline void reset()
+    {
+        e_t_1 = {};
+        d_filtered = {};
+        int_i = {};
+    }
+
 	T k_p = {}, k_i = {}, k_d = {}; // tuning parameters
 
 	T filter_power = {};

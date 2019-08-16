@@ -273,6 +273,12 @@ namespace exo
             }
 
 
+            S coincidence(Vec<S,D> const& v) const
+            {
+                return (this->dot(v) + S{ 1 }) / S{ 2 };
+            }
+
+
             bool is_near(const Vec<S,D>& v, S threshold=0.0001)
             {
                 auto diff = *this - v;
