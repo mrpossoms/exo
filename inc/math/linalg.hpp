@@ -937,7 +937,8 @@ namespace exo
 
             inline float rotational_difference(Quat const& q) const
             {
-                return 2 * atan2(q.as_dimension<3>().len(), fabsf(q[3]));
+                auto q_d = q * this->inverse();
+                return 2 * atan2(q_d.as_dimension<3>().len(), fabsf(q_d[3]));
             }
 
             Quat slerp_to(Quat const& p1, float t) const

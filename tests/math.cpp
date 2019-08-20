@@ -71,16 +71,20 @@ float uniform_random(float max=1)
 
 	// Test quaternion angular difference
 	{
-		auto theta = M_PI / 4;
-		auto rand_axis = Vec<float, 3>{ uniform_random(), uniform_random(), uniform_random() }.norm();
-		Quat q0 = Quat::from_axis_angle({0, 0, 1}, 0);
-		Quat q1 = Quat::from_axis_angle({0, 0, 1}, theta);
+		auto theta = uniform_random() + 1;
 
-		auto angle = q0.rotational_difference(q1);
+		for(int i = 100; i--;)
+		{
+			auto rand_axis = Vec<float, 3>{ uniform_random(), uniform_random(), uniform_random() }.norm();
+			Quat q0 = Quat::from_axis_angle({0, 0, 1}, 0);
+			Quat q1 = Quat::from_axis_angle({0, 0, 1}, theta);
 
-		std::cerr << "angle: " << std::to_string(angle) << "\n";
+			auto angle = q0.rotational_difference(q1);
 
-		assert(abs(theta - angle) < 0.0001);
+			std::cerr << "angle: " << std::to_string(angle) << "\n";
+
+			assert(abs(theta - angle) < 0.0001);
+		}
 	}
 
 	// Test quaternion to matrix conversion
