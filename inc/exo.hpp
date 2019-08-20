@@ -81,16 +81,16 @@ namespace exo
 
         static std::string plot(float min, float max, std::initializer_list<float> values, const int width=80)
         {
-            char buf[width + 1] = {};
+            char buf[width + 1];
             char* p = buf;
             memset(buf, ' ', sizeof(buf) - 1);
 
             auto len = sprintf(p, "[%0.2f, %0.2f] ", min, max);
-            p[len] = ' '; 
+            p[len] = ' ';
             p += 20;
             p[0] = '|';
             ++p;
-            
+
             int plot_space = width - (20 + 2);
             p[plot_space >> 1] = ':';
 

@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <time.h>
+#include <libgen.h>
 
 #include <unordered_map>
 
@@ -42,7 +43,7 @@ protected:
 
 		if (proc_name == nullptr)
 		{
-			proc_name = basename(getenv("_"));
+			proc_name = ::basename(getenv("_"));
 		}
 
 		switch(type)
@@ -63,7 +64,7 @@ protected:
 		str += sprintf(str, "[%s] ", proc_name);
 		if (topic.length() > 0)
 		{
-			str += sprintf(str, "%s: ", topic.c_str());		
+			str += sprintf(str, "%s: ", topic.c_str());
 		}
 
 		if (_show_time)
@@ -142,12 +143,12 @@ protected:
 		else
 		{
 			auto fd_path = _files_path + "/" + topic_name;
-			
+
 			fd = open(fd_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
 			if (fd < 0)
 			{
 				fprintf(stderr, "FATAL: Couldn't open named fd '%s' for logging (%s)\n", fd_path.c_str(), strerror(errno));
-				exit(-2);	
+				exit(-2);
 			}
 
 			_files[topic_name] = fd;
