@@ -259,7 +259,7 @@ namespace exo
             }
 
 
-            Vec<S,D> norm() { return *this / len(); }
+            Vec<S,D> norm() const { return *this / len(); }
 
 
             S dot(Vec<S,D> const& v) const
@@ -935,12 +935,17 @@ namespace exo
                 return inv;
             }
 
+            inline float rotational_difference(Quat const& q) const
+            {
+                return 2 * atan2(q.as_dimension<3>().len(), fabsf(q[3]));
+            }
+
             Quat slerp_to(Quat const& p1, float t) const
             {
                 const auto& p0 = *this;
-                auto W = acos(p0.dot(p1));
+                auto W = rotational_difference(p1);
                 auto sin_W = sin(W);
-		if (sin_W < 0.0001f) { sin_W = 0.0001f; }
+		        if (sin_W < 0.0001f) { sin_W = 0.0001f; }
                 return p0 * (sin((1 - t) * W) / sin_W) + p1 * (sin(t * W) / sin_W);
             }
 
