@@ -26,25 +26,32 @@ namespace Log
 
 struct Stderr : public exo::Log
 {
-    Stderr(int verbosity, bool timestamp=false)
-    {
+	Stderr(int verbosity, bool timestamp=false)
+	{
 		verbosity_level = verbosity;
 		_show_time = timestamp;
-    }
+	}
 
-    virtual ~Stderr() { };
+	virtual ~Stderr() { };
 
 protected:
-    virtual void log(Log::Type type, std::string const& msg, std::string const& topic)
-    {
-		static char* proc_name;
+	virtual void log(Log::Type type, std::string const& msg, std::string const& topic)
+	{
+		static const char* proc_name;
 		char buf[512] = {};
 		char* str = buf;
 
 		if (proc_name == nullptr)
 		{
-            char* proc_path = getenv("_");
-			proc_name = ::basename(proc_path != nullptr ? proc_path : "log");
+			char* proc_path = getenv("_");
+			if (proc_path == nullptr)
+			{
+				proc_name = ::basename(proc_path);
+			}
+			else
+			{
+				proc_name = "log";
+			}
 		}
 
 		switch(type)
@@ -77,47 +84,47 @@ protected:
 		// turn off coloring
 		str += sprintf(str, "%s\n", NIX_TERM_COLOR_OFF);
 		write(STDERR_FILENO, buf, strlen(buf));
-    }
+	}
 
-    virtual Log::Statement operator[](std::string const& topic)
-    {
-    	return { exo::Log::inst(), topic };
-    }
+	virtual Log::Statement operator[](std::string const& topic)
+	{
+		return { exo::Log::inst(), topic };
+	}
 
 private:
-    bool _show_time;
+	bool _show_time;
 };
 
 struct TopicFiles : public exo::Log
 {
-    TopicFiles(std::string const& path, bool timestamp=false)
-    {
-    	_files_path = path;
+	TopicFiles(std::string const& path, bool timestamp=false)
+	{
+		_files_path = path;
 		_show_time = timestamp;
 
 		exo::nix::fs::make_dirs(_files_path);
-    }
+	}
 
-    virtual ~TopicFiles()
-    {
-    	// clean-up pipe fd's and files
-    	for (auto name_pipe : _files)
-    	{
-    		close(name_pipe.second);
-    		unlink((_files_path + "/" + name_pipe.first).c_str());
-    	}
-    };
+	virtual ~TopicFiles()
+	{
+		// clean-up pipe fd's and files
+		for (auto name_pipe : _files)
+		{
+			close(name_pipe.second);
+			unlink((_files_path + "/" + name_pipe.first).c_str());
+		}
+	};
 
 protected:
-    virtual void log(Log::Type type, std::string const& msg, std::string const& topic)
-    {
-    	std::string topic_name = topic;
+	virtual void log(Log::Type type, std::string const& msg, std::string const& topic)
+	{
+		std::string topic_name = topic;
 		char buf[512] = {};
 		char* str = buf;
 
 		if (topic_name.length() == 0)
 		{
-			topic_name = std::string(basename(getenv("_")));
+		   topic_name = "log";
 		}
 
 		switch(type)
@@ -164,17 +171,17 @@ protected:
 		// turn off coloring
 		str += sprintf(str, "%s\n", NIX_TERM_COLOR_OFF);
 		write(fd, buf, strlen(buf));
-    }
+	}
 
-    virtual Log::Statement operator[](std::string const& topic)
-    {
-    	return { exo::Log::inst(), topic };
-    }
+	virtual Log::Statement operator[](std::string const& topic)
+	{
+		return { exo::Log::inst(), topic };
+	}
 
 private:
 	std::unordered_map<std::string, int> _files;
 	std::string _files_path;
-    bool _show_time;
+	bool _show_time;
 };
 
 }
