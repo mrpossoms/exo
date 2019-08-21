@@ -25,7 +25,7 @@ void standard_logging()
 
 void topic_file_logging()
 {
-    exo::Log::inst(new exo::nix::Log::NamedPipes("/tmp/exo-test-pipes"));
+    exo::Log::inst(new exo::nix::Log::TopicFiles("/tmp/exo-test-pipes"));
 
     exo::Log::info("info") << "Hello info! " << "yo " << "yo " << "yo!";
     exo::Log::error("error") << "Hello error!";
