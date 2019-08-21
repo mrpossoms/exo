@@ -43,7 +43,7 @@ protected:
 
 		if (proc_name == nullptr)
 		{
-            const char* proc_path = getenv("_");
+            char* proc_path = getenv("_");
 			proc_name = ::basename(proc_path != nullptr ? proc_path : "log");
 		}
 
