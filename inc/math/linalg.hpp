@@ -273,6 +273,14 @@ namespace exo
             }
 
 
+            Vec<S,D> project_onto(Vec<S,D> const& v) const
+            {
+                auto v_hat = v.norm();
+                auto len = this->dot(v_hat);
+                return *this - (v_hat * len);
+            }
+
+
             S coincidence(Vec<S,D> const& v) const
             {
                 return (this->dot(v) + S{ 1 }) / S{ 2 };
