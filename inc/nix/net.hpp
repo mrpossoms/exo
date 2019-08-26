@@ -497,6 +497,14 @@ private:
         name.sin_port        = htons(_port);
         name.sin_addr.s_addr = htonl(INADDR_ANY);
 
+        int use = 1;
+        if (setsockopt(_listen_sock, SOL_SOCKET, SO_REUSEPORT, (char*)&use, sizeof(use)))
+        {
+            exo::Log::error(4, "Setting SO_REUSEPORT to listen socket failed");
+            close(_listen_sock);
+            return Result::ERROR;
+        }
+
         if (bind(_listen_sock, (const struct sockaddr*)&name, sizeof(name)))
         {
             exo::Log::error(4, "Binding to port failed");
