@@ -36,7 +36,6 @@ struct fs
 
         if (nullptr == dir)
         {
-            closedir(dir);
             return exo::Result::ERROR;
         }
 
