@@ -11,6 +11,7 @@ struct SomeMsg
 
 #include "test.h"
 {
+	(void)argc; (void)argv;
 
 	auto p = exo::msg::Payload<sizeof(SomeMsg) + sizeof(uint32_t)>{};
 	auto msg_out = SomeMsg{

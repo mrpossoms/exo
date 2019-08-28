@@ -8,8 +8,9 @@
 
 #include "test.h"
 {
+    (void)argc; (void)argv;
     exo::nix::Pipeline::Out outlet;
-    exo::msg::Payload<sizeof(uint8_t)> pay; 
+    exo::msg::Payload<sizeof(uint8_t)> pay;
 
     uint8_t byte_out = 42;
 

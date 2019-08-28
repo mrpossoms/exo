@@ -8,6 +8,7 @@
 
 #include "test.h"
 {
+    (void)argc; (void)argv;
     int correct = 0;
 
     exo::nix::CLI::parser(argc, argv)

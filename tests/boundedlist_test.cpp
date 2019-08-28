@@ -8,6 +8,8 @@
 
 #include "test.h"
 {
+    (void)argc; (void)argv;
+
     {
         int rand_ints[] = { rand(), rand(), rand() };
         exo::ds::BoundedList<int, 3> list;

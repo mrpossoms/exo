@@ -14,7 +14,7 @@ struct Foo {
 
 #include "test.h"
 {
-
+    (void)argc; (void)argv;
     { // create, set, open and read foo
         std::string base_path = "/tmp/test/";
         exo::nix::data::Config cfg(base_path);

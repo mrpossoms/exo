@@ -11,6 +11,7 @@ using namespace exo::math;
 
 #include "test.h"
 {
+    (void)argc; (void)argv;
     Vec<float, 2> ctrl_pts[] = {
         { 0.0,  0 },
         { 0.333, 0 },

@@ -11,6 +11,8 @@
 
 #include "test.h"
 {
+    (void)argc; (void)argv;
+
     exo::Log::inst(new exo::nix::Log::Stderr(5, true), 5);
 
     bool continuous = false;
@@ -48,8 +50,6 @@
         }
         else
         {
-            exo::Result res = exo::Result::OK;
-
             while (true)
             {
                 if (get_message(inlet, msg) == exo::Result::OK) { break; }

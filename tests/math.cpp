@@ -15,6 +15,8 @@ float uniform_random(float max=1)
 
 #include "test.h"
 {
+	(void)argc; (void)argv;
+
 	auto v0 = Vec<float, 3>{ 1, 2, 3 };
 	auto v1 = Vec<float, 3>{ 1 };
 
@@ -75,7 +77,6 @@ float uniform_random(float max=1)
 
 		for(int i = 100; i--;)
 		{
-			auto rand_axis = Vec<float, 3>{ uniform_random(), uniform_random(), uniform_random() }.norm();
 			Quat q0 = Quat::from_axis_angle({0, 0, 1}, 0);
 			Quat q1 = Quat::from_axis_angle({0, 0, 1}, theta);
 
@@ -173,6 +174,7 @@ float uniform_random(float max=1)
 		// initialize totally random matrix. Which will
 		// be invertible with very high likelihood.
 		M.initialize([](float r, float c) {
+			(void)r; (void)c;
 			return static_cast<float>((rand() % 32) - 16);
 		});
 

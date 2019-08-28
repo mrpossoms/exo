@@ -41,6 +41,7 @@ void topic_file_logging()
 
 #include "test.h"
 {
+    (void)argc; (void)argv;
     umask(0000);
 
     standard_logging();

@@ -6,7 +6,7 @@
 #
 include $(EXO_ROOT)/vars.mk
 
-CPPC_FLAGS+=-Wall
+CPPC_FLAGS+=-Wall -Wextra -Werror 
 INC+=-Iinc/
 SRCS=$(shell ls src | grep .cpp)
 TEST_SRCS=$(shell ls tests | grep .cpp)

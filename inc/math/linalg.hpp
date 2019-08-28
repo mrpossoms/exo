@@ -18,12 +18,12 @@ namespace exo
         {
             Vec()
             {
-                for (int i = D; i--;) { v[i] = {}; }
+                for (auto i = D; i--;) { v[i] = {}; }
             }
 
             Vec(const S* arr)
             {
-                for (int i = D; i--;) { v[i] = arr[i]; }
+                for (auto i = D; i--;) { v[i] = arr[i]; }
             }
 
             Vec(std::initializer_list<S> init)
@@ -369,8 +369,8 @@ namespace exo
         {
             Mat()
             {
-                for (int row = R; row--;)
-                for (int col = C; col--;)
+                for (auto row = R; row--;)
+                for (auto col = C; col--;)
                 {
                     m[row][col] = {};
                 }
@@ -394,8 +394,8 @@ namespace exo
 
             Mat<S, R, C>& initialize(std::function<S (S r, S c)> init)
             {
-                for (int row = R; row--;)
-                for (int col = C; col--;)
+                for (auto row = R; row--;)
+                for (auto col = C; col--;)
                 {
                     m[row][col] = init(static_cast<S>(row), static_cast<S>(col));
                 }
@@ -411,8 +411,8 @@ namespace exo
             inline Mat<T, R, C> cast() const
             {
                 Mat<T, R, C> r;
-                for (int row = R; row--;)
-                for (int col = C; col--;)
+                for (auto row = R; row--;)
+                for (auto col = C; col--;)
                 {
                     r[row][col] = (T)m[row][col];
                 }
@@ -425,7 +425,7 @@ namespace exo
             {
                 Mat<S, NR, NC> r;
 
-                for (int row = NR; row--;)
+                for (auto row = NR; row--;)
                 {
                     r[row] = m[row + start_row].template slice<NC>(start_col);
                 }
@@ -438,10 +438,10 @@ namespace exo
             {
                 Mat<S, R, MC> r;
 
-                for (int row = R; row--;)
-                for (int col = MC; col--;)
+                for (auto row = R; row--;)
+                for (auto col = MC; col--;)
                 {
-                    for (int i = C; i--;)
+                    for (auto i = C; i--;)
                     {
                         r[row][col] += this->m[row][i] * m.m[i][col];
                     }
@@ -455,8 +455,8 @@ namespace exo
             {
                 Vec<S, R> r;
 
-                for (int row = R; row--;)
-                for (int col = C; col--;)
+                for (auto row = R; row--;)
+                for (auto col = C; col--;)
                 {
                     r[row] += this->m[row][col] * v[col];
                 }
@@ -468,8 +468,8 @@ namespace exo
             {
                 Mat<S, R, C> r;
 
-                for (int row = R; row--;)
-                for (int col = C; col--;)
+                for (auto row = R; row--;)
+                for (auto col = C; col--;)
                 {
                     r[row][col] = this->m[row][col] * s;
                 }
@@ -479,8 +479,8 @@ namespace exo
 
             Mat<S, R, C>& operator*= (S s)
             {
-                for (int row = R; row--;)
-                for (int col = C; col--;)
+                for (auto row = R; row--;)
+                for (auto col = C; col--;)
                 {
                     m[row][col] *= s;
                 }
@@ -492,8 +492,8 @@ namespace exo
             {
                 Mat<S, R, C> r;
 
-                for (int row = R; row--;)
-                for (int col = C; col--;)
+                for (auto row = R; row--;)
+                for (auto col = C; col--;)
                 {
                     r[row][col] = this->m[row][col] / s;
                 }
@@ -505,8 +505,8 @@ namespace exo
             {
                 Mat<S, R, C> r;
 
-                for (int row = R; row--;)
-                for (int col = C; col--;)
+                for (auto row = R; row--;)
+                for (auto col = C; col--;)
                 {
                     m[row][col] /= s;
                 }
@@ -519,8 +519,8 @@ namespace exo
             {
                 Mat<S, R, C> r;
 
-                for (int row = R; row--;)
-                for (int col = C; col--;)
+                for (auto row = R; row--;)
+                for (auto col = C; col--;)
                 {
                     r[row][col] += m.m[row][col];
                 }
@@ -533,8 +533,8 @@ namespace exo
             {
                 Mat<S, R, C> r;
 
-                for (int row = R; row--;)
-                for (int col = C; col--;)
+                for (auto row = R; row--;)
+                for (auto col = C; col--;)
                 {
                     r[row][col] = this->m[row][col] + m.m[row][col];
                 }
@@ -547,8 +547,8 @@ namespace exo
             {
                 Mat<S, R, C> r;
 
-                for (int row = R; row--;)
-                for (int col = C; col--;)
+                for (auto row = R; row--;)
+                for (auto col = C; col--;)
                 {
                     r[row][col] = this->m[row][col] - m.m[row][col];
                 }
@@ -561,8 +561,8 @@ namespace exo
             {
                 Mat<S, R, C> r;
 
-                for (int row = R; row--;)
-                for (int col = C; col--;)
+                for (auto row = R; row--;)
+                for (auto col = C; col--;)
                 {
                     r[row][col] = this->m[row][col] - m.m[row][col];
                 }
@@ -588,7 +588,13 @@ namespace exo
 
             inline bool operator== (Mat<S, R, C> M) const
             {
-                return memcmp(this->m, M.m, sizeof(M.m)) == 0;
+                for (auto r = R; r--;)
+                {
+                    if (m[r] != M.m[r]) { return false; }
+                }
+
+                return true;
+                // return memcmp(this->m, M.m, sizeof(M.m)) == 0;
             }
 
             std::string to_string(Mat<S, R, C> const&) const
@@ -599,10 +605,10 @@ namespace exo
             std::string to_string() const
             {
                 std::string str = "";
-                for (int j = 0; j < R; ++j)
+                for (size_t j = 0; j < R; ++j)
                 {
                     str += "|";
-                    for (int i = 0; i < C; ++i)
+                    for (size_t i = 0; i < C; ++i)
                     {
                         str += std::to_string(m[j][i]);
                         if (i < C - 1) { str += ", "; }
@@ -616,8 +622,8 @@ namespace exo
             {
                 S sum = 0;
 
-                for (int r = R; r--;)
-                for (int c = C; c--;)
+                for (auto r = R; r--;)
+                for (auto c = C; c--;)
                 {
                     auto d = M.m[r][c] - m[r][c];
                     sum += d * d;
@@ -637,17 +643,17 @@ namespace exo
 
             Mat<S, R, C>& rref()
             {
-                int piv_c = 0;
+                size_t piv_c = 0;
 
                 // compute upper diagonal
-                for (int r = 0; r < R; r++)
+                for (size_t r = 0; r < R; r++)
                 {
                     // Check if the piv column of row r is zero. If it is, lets
                     // try to find a row below that has a non-zero column
                     if (m[r][piv_c] == 0)
                     {
-                        int swap_ri = -1;
-                        for (int ri = r + 1; ri < R; ri++)
+                        ssize_t swap_ri = -1;
+                        for (size_t ri = r + 1; ri < R; ri++)
                         {
                             if (m[ri][piv_c] != 0)
                             {
@@ -656,18 +662,18 @@ namespace exo
                             }
                         }
 
-                        if (swap_ri > -1) { swap_rows(swap_ri, r); }
+                        if (swap_ri > -1) { swap_rows((size_t)swap_ri, r); }
                     }
 
                     { // next row, scale so leading coefficient is 1
                         float d = 1 / m[r][piv_c];
 
                         // scale row
-                        for (int c = piv_c; c < C; c++) { m[r][c] *= d; }
+                        for (size_t c = piv_c; c < C; c++) { m[r][c] *= d; }
                     }
 
 
-                    for (int ri = 0; ri < R; ri++)
+                    for (size_t ri = 0; ri < R; ri++)
                     {
                         // skip zero elements and skip row r
                         if (m[ri][piv_c] == 0 || ri == r) { continue; }
@@ -676,7 +682,7 @@ namespace exo
 
                         // scale row then subtract the row above to zero out
                         // other elements in this column
-                        for (int c = piv_c; c < C; c++)
+                        for (size_t c = piv_c; c < C; c++)
                         {
                             m[ri][c] -= d * m[r][c];
                         }
@@ -692,14 +698,13 @@ namespace exo
             {
                 const auto Mc = C * 2;
                 Mat<S, R, Mc> M;
-                S d = 0;
 
-                for (int r = 0; r < R; ++r)
+                for (auto r = R; r--;)
                 {
                     // form the identity on the right hand side
                     M[r][r + C] = 1.0;
 
-                    for (int c = 0; c < C; ++c)
+                    for (auto c = C; c--;)
                     {
                         M[r][c] = m[r][c];
                     }
@@ -713,7 +718,7 @@ namespace exo
                 Mat<S, R, C> inv;
                 auto _rref = augment().rref();
 
-                for (int r = 0; r < R; r++)
+                for (auto r = R; r--;)
                 {
                     inv[r] = _rref[r].template slice<C>(C);
                 }
@@ -725,10 +730,10 @@ namespace exo
             {
                 Mat<S, C, R> res;
 
-                for (int r = 0; r < C; ++r)
-                for (int c = 0; c < R; ++c)
+                for (auto r = R; r--;)
+                for (auto c = C; c--;)
                 {
-                    res[r][c] = m[c][r];
+                    res[c][r] = m[r][c];
                 }
 
                 return res;
@@ -739,8 +744,8 @@ namespace exo
             {
                 Mat<S, R, C> res;
 
-                for (int r = R; r--;)
-                for (int c = C; c--;)
+                for (auto r = R; r--;)
+                for (auto c = C; c--;)
                 {
                     if (r == c) { res[r][c] = 1; }
                 }
@@ -849,16 +854,16 @@ namespace exo
 
                 // compute the mean of the samples
                 Vec<S, D> mu = {};
-                for (int r = 0; r < D; r++)
-                for (int c = 0; c < C; c++)
+                for (auto r = R; r--;)
+                for (auto c = C; c--;)
                 {
                     mu[r] += samples[r][c];
                 }
                 mu /= static_cast<S>(N);
 
                 // subtract the mean from the set of samples
-                for (int r = 0; r < D; r++)
-                for (int c = 0; c < C; c++)
+                for (auto r = R; r--;)
+                for (auto c = C; c--;)
                 {
                     samples[r][c] -= mu[r];
                 }
@@ -1036,7 +1041,7 @@ namespace exo
         {
             Basis()
             {
-                for(int i = D; i--;)
+                for(auto i = D; i--;)
                 {
                     vectors[i][i] = 1;
                 }

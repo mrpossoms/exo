@@ -8,9 +8,10 @@
 
 #include "test.h"
 {
+    (void)argc; (void)argv;
     exo::nix::Pipeline::In inlet;
     exo::msg::Payload<sizeof(uint8_t)> pay;
-    
+
     uint8_t byte_in;
     inlet >> pay.buffer();
     pay >> byte_in;

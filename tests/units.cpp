@@ -7,6 +7,7 @@ using namespace exo::units;
 
 #include "test.h"
 {
+	(void)argc; (void)argv;
 	M one_meter  = 1.0_m;
 	M two_meters = 2.0_m;
 
