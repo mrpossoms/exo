@@ -63,6 +63,8 @@ namespace exo
                 case Result::NO_PERMISSION: return "NO_PERMISSION";
                 case Result::DOES_NOT_EXIST: return "DOES_NOT_EXIST";
             }
+
+            return "";
         }
 
     private:
