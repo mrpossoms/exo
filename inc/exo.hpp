@@ -132,7 +132,13 @@ namespace exo
             std::string topic;
 
             Statement(Log* log, std::string const& topic) : logger(log), topic(topic) {}
-            ~Statement() { if (length() > 0) logger->log(log_type, *this, topic); }
+            ~Statement()
+            {
+                if (length() > 0 && nullptr != logger)
+                {
+                    logger->log(log_type, *this, topic);
+                }
+            }
 
             Statement& info() { log_type = Type::info; return *this; }
             Statement& error() { log_type = Type::error; return *this; }
