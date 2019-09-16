@@ -69,7 +69,7 @@ struct Out : public exo::msg::Outlet
         switch(_protocol)
         {
             case Protocol::UDP:
-                _socket = ::socket(AF_INET, SOCK_STREAM, 0);
+                _socket = ::socket(AF_INET, SOCK_DGRAM, 0);
                 break;
             case Protocol::TCP:
                 // handled when connection is checked
@@ -171,7 +171,14 @@ struct Out : public exo::msg::Outlet
                     return (ssize_t)0;
                 }
 
-                return sendto(fd, buf, to_write, 0, (const struct sockaddr *)&host_addr, sizeof(host_addr));
+                auto written = sendto(fd, buf, to_write, 0, (const struct sockaddr *)&host_addr, sizeof(host_addr));
+
+                if (written < 0)
+                {
+                    exo::Log::error(4, "Error writing: " + std::string(strerror(errno)));
+                }
+
+                return written;
             }
 
             return (ssize_t)0;
@@ -290,9 +297,17 @@ struct In : public exo::msg::Inlet
     {
         bool corrupt = false;
 
+        int sock() { return _sock; }
+
+        bool got_header() { return _hdr.sanity == exo::msg::sanity; }
+
+        bool got_payload() { return _got_payload; }
+
+        virtual int client_read(int fd, void* dst, size_t size) = 0;
+
         Client() = default;
 
-        Client(int sock, Protocol p = Protocol::TCP)
+        Client(int sock)
         {
             _sock = sock;
         }
@@ -300,18 +315,11 @@ struct In : public exo::msg::Inlet
         Client(Client& c)
         {
             _sock = c._sock;
-            _protocol = c._protocol;
         }
-
-        int sock() { return _sock; }
-
-        bool got_header() { return _hdr.sanity == exo::msg::sanity; }
-
-        bool got_payload() { return _got_payload; }
 
         exo::Result operator>>(msg::Hdr& h)
         {
-            if (read(_sock, &h, sizeof(h)) != sizeof(h))
+            if (client_read(_sock, &h, sizeof(h)) != sizeof(h))
             {
                 return exo::Result::OUT_OF_DATA;
             }
@@ -333,16 +341,7 @@ struct In : public exo::msg::Inlet
             auto end = (uint8_t*)pay.buf;
 
             auto res = chunker::reader(_sock, end, to_read, [&](int fd, uint8_t* buf, size_t to_read) {
-                if (_protocol == Protocol::TCP)
-                {
-                    return read(fd, buf, to_read);
-                }
-                else if (_protocol == Protocol::UDP)
-                {
-                    return recvfrom(fd, buf, to_read, 0,  nullptr, nullptr);
-                }
-
-                return (ssize_t)0;
+                return client_read(fd, buf, to_read);
             });
 
             if (res != exo::Result::OK)
@@ -401,7 +400,7 @@ struct In : public exo::msg::Inlet
                 // read each section of the payload by block sized chunks
                 auto pay = block.buffer();
                 auto to_read = bytes > pay.len ? pay.len : bytes;
-                auto bytes_read = read(_sock, pay.buf, to_read);
+                auto bytes_read = client_read(_sock, pay.buf, to_read);
 
                 if (bytes_read < 0)
                 {
@@ -428,12 +427,78 @@ struct In : public exo::msg::Inlet
         }
 
         bool operator==(Client& c) { return c._sock == _sock; }
-
-    private:
+    protected:
         int _sock = -1;
         exo::msg::Hdr _hdr = {};
         bool _got_payload  = false;
-        Protocol _protocol;
+    };
+
+    struct TcpClient : public Client
+    {
+        TcpClient() = default;
+
+        TcpClient(int sock) : Client(sock) {}
+
+        TcpClient(TcpClient& c) { _sock = c._sock; }
+
+        virtual int client_read(int fd, void* buf, size_t size)
+        {
+            return read(fd, buf, size);
+        }
+    };
+
+    struct UdpClient : public Client
+    {
+        UdpClient() = default;
+
+        UdpClient(int sock) : Client(sock) {}
+
+        UdpClient(UdpClient& c) { _sock = c._sock; }
+
+        virtual int client_read(int fd, void* buf, size_t size)
+        {
+            if (_last_packet.size() <= 0)
+            {
+                // fetch a new packet store it in the buffer to incremental reading
+                int bytes_read = recvfrom(
+                    fd,_last_packet.buf,
+                    size,
+                    0,  nullptr, nullptr
+                );
+
+                if (bytes_read < 0) { return bytes_read; }
+
+                _last_packet.end = (size_t)bytes_read;
+                _last_packet.start = 0;
+            }
+
+            return _last_packet.dequeue(buf, size);
+        }
+
+    private:
+        struct {
+            uint8_t buf[65535];
+            size_t start = 0, end = 0;
+
+            size_t size() { return len; }
+
+            int dequeue(uint8_t* b, size_t size)
+            {
+                auto bytes_left = len - start;
+                if (size < bytes_left)
+                {
+                    memcpy(b, buf + start, size);
+                    start += size;
+                    return size;
+                }
+                else
+                {
+                    memcpy(b, buf + start, bytes_left);
+                    start = len = 0;
+                    return bytes_left;
+                }
+            }
+        } _last_packet;
     };
 
     In() = default;
@@ -464,7 +529,19 @@ struct In : public exo::msg::Inlet
         }
 
         Client* client;
-        auto res = get_ready_clients(&client);
+        exo::Result res;
+
+        if (_protocol == Protocol::TCP)
+        {
+            res = get_ready_clients(&client);
+        }
+        else if (_protocol == Protocol::UDP)
+        {
+            static Client c = { _listen_sock, Protocol::UDP };
+            res = Result::OK;
+
+            client = &c;
+        }
 
         switch (res)
         {
