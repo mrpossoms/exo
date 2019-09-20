@@ -12,9 +12,12 @@ struct Pipeline
 {
     struct Out : public exo::msg::Outlet
     {
+        Out() = default;
+        Out(int fd) : _fd(fd) {}
+
         exo::Result operator<<(exo::msg::Hdr const& h)
         {
-		    if (write(STDOUT_FILENO, &h, sizeof(h)) == sizeof(h))
+		    if (write(_fd, &h, sizeof(h)) == sizeof(h))
 		    {
 		        return Result::OK;
 		    }
@@ -24,15 +27,21 @@ struct Pipeline
 
         exo::Result operator<<(exo::msg::PayloadBuffer const& pay)
         {
-            return exo::nix::chunker::writer(STDOUT_FILENO, (uint8_t*)pay.buf, pay.len);
+            return exo::nix::chunker::writer(_fd, (uint8_t*)pay.buf, pay.len);
         }
+
+    private:
+        int _fd = STDOUT_FILENO;
     };
 
     struct In : public exo::msg::Inlet
     {
+        In() = default;
+        In(int fd) : _fd(fd) {}
+
         exo::Result operator>>(exo::msg::Hdr& h)
         {
-		    if ((size_t)read(STDIN_FILENO, &h, sizeof(h)) != sizeof(h))
+		    if ((size_t)read(_fd, &h, sizeof(h)) != sizeof(h))
 		    {
 		        return Result::OUT_OF_DATA;
 		    }
@@ -49,7 +58,7 @@ struct Pipeline
 
         exo::Result operator>>(exo::msg::PayloadBuffer const& pay)
         {
-            return exo::nix::chunker::reader(STDIN_FILENO, (uint8_t*)pay.buf, pay.len);
+            return exo::nix::chunker::reader(_fd, (uint8_t*)pay.buf, pay.len);
         }
 
         exo::Result flush(size_t bytes)
@@ -59,7 +68,7 @@ struct Pipeline
             while (bytes > 0)
             {
                 auto to_read = bytes > sizeof(junk) ? sizeof(junk) : bytes;
-                auto bytes_read = read(STDIN_FILENO, &junk, to_read);
+                auto bytes_read = read(_fd, &junk, to_read);
 
                 if (bytes_read <= 0)
                 {
@@ -99,7 +108,7 @@ struct Pipeline
                 auto pay = block.buffer();
                 memset(pay.buf, 0, pay.len);
                 auto to_read = bytes > pay.len ? pay.len : bytes;
-                auto bytes_read = read(STDIN_FILENO, pay.buf, to_read);
+                auto bytes_read = read(_fd, pay.buf, to_read);
 
                 if (bytes_read < 0)
                 {
@@ -126,6 +135,8 @@ struct Pipeline
 
             return Result::OK;
         }
+    private:
+        int _fd = STDIN_FILENO;
     };
 };
 
