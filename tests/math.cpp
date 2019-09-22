@@ -82,7 +82,7 @@ float uniform_random(float max=1)
 
 			auto angle = q0.rotational_difference(q1);
 
-			std::cerr << "angle: " << std::to_string(angle) << "\n";
+			// std::cerr << "angle: " << std::to_string(angle) << "\n";
 
 			assert(abs(theta - angle) < 0.0001);
 		}
@@ -100,8 +100,8 @@ float uniform_random(float max=1)
 		auto vq = q.rotate(v.as_dimension<3>());
 		auto vm = (m * v).as_dimension<3>();
 
-		std::cerr << vq.to_string() << std::endl;
-		std::cerr << vm.to_string() << std::endl;
+		// std::cerr << vq.to_string() << std::endl;
+		// std::cerr << vm.to_string() << std::endl;
 		assert(vq.is_near(vm));
 	}
 
@@ -326,7 +326,7 @@ float uniform_random(float max=1)
 		std::default_random_engine gen;
 		std::normal_distribution<float> norm_dist(0,0.1);
 
-		for (float t = 0; t < 10; t += dt)
+		for (float t = 0; t < 1; t += dt)
 		{
 			auto acceleration = -sin(t);
 			velocity = cos(t);

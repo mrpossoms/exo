@@ -144,5 +144,54 @@ namespace exo
             T _list[CAP];
             size_t _size;
         };
+
+        template<typename T, size_t CAP>
+        struct RingBuffer {
+
+            RingBuffer()
+            {
+                _start = _size = 0;
+            }
+
+            size_t size() const
+            {
+                return _size;
+            }
+
+            void enqueue(T t)
+            {
+                auto i = (_start + _size) % CAP;
+                _list[i] = t;
+                _size++;
+
+                if (_size > CAP)
+                {
+                    _start = (_start + 1) % CAP;
+                    _size = CAP;
+                }
+            }
+
+            T dequeue()
+            {
+                if (_size <= 0) { return {}; }
+
+                auto last_start = _start;
+                _start = (_start + 1) % CAP;
+                _size--;
+
+                return _list[last_start];
+            }
+
+            T* operator[](size_t i)
+            {
+                if (size() <= i) { return nullptr; }
+                i = (_start + i) % CAP;
+                return _list + i;
+            }
+
+        private:
+            T _list[CAP];
+            size_t _start, _size;
+        };
     }
 }
