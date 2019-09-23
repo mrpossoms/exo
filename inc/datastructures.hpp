@@ -158,7 +158,7 @@ namespace exo
                 return _size;
             }
 
-            void enqueue(T t)
+            void push_back(T t)
             {
                 auto i = (_start + _size) % CAP;
                 _list[i] = t;
@@ -171,7 +171,7 @@ namespace exo
                 }
             }
 
-            T dequeue()
+            T pop_front()
             {
                 if (_size <= 0) { return {}; }
 
@@ -180,6 +180,16 @@ namespace exo
                 _size--;
 
                 return _list[last_start];
+            }
+
+            T pop_back()
+            {
+                if (_size <= 0) { return {}; }
+
+                auto i = (_start + _size - 1) % CAP;
+                _size--;
+
+                return _list[i];
             }
 
             T* operator[](size_t i)

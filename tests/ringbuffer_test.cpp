@@ -17,7 +17,7 @@
         // add 3 elements, all must succeed
         for (int i = 0; i < 3; ++i)
         {
-            buf.enqueue(rand_ints[i]);
+            buf.push_back(rand_ints[i]);
         }
 
         EXPECT_EQ(buf.size(), 3);
@@ -31,7 +31,7 @@
         // remove all 3 elements
         for (int i = 0; i < 3; ++i)
         {
-            assert(buf.dequeue() == rand_ints[i]);
+            assert(buf.pop_front() == rand_ints[i]);
         }
 
         // the buf should now be empty
@@ -40,7 +40,7 @@
         // add the same 3 elements twice, first 3 should be overwritten
         for (int i = 0; i < 6; ++i)
         {
-            buf.enqueue(rand_ints[i % 3]);
+            buf.push_back(rand_ints[i % 3]);
         }
 
         // ensure that every int is in the right place
