@@ -12,6 +12,7 @@
 
 #include "test.h"
 {
+    (void)argc; (void)argv;
     exo::Log::instance(new exo::nix::Log::Stderr(5, true), 5);
 
     bool        continuous      = false;

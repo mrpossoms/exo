@@ -63,6 +63,8 @@ namespace exo
                 case Result::NO_PERMISSION: return "NO_PERMISSION";
                 case Result::DOES_NOT_EXIST: return "DOES_NOT_EXIST";
             }
+
+            return "";
         }
 
     private:
@@ -130,7 +132,13 @@ namespace exo
             std::string topic;
 
             Statement(Log* log, std::string const& topic) : logger(log), topic(topic) {}
-            ~Statement() { if (length() > 0) logger->log(log_type, *this, topic); }
+            ~Statement()
+            {
+                if (length() > 0 && nullptr != logger)
+                {
+                    logger->log(log_type, *this, topic);
+                }
+            }
 
             Statement& info() { log_type = Type::info; return *this; }
             Statement& error() { log_type = Type::error; return *this; }
@@ -331,6 +339,11 @@ namespace exo
         struct Hdr
         {
             /**
+             * @brief Magic number for tracking exo version compatibility
+             */
+            uint32_t exo_magic;
+
+            /**
              * @brief Integer value for identifying type of payload which follows.
              */
             uint32_t type;
@@ -339,11 +352,6 @@ namespace exo
              * @brief Magic number for tracking payload compatibility.
              */
             uint32_t msg_magic;
-
-            /**
-             * @brief Magic number for tracking exo version compatibility
-             */
-            uint32_t exo_magic;
 
             /**
              * @brief Size of payload in bytes.

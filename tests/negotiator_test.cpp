@@ -8,10 +8,11 @@
 
 #include "test.h"
 {
+    (void)argc; (void)argv;
     bool is_sender = false;
 
     exo::nix::CLI::parser(argc, argv)
-    .optional<bool>("--sender", [&](bool value) { is_sender = true; });
+    .optional<bool>("--sender", [&](bool value) { (void)value; is_sender = true; });
 
     if (is_sender)
     {

@@ -9,6 +9,7 @@
 
 #include "test.h"
 {
+    (void)argc; (void)argv;
     system("rm -rf /tmp/junk");
     system("rm -rf /tmp/junker");
 
@@ -24,7 +25,7 @@
 
     assert(exo::nix::fs::make_dirs("/tmp/junker/junkiest") == exo::Result::OK);
     assert(exo::nix::fs::exists("/tmp/junker/junkiest") == exo::Result::OK);
-    
+
     assert(exo::nix::fs::base_name("/tmp/junker") == "junker");
 
     return 0;

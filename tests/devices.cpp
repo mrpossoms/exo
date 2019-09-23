@@ -81,6 +81,8 @@ struct DummyPosition : public Position<GpsCoord>
 
 #include "test.h"
 {
+    (void)argc; (void)argv;
+
     { // Accel test
         DummyAccel d;
 

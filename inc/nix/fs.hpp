@@ -36,7 +36,6 @@ struct fs
 
         if (nullptr == dir)
         {
-            closedir(dir);
             return exo::Result::ERROR;
         }
 
@@ -91,7 +90,7 @@ struct fs
     {
         if (path.length() == 0) { return Result::OK; }
 
-        for (int i = 0; i < path.size(); ++i)
+        for (size_t i = 0; i < path.size(); ++i)
         {
             if (path[i] == '/' || i == path.size() - 1)
             {

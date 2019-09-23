@@ -23,7 +23,12 @@ struct Base
      * Matrix which represents the device's location within the robot's
      * local reference frame.
      */
-    exo::math::Mat<FRAME_UNIT, 4, 4> transform;
+    exo::math::Mat<FRAME_UNIT, 4, 4> transform = {
+        { 1, 0, 0, 0 },
+        { 0, 1, 0, 0 },
+        { 0, 0, 1, 0 },
+        { 0, 0, 0, 1 },
+    };
 
     /**
      * If the sensor is non-polling, but rather streams data this lambda can be

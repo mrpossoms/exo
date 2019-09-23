@@ -10,6 +10,15 @@
 #include <sys/stat.h>
 #include <math.h>
 
+#define EXPECT_EQ(exp, actual) { \
+	if ((exp) != (actual)) \
+	{ \
+		std::string log = "'" + std::to_string((exp)) + "' != '" + std::to_string((actual)) + "'";\
+		bad(log.c_str()); \
+	} \
+	assert((exp) == (actual)); \
+} \
+
 static inline void good(const char* format, ...){
 	char buf[1024] = {}, txt[1024] = {};
 	va_list args;

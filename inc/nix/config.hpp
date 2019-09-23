@@ -209,7 +209,7 @@ struct Config
             if (fd == -1) { return exo::Result::DOES_NOT_EXIST; }
 
             auto size = sizeof(blob);
-            if (read(fd, &blob, size) != size)
+            if (read(fd, &blob, size) != (int)size)
             {
                 close(fd);
                 return exo::Result::READ_ERR;
@@ -233,7 +233,7 @@ struct Config
             if (fd > -1)
             {
                 auto size = sizeof(blob);
-                if (write(fd, &blob, size) != size)
+                if (write(fd, &blob, size) != (int)size)
                 {
                     close(fd);
                     return exo::Result::WRITE_ERR;
