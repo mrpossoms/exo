@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../exo.hpp"
-#include "../datastructures.hpp"
+#include "../../exo.hpp"
+#include "../../datastructures.hpp"
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -15,15 +15,11 @@ namespace exo
 {
 namespace nix
 {
-
-struct Net
+namespace net
 {
 
-enum class Protocol
+struct TCP
 {
-    TCP,
-    UDP,
-};
 
 static inline struct sigaction disable_sigpipe()
 {
@@ -56,25 +52,13 @@ struct Out : public exo::msg::Outlet
         strcpy(_addr, i._addr);
         _port = i._port;
         _socket = -1;
-        _protocol = i._protocol;
     }
 
-    Out(const char* dst_addr, uint16_t port, Protocol p=Protocol::TCP)
+    Out(const char* dst_addr, uint16_t port)
     {
         strcpy(_addr, dst_addr);
         _port = port;
         _socket = -1;
-        _protocol = p;
-
-        switch(_protocol)
-        {
-            case Protocol::UDP:
-                _socket = ::socket(AF_INET, SOCK_DGRAM, 0);
-                break;
-            case Protocol::TCP:
-                // handled when connection is checked
-                break;
-        }
     }
 
     ~Out()
@@ -84,13 +68,13 @@ struct Out : public exo::msg::Outlet
 
     void set_dst_addr(const char* dst_addr)
     {
-        if (_protocol == Protocol::TCP && is_connected()) { disconnect(); }
+        if (is_connected()) { disconnect(); }
         strcpy(_addr, dst_addr);
     }
 
     void set_dst_port(uint16_t port)
     {
-        if (_protocol == Protocol::TCP && is_connected()) { disconnect(); }
+        if (is_connected()) { disconnect(); }
         _port = port;
     }
 
@@ -98,15 +82,12 @@ struct Out : public exo::msg::Outlet
     {
         struct sigaction old_act;
 
-        if (_protocol == Protocol::TCP)
+        if (!is_connected())
         {
-            if (!is_connected())
-            {
-                if (!connect()) { return Result::CONNECTION_FAILURE; }
-            }
-
-            old_act = disable_sigpipe();
+            if (!connect()) { return Result::CONNECTION_FAILURE; }
         }
+
+        old_act = disable_sigpipe();
 
         fd_set w_fds;
         FD_ZERO(&w_fds);
@@ -132,12 +113,12 @@ struct Out : public exo::msg::Outlet
             case 1: // ok to write!
                 if (write(_socket, &h, sizeof(h)) == sizeof(h))
                 {
-                    if (_protocol == Protocol::TCP) { enable_sigpipe(old_act); }
+                    enable_sigpipe(old_act);
                     return Result::OK;
                 }
         }
 
-        if (_protocol == Protocol::TCP) { enable_sigpipe(old_act); }
+        enable_sigpipe(old_act);
         return Result::WRITE_ERR;
     }
 
@@ -145,57 +126,29 @@ struct Out : public exo::msg::Outlet
     {
         struct sigaction old_act;
 
-        if (_protocol == Protocol::TCP)
+        if (!is_connected())
         {
-            if (!is_connected())
-            {
-                if (!connect()) { return Result::CONNECTION_FAILURE; }
-            }
-
-            old_act = disable_sigpipe();
+            if (!connect()) { return Result::CONNECTION_FAILURE; }
         }
+
+        old_act = disable_sigpipe();
 
         exo::Log::info(4, "Writing to: " + std::to_string(_port));
         auto to_write = pay.len;
 
         auto res = chunker::writer(_socket, (uint8_t*)pay.buf, to_write, [&](int fd, uint8_t* buf, size_t to_write) {
-            if (_protocol == Protocol::TCP)
-            {
-                return write(fd, buf, to_write);
-            }
-            else if (_protocol == Protocol::UDP)
-            {
-                struct sockaddr_in host_addr;
-                if (!get_sockaddr(&host_addr))
-                {
-                    return (ssize_t)0;
-                }
-
-                auto written = sendto(fd, buf, to_write, 0, (const struct sockaddr *)&host_addr, sizeof(host_addr));
-
-                if (written < 0)
-                {
-                    exo::Log::error(4, "Error writing: " + std::string(strerror(errno)));
-                }
-
-                return written;
-            }
-
-            return (ssize_t)0;
+            return write(fd, buf, to_write);
         });
 
         if (res != exo::Result::OK)
         {
-            if (_protocol == Protocol::TCP)
-            {
-                enable_sigpipe(old_act);
-                disconnect();
-            }
+            enable_sigpipe(old_act);
+            disconnect();
 
             return res;
         }
 
-        if (_protocol == Protocol::TCP) { enable_sigpipe(old_act); }
+        enable_sigpipe(old_act);
         return res;
     }
 
@@ -207,7 +160,6 @@ private:
     char _addr[64] = {};
     uint16_t _port;
     int _socket;
-    Protocol _protocol;
     int _timeout_ms = 0;
 
     bool is_connected()
@@ -303,7 +255,10 @@ struct In : public exo::msg::Inlet
 
         bool got_payload() { return _got_payload; }
 
-        virtual int client_read(int fd, void* dst, size_t size) = 0;
+        int client_read(int fd, void* dst, size_t size)
+        {
+            return read(fd, dst, size);
+        }
 
         Client() = default;
 
@@ -433,82 +388,13 @@ struct In : public exo::msg::Inlet
         bool _got_payload  = false;
     };
 
-    struct TcpClient : public Client
-    {
-        TcpClient() = default;
-
-        TcpClient(int sock) : Client(sock) {}
-
-        TcpClient(TcpClient& c) { _sock = c._sock; }
-
-        virtual int client_read(int fd, void* buf, size_t size)
-        {
-            return read(fd, buf, size);
-        }
-    };
-
-    struct UdpClient : public Client
-    {
-        UdpClient() = default;
-
-        UdpClient(int sock) : Client(sock) {}
-
-        UdpClient(UdpClient& c) { _sock = c._sock; }
-
-        virtual int client_read(int fd, void* buf, size_t size)
-        {
-            if (_last_packet.size() <= 0)
-            {
-                // fetch a new packet store it in the buffer to incremental reading
-                int bytes_read = recvfrom(
-                    fd,_last_packet.buf,
-                    size,
-                    0,  nullptr, nullptr
-                );
-
-                if (bytes_read < 0) { return bytes_read; }
-
-                _last_packet.end = (size_t)bytes_read;
-                _last_packet.start = 0;
-            }
-
-            return _last_packet.dequeue(buf, size);
-        }
-
-    private:
-        struct {
-            uint8_t buf[65535];
-            size_t start = 0, end = 0;
-
-            size_t size() { return len; }
-
-            int dequeue(uint8_t* b, size_t size)
-            {
-                auto bytes_left = len - start;
-                if (size < bytes_left)
-                {
-                    memcpy(b, buf + start, size);
-                    start += size;
-                    return size;
-                }
-                else
-                {
-                    memcpy(b, buf + start, bytes_left);
-                    start = len = 0;
-                    return bytes_left;
-                }
-            }
-        } _last_packet;
-    };
-
     In() = default;
 
     In(In& i) = default;
 
-    In(uint16_t port, Protocol p=Protocol::TCP)
+    In(uint16_t port)
     {
         this->_port = port;
-        this->_protocol = p;
     }
 
     ~In()
@@ -529,19 +415,7 @@ struct In : public exo::msg::Inlet
         }
 
         Client* client;
-        exo::Result res;
-
-        if (_protocol == Protocol::TCP)
-        {
-            res = get_ready_clients(&client);
-        }
-        else if (_protocol == Protocol::UDP)
-        {
-            static Client c = { _listen_sock, Protocol::UDP };
-            res = Result::OK;
-
-            client = &c;
-        }
+        exo::Result res = get_ready_clients(&client);
 
         switch (res)
         {
@@ -614,7 +488,6 @@ struct In : public exo::msg::Inlet
 private:
     static const int max_clients = 32;
     uint16_t _port;
-    Protocol _protocol;
     exo::ds::BoundedList<Client, max_clients> _clients;
     exo::ds::BoundedList<Client, max_clients> _ready_clients;
     int _listen_sock = -1;
@@ -622,16 +495,7 @@ private:
 
     Result setup()
     {
-        switch (_protocol)
-        {
-            case Protocol::TCP:
-                _listen_sock = ::socket(AF_INET, SOCK_STREAM, 0);
-                break;
-            case Protocol::UDP:
-                _listen_sock = ::socket(AF_INET, SOCK_DGRAM, 0);
-                break;
-            default: break;
-        }
+        _listen_sock = ::socket(AF_INET, SOCK_STREAM, 0);
 
         if (_listen_sock < 0) { return Result::RESOURCE_CREATE_FAILED; }
 
@@ -656,18 +520,12 @@ private:
             return Result::BIND_FAILED;
         }
 
-        switch (_protocol)
+        if(listen(_listen_sock, 1))
         {
-            case Protocol::TCP:
-                if(listen(_listen_sock, 1))
-                {
-                    exo::Log::error(4, "Listening failed");
-                    close(_listen_sock);
-                    _listen_sock = -1;
-                    return Result::LISTEN_FAILED;
-                }
-                break;
-            default: break;
+            exo::Log::error(4, "Listening failed");
+            close(_listen_sock);
+            _listen_sock = -1;
+            return Result::LISTEN_FAILED;
         }
 
         return Result::OK;
@@ -797,7 +655,7 @@ private:
                     // add the fd to the list, or decline the connection
                     if (_clients.size() < max_clients)
                     {
-                        _clients.push_back( {client_fd, _protocol} );
+                        _clients.push_back( {client_fd} );
                         exo::Log::info(4, "Client connected");
                         return Result::NOT_READY;
                     }
@@ -820,6 +678,8 @@ private:
     }
 };
 };
+
+}
 
 }
 

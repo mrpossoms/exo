@@ -34,7 +34,7 @@
         ;
     }
 
-    exo::nix::Net::Out outlet(outlet_hostname.c_str(), outlet_port);
+    exo::nix::net::TCP::Out outlet(outlet_hostname.c_str(), outlet_port);
 
     { // communicate
         TestMessage msg;

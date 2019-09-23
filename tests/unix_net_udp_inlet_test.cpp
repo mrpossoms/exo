@@ -14,7 +14,7 @@
     exo::Log::inst(new exo::nix::Log::Stderr(5, true), 5);
 
     bool continuous = false;
-    uint16_t inlet_port = 31337;
+    uint16_t inlet_port = 31338;
 
     { // parse arguments
         exo::nix::CLI::parser(argc, argv)
@@ -29,7 +29,7 @@
         ;
     }
 
-    exo::nix::Net::In inlet(inlet_port, exo::nix::Net::Protocol::UDP);
+    exo::nix::net::UDP::In inlet(inlet_port);
 
     { // communicate
         TestMessage msg;
@@ -48,19 +48,18 @@
         }
         else
         {
-            exo::Result res = exo::Result::OK;
-
             while (true)
             {
                 if (get_message(inlet, msg) == exo::Result::OK) { break; }
                 else { usleep(10000); }
             }
 
+            exo::Log::info(0, "Expected '" PROPER_GREETING "' got '" + std::string(msg.str) + "'");
             assert(strcmp(msg.str, PROPER_GREETING) == 0);
         }
     }
 
-
+    exo::Log::info(0, "Done!");
 
     return 0;
 }
