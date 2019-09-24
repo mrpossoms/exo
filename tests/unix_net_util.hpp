@@ -3,8 +3,10 @@
 #include "exo.hpp"
 #include "nix.hpp"
 #include "msg.hpp"
+#include "nix/net/udp.hpp"
+#include "nix/net/tcp.hpp"
 
-exo::Result get_message(exo::nix::Net::In& inlet, TestMessage& msg)
+exo::Result get_message(exo::msg::Inlet& inlet, TestMessage& msg)
 {
     exo::msg::Hdr hdr;
     exo::msg::Payload<sizeof(msg)> payload;
@@ -29,7 +31,7 @@ exo::Result get_message(exo::nix::Net::In& inlet, TestMessage& msg)
     return res;
 }
 
-exo::Result send_message(exo::nix::Net::Out& outlet, TestMessage& msg)
+exo::Result send_message(exo::msg::Outlet& outlet, TestMessage& msg)
 {
     // create the header, pack the payload
     exo::msg::Payload<sizeof(TestMessage) + sizeof(exo::msg::Hdr)> payload;

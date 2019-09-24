@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../exo.hpp"
-#include "../datastructures.hpp"
+#include "../../exo.hpp"
+#include "../../datastructures.hpp"
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -15,15 +15,11 @@ namespace exo
 {
 namespace nix
 {
-
-struct Net
+namespace net
 {
 
-enum class Protocol
+struct TCP
 {
-    TCP,
-    UDP,
-};
 
 static inline struct sigaction disable_sigpipe()
 {
@@ -56,15 +52,13 @@ struct Out : public exo::msg::Outlet
         strcpy(_addr, i._addr);
         _port = i._port;
         _socket = -1;
-        _protocol = i._protocol;
     }
 
-    Out(const char* dst_addr, uint16_t port, Protocol p=Protocol::TCP)
+    Out(const char* dst_addr, uint16_t port)
     {
         strcpy(_addr, dst_addr);
         _port = port;
         _socket = -1;
-        _protocol = p;
     }
 
     ~Out()
@@ -86,12 +80,14 @@ struct Out : public exo::msg::Outlet
 
     exo::Result operator<<(exo::msg::Hdr const& h)
     {
+        struct sigaction old_act;
+
         if (!is_connected())
         {
             if (!connect()) { return Result::CONNECTION_FAILURE; }
         }
 
-        auto old_act = disable_sigpipe();
+        old_act = disable_sigpipe();
 
         fd_set w_fds;
         FD_ZERO(&w_fds);
@@ -128,21 +124,27 @@ struct Out : public exo::msg::Outlet
 
     exo::Result operator<<(exo::msg::PayloadBuffer const& pay)
     {
+        struct sigaction old_act;
+
         if (!is_connected())
         {
             if (!connect()) { return Result::CONNECTION_FAILURE; }
         }
 
-        exo::Log::info(4, "Writing to: " + std::to_string(_port));
+        old_act = disable_sigpipe();
 
-        auto old_act = disable_sigpipe();
+        exo::Log::info(4, "Writing to: " + std::to_string(_port));
         auto to_write = pay.len;
 
-        auto res = chunker::writer(_socket, (uint8_t*)pay.buf, to_write);
+        auto res = chunker::writer(_socket, (uint8_t*)pay.buf, to_write, [&](int fd, uint8_t* buf, size_t to_write) {
+            return write(fd, buf, to_write);
+        });
+
         if (res != exo::Result::OK)
         {
             enable_sigpipe(old_act);
             disconnect();
+
             return res;
         }
 
@@ -158,7 +160,6 @@ private:
     char _addr[64] = {};
     uint16_t _port;
     int _socket;
-    Protocol _protocol;
     int _timeout_ms = 0;
 
     bool is_connected()
@@ -185,6 +186,28 @@ private:
         _socket = -1;
     }
 
+    bool get_sockaddr(struct sockaddr_in* host_addr)
+    {
+        // resolve host
+        auto host = gethostbyname(_addr);
+        if (host == nullptr)
+        {
+            exo::Log::error(4, "Host resolution failed");
+            return false;
+        }
+
+        // fill in host_addr with resolved info
+        bcopy(
+            (char *)host->h_addr,
+            (char *)&host_addr->sin_addr.s_addr,
+            host->h_length
+        );
+        host_addr->sin_port   = htons(_port);
+        host_addr->sin_family = AF_INET;
+
+        return true;
+    }
+
     bool connect()
     {
         // create and check socket
@@ -196,24 +219,12 @@ private:
             return false;
         }
 
-        // resolve host
-        auto host = gethostbyname(_addr);
-        if (host == nullptr)
+        struct sockaddr_in host_addr;
+        if (!get_sockaddr(&host_addr))
         {
-            exo::Log::error(4, "Host resolution failed");
             disconnect();
             return false;
         }
-
-        // fill in host_addr with resolved info
-        struct sockaddr_in host_addr = {};
-        bcopy(
-            (char *)host->h_addr,
-            (char *)&host_addr.sin_addr.s_addr,
-            host->h_length
-        );
-        host_addr.sin_port   = htons(_port);
-        host_addr.sin_family = AF_INET;
 
         // attempt connection
         if (::connect(_socket, (struct sockaddr *)&host_addr,sizeof(host_addr)) < 0)
@@ -238,6 +249,17 @@ struct In : public exo::msg::Inlet
     {
         bool corrupt = false;
 
+        int sock() { return _sock; }
+
+        bool got_header() { return _hdr.sanity == exo::msg::sanity; }
+
+        bool got_payload() { return _got_payload; }
+
+        int client_read(int fd, void* dst, size_t size)
+        {
+            return read(fd, dst, size);
+        }
+
         Client() = default;
 
         Client(int sock)
@@ -250,15 +272,9 @@ struct In : public exo::msg::Inlet
             _sock = c._sock;
         }
 
-        int sock() { return _sock; }
-
-        bool got_header() { return _hdr.sanity == exo::msg::sanity; }
-
-        bool got_payload() { return _got_payload; }
-
         exo::Result operator>>(msg::Hdr& h)
         {
-            if (read(_sock, &h, sizeof(h)) != sizeof(h))
+            if (client_read(_sock, &h, sizeof(h)) != sizeof(h))
             {
                 return exo::Result::OUT_OF_DATA;
             }
@@ -279,7 +295,10 @@ struct In : public exo::msg::Inlet
             auto to_read = pay.len;
             auto end = (uint8_t*)pay.buf;
 
-            auto res = chunker::reader(_sock, end, to_read);
+            auto res = chunker::reader(_sock, end, to_read, [&](int fd, uint8_t* buf, size_t to_read) {
+                return client_read(fd, buf, to_read);
+            });
+
             if (res != exo::Result::OK)
             {
                 return res;
@@ -336,7 +355,7 @@ struct In : public exo::msg::Inlet
                 // read each section of the payload by block sized chunks
                 auto pay = block.buffer();
                 auto to_read = bytes > pay.len ? pay.len : bytes;
-                auto bytes_read = read(_sock, pay.buf, to_read);
+                auto bytes_read = client_read(_sock, pay.buf, to_read);
 
                 if (bytes_read < 0)
                 {
@@ -363,8 +382,7 @@ struct In : public exo::msg::Inlet
         }
 
         bool operator==(Client& c) { return c._sock == _sock; }
-
-    private:
+    protected:
         int _sock = -1;
         exo::msg::Hdr _hdr = {};
         bool _got_payload  = false;
@@ -374,10 +392,9 @@ struct In : public exo::msg::Inlet
 
     In(In& i) = default;
 
-    In(uint16_t port, Protocol p=Protocol::TCP)
+    In(uint16_t port)
     {
         this->_port = port;
-        this->_protocol = p;
     }
 
     ~In()
@@ -398,7 +415,7 @@ struct In : public exo::msg::Inlet
         }
 
         Client* client;
-        auto res = get_ready_clients(&client);
+        exo::Result res = get_ready_clients(&client);
 
         switch (res)
         {
@@ -471,7 +488,6 @@ struct In : public exo::msg::Inlet
 private:
     static const int max_clients = 32;
     uint16_t _port;
-    Protocol _protocol;
     exo::ds::BoundedList<Client, max_clients> _clients;
     exo::ds::BoundedList<Client, max_clients> _ready_clients;
     int _listen_sock = -1;
@@ -479,16 +495,7 @@ private:
 
     Result setup()
     {
-        switch (_protocol)
-        {
-            case Protocol::TCP:
-                _listen_sock = ::socket(AF_INET, SOCK_STREAM, 0);
-                break;
-            case Protocol::UDP:
-                _listen_sock = ::socket(AF_INET, SOCK_DGRAM, 0);
-                break;
-            default: break;
-        }
+        _listen_sock = ::socket(AF_INET, SOCK_STREAM, 0);
 
         if (_listen_sock < 0) { return Result::RESOURCE_CREATE_FAILED; }
 
@@ -513,18 +520,12 @@ private:
             return Result::BIND_FAILED;
         }
 
-        switch (_protocol)
+        if(listen(_listen_sock, 1))
         {
-            case Protocol::TCP:
-                if(listen(_listen_sock, 1))
-                {
-                    exo::Log::error(4, "Listening failed");
-                    close(_listen_sock);
-                    _listen_sock = -1;
-                    return Result::LISTEN_FAILED;
-                }
-                break;
-            default: break;
+            exo::Log::error(4, "Listening failed");
+            close(_listen_sock);
+            _listen_sock = -1;
+            return Result::LISTEN_FAILED;
         }
 
         return Result::OK;
@@ -677,6 +678,8 @@ private:
     }
 };
 };
+
+}
 
 }
 

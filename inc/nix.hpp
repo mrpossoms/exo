@@ -15,7 +15,8 @@
 #include "nix/cli.hpp"
 #include "nix/log.hpp"
 #include "nix/pipeline.hpp"
-#include "nix/net.hpp"
+#include "nix/net/tcp.hpp"
+#include "nix/net/udp.hpp"
 #include "nix/fs.hpp"
 #include "nix/config.hpp"
 
