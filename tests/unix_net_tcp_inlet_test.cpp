@@ -31,7 +31,7 @@
         ;
     }
 
-    exo::nix::Net::In inlet(inlet_port);
+    exo::nix::net::TCP::In inlet(inlet_port);
 
     { // communicate
         TestMessage msg;

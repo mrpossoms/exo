@@ -12,12 +12,11 @@
 
 #include "test.h"
 {
-    (void)argc; (void)argv;
     exo::Log::instance(new exo::nix::Log::Stderr(5, true), 5);
 
     bool        continuous      = false;
     std::string outlet_hostname = { "127.0.0.1" };
-    uint16_t    outlet_port     = 31337;
+    uint16_t    outlet_port     = 31338;
 
     { // parse arguments
         exo::nix::CLI::parser(argc, argv)
@@ -34,7 +33,7 @@
         ;
     }
 
-    exo::nix::Net::Out outlet(outlet_hostname.c_str(), outlet_port);
+    exo::nix::net::UDP::Out outlet(outlet_hostname.c_str(), outlet_port);
 
     { // communicate
         TestMessage msg;

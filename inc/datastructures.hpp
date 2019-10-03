@@ -192,6 +192,11 @@ namespace exo
                 return _list[i];
             }
 
+            void clear()
+            {
+                _start = _size = 0;
+            }
+
             T* operator[](size_t i)
             {
                 if (size() <= i) { return nullptr; }

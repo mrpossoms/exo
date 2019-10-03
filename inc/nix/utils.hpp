@@ -7,14 +7,27 @@ namespace nix
 namespace chunker
 {
 
-static inline exo::Result writer(int fd, uint8_t* buf, size_t to_write)
+static inline int standard_write(int fd, uint8_t* buf, size_t to_write)
+{
+    return write(fd, buf, to_write);
+}
+
+static inline int standard_read(int fd, uint8_t* buf, size_t to_read)
+{
+    return read(fd, buf, to_read);
+}
+
+static inline exo::Result writer(int fd,
+                                 uint8_t* buf,
+                                 size_t to_write,
+                                 std::function<int (int fd, uint8_t* buf, size_t to_write)> write_cb=standard_write)
 {
     auto end = buf;
 
     // Allow the payload to be read in chunks at a time
     while (to_write > 0)
     {
-        auto bytes_written = write(fd, end, to_write);
+        auto bytes_written = write_cb(fd, end, to_write);
 
         switch(bytes_written)
         {
@@ -29,14 +42,17 @@ static inline exo::Result writer(int fd, uint8_t* buf, size_t to_write)
     return exo::Result::OK;
 }
 
-static inline exo::Result reader(int fd, uint8_t* buf, size_t to_read)
+static inline exo::Result reader(int fd,
+                                 uint8_t* buf,
+                                 size_t to_read,
+                                 std::function<int (int fd, uint8_t* buf, size_t to_read)> read_cb=standard_read)
 {
     auto end = (uint8_t*)buf;
 
     // Allow the payload to be read in chunks at a time
     while (to_read > 0)
     {
-        auto bytes_read = read(fd, end, to_read);
+        auto bytes_read = read_cb(fd, end, to_read);
 
         switch(bytes_read)
         {
