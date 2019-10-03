@@ -40,8 +40,12 @@ struct pid
 	{
 		auto u = p(e) + i(e, dt) + d(e, dt);
 		e_t_1 = e;
-		return u; 
+		return u;
 	}
+
+    inline T d_error_filtered() const { return d_filtered; }
+
+    inline T i_error() const { return int_i; }
 
     inline void reset()
     {
