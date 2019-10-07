@@ -81,13 +81,61 @@ namespace exo
     struct Log
     {
 
+        /**
+         * @brief      The PlotRange object is used to track the minimum and
+         *             maximum extents of values passed into the plot. This is
+         *             used to updating the plot scale.
+         */
+        struct PlotRange
+        {
+            float min, max;
+
+            PlotRange() : min(-1), max(1) {}
+            PlotRange(float _min, float _max) : min(_min), max(_max) {}
+
+            float update(float x)
+            {
+                min = std::min(x, min);
+                max = std::max(x, max);
+                return x;
+            }
+        };
+
+        /**
+         * @brief      Generate a vertical plot line string.
+         *
+         * @param[in]  min     The minimum value displayed by the scale
+         * @param[in]  max     The maximum value displayed by the scale
+         * @param[in]  values  The values to be plotted in this line.
+         * @param[in]  width   The width in characters of the line
+         *
+         * @return     plot string
+         */
         static std::string plot(float min, float max, std::initializer_list<float> values, const int width=80)
+        {
+            PlotRange range(min, max);
+            return plot(range, values, width);
+        }
+
+        /**
+         * @brief      Generate a vertical plot line string.
+         *
+         * @param      range   The PlotRange instance to be used and updated.
+         * @param[in]  values  The values to be plotted in this line.
+         * @param[in]  width   The width in characters of the line
+         *
+         * @return     plot string
+         */
+        static std::string plot(PlotRange& range, std::initializer_list<float> values, const int width=80)
         {
             char buf[width + 1];
             char* p = buf;
             memset(buf, ' ', sizeof(buf) - 1);
 
-            auto len = sprintf(p, "[%0.2f, %0.2f] ", min, max);
+            // update plot range object
+            for (auto x : values) { range.update(x); }
+
+            auto len = sprintf(p, "[%0.2f, %0.2f] ", range.min, range.max);
             p[len] = ' ';
             p += 20;
             p[0] = '|';
@@ -100,8 +148,8 @@ namespace exo
             char mark[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
             for (auto x : values)
             {
-                x -= min;
-                auto mi = static_cast<int>(plot_space * (x / (max - min)));
+                x -= range.min;
+                auto mi = static_cast<int>(plot_space * (x / (range.max - range.min)));
                 if (mi >= 0 && mi < plot_space)
                 {
                     p[mi] = mark[vi];
@@ -443,16 +491,6 @@ namespace exo
             template<typename S>
             Payload& put(S& structure) { enqueue<S>(structure); return *this; }
             Payload& operator<<(Hdr const& val) { enqueue<Hdr>(val); return *this; }
-            Payload& operator<<(int8_t& val)    { enqueue<int8_t>(val); return *this; }
-            Payload& operator<<(uint8_t& val)   { enqueue<uint8_t>(val); return *this; }
-            Payload& operator<<(int16_t& val)   { enqueue<int16_t>(val); return *this; }
-            Payload& operator<<(uint16_t& val)  { enqueue<uint16_t>(val); return *this; }
-            Payload& operator<<(int32_t& val)   { enqueue<int32_t>(val); return *this; }
-            Payload& operator<<(uint32_t& val)  { enqueue<uint32_t>(val); return *this; }
-            Payload& operator<<(int64_t& val)   { enqueue<int64_t>(val); return *this; }
-            Payload& operator<<(uint64_t& val)  { enqueue<uint64_t>(val); return *this; }
-            Payload& operator<<(float& val)     { enqueue<float>(val); return *this; }
-            Payload& operator<<(double& val)    { enqueue<double>(val); return *this; }
 
             /**
              * @brief Dequeue a structure from the payload
@@ -463,16 +501,6 @@ namespace exo
             template<typename S>
             Payload& get(S& structure) { dequeue<S>(structure); return *this; }
             Payload& operator>>(Hdr& val)      { dequeue<Hdr>(val); return *this; }
-            Payload& operator>>(int8_t& val)   { dequeue<int8_t>(val); return *this; }
-            Payload& operator>>(uint8_t& val)  { dequeue<uint8_t>(val); return *this; }
-            Payload& operator>>(int16_t& val)  { dequeue<int16_t>(val); return *this; }
-            Payload& operator>>(uint16_t& val) { dequeue<uint16_t>(val); return *this; }
-            Payload& operator>>(int32_t& val)  { dequeue<int32_t>(val); return *this; }
-            Payload& operator>>(uint32_t& val) { dequeue<uint32_t>(val); return *this; }
-            Payload& operator>>(int64_t& val)  { dequeue<int64_t>(val); return *this; }
-            Payload& operator>>(uint64_t& val) { dequeue<uint64_t>(val); return *this; }
-            Payload& operator>>(float& val)    { dequeue<float>(val); return *this; }
-            Payload& operator>>(double& val)   { dequeue<double>(val); return *this; }
 
             /**
              * @brief Set the position in the payload from which to read, or write the next values.
@@ -591,7 +619,7 @@ namespace exo
         /**
          * @param name system wide unique identifier
          */
-        Mod(ID&& name) { _name = name; }
+        Mod(ID const& name) { _name = name; }
 
         /**
          * @brief used to check compatibility between this module, and a specific message type.

@@ -14,7 +14,7 @@
 
     uint8_t byte_out = 42;
 
-    pay << byte_out;
+    pay.put<uint8_t>(byte_out);
     outlet << pay.buffer();
 
     return 0;
