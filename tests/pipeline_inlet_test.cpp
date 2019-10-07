@@ -14,7 +14,7 @@
 
     uint8_t byte_in;
     inlet >> pay.buffer();
-    pay >> byte_in;
+    pay.get<uint8_t>(byte_in);
 
     assert(byte_in == 42);
 
