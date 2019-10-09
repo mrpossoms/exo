@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unistd.h>
+#include <functional>
 
 namespace exo
 {
