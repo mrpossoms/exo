@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../exo.hpp"
+#include "../utils.hpp"
 #include "../../datastructures.hpp"
 
 #include <unistd.h>
@@ -37,6 +38,13 @@ struct Out : public exo::msg::Outlet
         strcpy(_addr, i._addr);
         _port = i._port;
         _socket = ::socket(AF_INET, SOCK_DGRAM, 0);
+    }
+
+    Out(std::string dst_addr, uint16_t port)
+    {
+        strcpy(_addr, dst_addr.c_str());
+        _port = port;
+        _socket = -1;
     }
 
     Out(const char* dst_addr, uint16_t port)
