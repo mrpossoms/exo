@@ -238,14 +238,14 @@ namespace exo
             }
 
 
-            std::string to_string() const
+            std::string to_string(bool parens=true) const
             {
-                std::string str = "(";
+                std::string str = parens ? "(" : "";
                 for (size_t i = 0; i < D; ++i)
                 {
                     str += std::to_string(v[i]);
                     if (i < D - 1) { str += ", "; }
-                } str += ")";
+                } str += parens ? ")" : "";
 
                 return str;
             }
