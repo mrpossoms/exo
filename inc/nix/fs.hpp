@@ -75,7 +75,14 @@ struct fs
     {
         std::string contents;
         std::ifstream file(path.c_str(), std::ifstream::in | std::ifstream::binary);
-        file >> contents;
+
+        while (!file.eof())
+        {
+            char buf[1024] = {};
+            file.read(buf, sizeof(buf));
+            contents += std::string(buf, strnlen(buf, sizeof(buf)));
+        }
+
         file.close();
 
         return contents;
