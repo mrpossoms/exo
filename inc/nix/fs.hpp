@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <dirent.h>
 
+#include <fstream>
 #include <functional>
 
 namespace exo
@@ -26,6 +27,22 @@ struct fs
     		case ENOENT:  return Result::BAD;
     		default:      return Result::ERROR;
     	}
+    }
+
+    static Result modified_time(std::string const& path, struct timespec& time)
+    {
+        struct stat statbuf;
+
+        switch (stat(path.c_str(), &statbuf))
+        {
+            case 0:       return Result::OK;
+            case ENOENT:  return Result::BAD;
+            default:      return Result::ERROR;
+        }
+
+        time = statbuf.st_mtimespec;
+
+        return Result::OK;
     }
 
     static exo::Result foreach_in_path(
@@ -50,6 +67,15 @@ struct fs
         return exo::Result::OK;
     }
 
+    static std::string read_file(std::string const& path)
+    {
+        std::string contents;
+        std::ifstream file(path.c_str(), std::ifstream::in | std::ifstream::binary);
+        file >> contents;
+        file.close();
+
+        return contents;
+    }
 
     static Result remove(std::string const& path)
     {
@@ -83,7 +109,7 @@ struct fs
         auto idx = path.find_last_of('/');
         if (std::string::npos == idx) { return ""; }
         idx += 1;
-        return path.substr(idx, path.length() - idx); 
+        return path.substr(idx, path.length() - idx);
     }
 
     static Result make_dirs(std::string const& path, mode_t mode=0777)
@@ -107,7 +133,7 @@ struct fs
         }
 
         return Result::OK;
-    } 
+    }
 };
 
 }
