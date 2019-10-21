@@ -40,7 +40,11 @@ struct fs
             default:      return Result::ERROR;
         }
 
+#if   defined(__APPLE__)
         time = statbuf.st_mtimespec;
+#elif defined(__linux__)
+        time = statbuf.st_mtim;
+#endif
 
         return Result::OK;
     }
