@@ -57,6 +57,22 @@ float uniform_random(float max=1)
 	v0 *= 0.001f;
 	assert(v0[0] == 1);
 
+	{ // check vector projection 0
+		Vec<float,3> v = { 1, 0, 0 };
+		Vec<float,3> w = {1, 1, 0};
+
+		auto p = w.project_onto(v);
+		assert(NEAR((p - v).len(), 0));
+	}
+
+	{ // check vector projection 1
+		Vec<float,3> v = { 0, 1, 0 };
+		Vec<float,3> w = {1, 1, 0};
+
+		auto p = w.project_onto(v);
+		assert(NEAR((p - v).len(), 0));
+	}
+
 	auto ortho = Vec<float,3>::cross({1, 0, 0}, {0, 1, 0});
 
 	assert(ortho[0] == 0);

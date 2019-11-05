@@ -277,7 +277,7 @@ namespace exo
             {
                 auto v_hat = v.norm();
                 auto len = this->dot(v_hat);
-                return *this - (v_hat * len);
+                return v_hat * len;
             }
 
 
