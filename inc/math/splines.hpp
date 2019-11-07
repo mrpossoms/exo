@@ -107,6 +107,51 @@ struct CatmullRom {
         }
     }
 
+
+    S nearest_t(Vec<S, D>& point, S t_min, S t_max, unsigned int sub=10)
+    {
+        S t_mid  = (t_min + t_max) * 0.5f;
+
+        if (sub == 0) { return t_mid; }
+
+        S t_low  = (t_min + t_mid) * 0.5f;
+        S t_high = (t_mid + t_max) * 0.5f;
+
+        // difference vectors between our search point, and the
+        // high and low midpoints on either side of the time interval
+        auto d_low  = point - this->point(t_low);
+        auto d_high = point - this->point(t_high);
+
+        // squared distance between the point, low and high
+        auto dist_low  = d_low.dot(d_low);
+        auto dist_high = d_high.dot(d_high);
+
+        if (dist_low < dist_high)
+        {
+            return nearest_t(point, t_min, t_mid, sub - 1);
+        }
+
+        return nearest_t(point, t_mid, t_max, sub - 1);
+    }
+
+
+    S arc_length(S t_start=0, S t_end=1, unsigned int steps=10)
+    {
+        auto dt = (t_end - t_start) / static_cast<S>(steps);
+        S len_sqr = 0;
+        auto last_p = point(t_start);
+
+        for (unsigned int i = 1; i < steps + 1; ++i)
+        {
+            auto p = point(t_start + i * dt);
+            auto delta = p - last_p;
+            len_sqr += sqrtf(delta.dot(delta));
+            last_p = p;
+        }
+
+        return static_cast<S>(len_sqr);
+    }
+
 private:
     S _t[4] = {};
     Vec<S, D> A[3] = {};
