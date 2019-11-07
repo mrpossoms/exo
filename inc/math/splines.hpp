@@ -7,6 +7,8 @@ namespace exo
 namespace math
 {
 
+
+
 template<typename S, ssize_t D>
 struct CatmullRom {
     Vec<S, D>* P = nullptr;
@@ -108,7 +110,7 @@ struct CatmullRom {
     }
 
 
-    S nearest_t(Vec<S, D>& point, S t_min, S t_max, unsigned int sub=10)
+    S nearest_t(Vec<S, D>& point, S t_min={0}, S t_max={1}, unsigned int sub=10)
     {
         S t_mid  = (t_min + t_max) * 0.5f;
 
@@ -174,6 +176,87 @@ private:
             B[i] = A[i] * ((_t[i + 2] - t) / den) + A[i + 1] * ((t - _t[i]) / den);
         }
     }
+};
+
+
+template<size_t POINTS, typename S, ssize_t D>
+struct path
+{
+    path(Vec<S, D>* points)
+    {
+        // copy control points
+        for (unsigned int i = 0; i < POINTS; ++i) { ctrl_pts[i] = points[i]; }
+
+        // initalize segments with control point pointers
+        for (unsigned int i = 0; i < POINTS - 3; ++i)
+        {
+            segments[i] = CatmullRom<S, D>{ ctrl_pts + i };
+            segments[i].centripetal();
+        }
+    }
+
+
+    /**
+     * @brief Computes a point on the spline
+     * @parameter t interpolation between control points p1 and p2
+     * @returns point on curve at time t
+     */
+    Vec<S, D> point(S t)
+    {
+        auto s_i = segment_idx(t);
+        S s_i_t = path_time(t) - s_i; // time within segment s_i
+
+        return segments[s_i].point(s_i_t);
+    }
+
+
+    S nearest_t(Vec<S, D>& point, S t_min=0, S t_max=1)
+    {
+        auto min_i = segment_idx(t_min);
+        auto max_i = segment_idx(t_max);
+        S t = {};
+        
+        for (int i = min_i; i <= max_i; ++i)
+        {
+            t = segments[i].nearest_t(point);
+
+            if (t > 0.001 || t < 0.999) { break; }
+        }
+
+        return t;
+    }
+
+
+    S arc_length(S t_start=0, S t_end=1, unsigned int steps=10)
+    {
+        auto min_i = segment_idx(t_start);
+        auto max_i = segment_idx(t_end);
+        auto min_path_t = path_time(t_start) - min_i;
+        auto max_path_t = path_time(t_end) - max_i;
+        S len = segments[min_i].arc_length(min_path_t);
+
+        for (int i = min_i + 1; i < max_i; ++i)
+        {
+            len += segments[i].arc_length();
+        }
+
+        return len + segments[max_i].arc_length(0, max_path_t);
+    }
+
+private:
+    inline float path_time(S t)
+    {
+        return (POINTS - 3) * t; // path time, as a sum of all segment
+                                 // ranges [0,1]
+    }
+
+    inline unsigned int segment_idx(S t)
+    {
+        return path_time(t); // index of the current segment to sample
+    }
+
+    Vec<S, D> ctrl_pts[POINTS];
+    CatmullRom<S, D> segments[POINTS - 3];
 };
 
 }
