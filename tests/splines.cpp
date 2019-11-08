@@ -13,7 +13,7 @@ using namespace exo::math;
 {
     (void)argc; (void)argv;
 
-    {
+    { // check basic interpolation
         Vec<float, 2> ctrl_pts[] = {
             { 0.0,  0 },
             { 0.333, 0 },
@@ -41,7 +41,22 @@ using namespace exo::math;
         info("dC(1): %s\n",   spline.tangent(1).to_string().c_str());
     }
 
-    {
+    { // check nearest time searches
+        Vec<float, 2> ctrl_pts[] = {
+            { 0.0,  0 },
+            { 0.333, 0 },
+            { 0.666, 0 },
+            { 1.0,  0 }
+        };
+
+        auto spline = CatmullRom<float, 2>(ctrl_pts);
+        spline.uniform();
+
+        assert(spline.nearest_t(ctrl_pts[0]) < 0.001);
+        assert(spline.nearest_t(ctrl_pts[3]) > 0.999);
+    }
+
+    { // check path interpolation
         Vec<float, 2> ctrl_pts[] = {
             { 0.0, 0 },
             { 1.0, 0 },
@@ -60,6 +75,27 @@ using namespace exo::math;
         auto point = p.point(0.5);
 
         assert((point - ctrl_pts[5]).len() < 0.01);
+    }
+
+    { // check nearest time searches
+        Vec<float, 2> ctrl_pts[] = {
+            { 0.0, 0 },
+            { 1.0, 0 },
+            { 2.0, 0 },
+            { 3.0, 0 },
+            { 4.0, 0 },
+            { 5.0, 0 },
+            { 6.0, 0 },
+            { 7.0, 0 },
+            { 8.0, 0 },
+            { 9.0, 0 },
+            {10.0, 0 },
+        };
+
+        exo::math::path<11, float, 2> p(ctrl_pts);
+
+        assert(p.nearest_t(ctrl_pts[0]) < 0.001);
+        assert(p.nearest_t(ctrl_pts[10]) > 0.999);
     }
 
     return 0;

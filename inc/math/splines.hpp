@@ -182,11 +182,19 @@ private:
 template<size_t POINTS, typename S, ssize_t D>
 struct path
 {
+    path() = default;
+
     path(Vec<S, D>* points)
     {
         // copy control points
         for (unsigned int i = 0; i < POINTS; ++i) { ctrl_pts[i] = points[i]; }
 
+        init();
+    }
+
+
+    void init()
+    {
         // initalize segments with control point pointers
         for (unsigned int i = 0; i < POINTS - 3; ++i)
         {
@@ -194,7 +202,6 @@ struct path
             segments[i].centripetal();
         }
     }
-
 
     /**
      * @brief Computes a point on the spline
@@ -216,7 +223,7 @@ struct path
         auto max_i = segment_idx(t_max);
         S t = {};
         
-        for (int i = min_i; i <= max_i; ++i)
+        for (unsigned int i = min_i; i <= max_i; ++i)
         {
             t = segments[i].nearest_t(point);
 
