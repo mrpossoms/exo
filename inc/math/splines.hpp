@@ -112,7 +112,7 @@ struct CatmullRom {
     }
 
 
-    S nearest_t(Vec<S, D>& point, S t_min={0}, S t_max={1}, unsigned int sub=10)
+    S nearest_t(Vec<S, D> const& point, S t_min={0}, S t_max={1}, unsigned int sub=10)
     {
         S t_mid  = (t_min + t_max) * 0.5f;
 
@@ -231,7 +231,7 @@ struct path
     }
 
 
-    S nearest_t(Vec<S, D>& point, S t_min=0, S t_max=1)
+    S nearest_t(Vec<S, D> const& point, S t_min=0, S t_max=1)
     {
         auto min_i = segment_idx(t_min);
         auto max_i = segment_idx(t_max);
