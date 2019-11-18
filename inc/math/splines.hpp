@@ -2,6 +2,8 @@
 
 #include "linalg.hpp"
 
+#include <initializer_list>
+
 namespace exo
 {
 namespace math
@@ -9,7 +11,7 @@ namespace math
 
 
 
-template<typename S, ssize_t D>
+template<typename S, size_t D>
 struct CatmullRom {
     Vec<S, D>* P = nullptr;
 
@@ -179,7 +181,7 @@ private:
 };
 
 
-template<size_t POINTS, typename S, ssize_t D>
+template<size_t POINTS, typename S, size_t D>
 struct path
 {
     path() = default;
@@ -188,6 +190,18 @@ struct path
     {
         // copy control points
         for (unsigned int i = 0; i < POINTS; ++i) { ctrl_pts[i] = points[i]; }
+
+        init();
+    }
+
+
+    path(std::initializer_list<Vec<S, D>> const& points)
+    {
+        int i = 0;
+        for (Vec<S, D> p : points)
+        {
+            ctrl_pts[i++] = p;
+        } 
 
         init();
     }
@@ -250,7 +264,6 @@ struct path
         return len + segments[max_i].arc_length(0, max_path_t);
     }
 
-private:
     inline float path_time(S t)
     {
         return (POINTS - 3) * t; // path time, as a sum of all segment
@@ -262,6 +275,7 @@ private:
         return path_time(t); // index of the current segment to sample
     }
 
+private:
     Vec<S, D> ctrl_pts[POINTS];
     CatmullRom<S, D> segments[POINTS - 3];
 };
