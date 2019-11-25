@@ -26,6 +26,11 @@ struct CatmullRom {
         P = control_points;
     }
 
+    bool is_valid()
+    {
+        return nullptr != P;
+    }
+
     /**
      * @brief Compute centripetal time knots
      * @returns CatmullRom reference
@@ -215,6 +220,16 @@ struct path
             segments[i] = CatmullRom<S, D>{ ctrl_pts + i };
             segments[i].centripetal();
         }
+    }
+
+    bool is_valid()
+    {
+        for (unsigned int i = 0; i < POINTS - 3; ++i)
+        {
+            if (!segments[i].is_valid()) { return false ; }
+        }
+
+        return true;
     }
 
     /**
